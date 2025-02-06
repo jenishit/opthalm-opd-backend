@@ -63,3 +63,36 @@ type Invoice struct {
 }
 
 type InvoiceItem struct {
+	ID              uuid.UUID
+	InvoiceID       uuid.UUID
+	BundleID        *uuid.UUID
+	ItemType        ItemType
+	Description     string
+	InventoryItemID *uuid.UUID
+	Quantity        int
+	UnitPrice       float64
+	DiscountAmount  float64
+	LineTotal       float64
+	CreatedAt       time.Time
+}
+
+type Payment struct {
+	ID          uuid.UUID
+	InvoiceID   uuid.UUID
+	Amount      float64
+	Method      PaymentMethod
+	ReferenceNo *string
+	PaidAt      time.Time
+	CreatedBy   uuid.UUID
+	CreatedAt   time.Time
+}
+
+// InvoiceDetails is the denormalized view used for read endpoints (list/get),
+// mirroring the VisitDetails pattern.
+type InvoiceDetails struct {
+	Invoice
+	PatientName  string
+	PatientPhone string
+	Items        []*InvoiceItem
+	Payments     []*Payment
+}
