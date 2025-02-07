@@ -52,3 +52,56 @@ type InventoryItem struct {
 }
 
 type StockMovement struct {
+	ID              uuid.UUID
+	InventoryItemID uuid.UUID
+	MovementType    StockMovementType
+	Quantity        int
+	ReferenceType   *string
+	ReferenceID     *uuid.UUID
+	Notes           *string
+	CreatedBy       uuid.UUID
+	CreatedAt       time.Time
+}
+
+type Vendor struct {
+	ID            uuid.UUID
+	ClinicID      uuid.UUID
+	Name          string
+	ContactPerson *string
+	Phone         *string
+	Email         *string
+	Address       *string
+	DeletedAt     *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
+type StockPurchaseItem struct {
+	ID              uuid.UUID
+	PurchaseID      uuid.UUID
+	InventoryItemID uuid.UUID
+	Quantity        int
+	UnitCost        float64
+	LineTotal       float64
+}
+
+type StockPurchase struct {
+	ID           uuid.UUID
+	ClinicID     uuid.UUID
+	VendorID     uuid.UUID
+	PurchaseDate time.Time
+	InvoiceRefNo *string
+	TotalAmount  float64
+	PaidAmount   float64
+	DueAmount    float64
+	CreatedBy    uuid.UUID
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
+// StockPurchaseDetails is the denormalized view used for read endpoints.
+type StockPurchaseDetails struct {
+	StockPurchase
+	VendorName string
+	Items      []*StockPurchaseItem
+}
