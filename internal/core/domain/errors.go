@@ -30,3 +30,35 @@ var (
 	ErrTokenDuration = errors.New("invalid token duration format")
 	// ErrTokenCreation is an error for when the token creation fails
 	ErrTokenCreation = errors.New("error creating token")
+	// ErrExpiredToken is an error for when the access token is expired
+	ErrExpiredToken = errors.New("access token has expired")
+	ErrExpiredOTP   = errors.New("OTP code invalid")
+	// ErrInvalidToken is an error for when the access token is invalid
+	ErrInvalidToken = errors.New("access token is invalid")
+	// ErrInvalidCredentials is an error for when the credentials are invalid
+	ErrInvalidCredentials = errors.New("invalid email or password")
+	// ErrEmptyAuthorizationHeader is an error for when the authorization header is empty
+	ErrEmptyAuthorizationHeader = errors.New("authorization header is not provided")
+	ErrPaymentExceedsDueAmount  = errors.New("payment exceeds due amount")
+	ErrInvoiceAlreadyPaid       = errors.New("invoice is already paid")
+	// ErrInsufficientStock is an error for when there isn't enough stock on hand to fulfil a request
+	ErrInsufficientStock = errors.New("insufficient stock on hand")
+	// ErrSubscriptionInactive is an error for when a clinic's subscription is missing, expired, or cancelled
+	ErrSubscriptionInactive = errors.New("subscription is inactive or expired")
+	// ErrTooManyRequests is an error for when a caller has exceeded a rate limit
+	ErrTooManyRequests = errors.New("too many requests, please try again later")
+
+	ErrEmptyToken = errors.New("token is missing in the url ")
+
+	// ErrInvalidAuthorizationHeader is an error for when the authorization header is invalid
+	ErrInvalidAuthorizationHeader = errors.New("authorization header format is invalid")
+	// ErrInvalidAuthorizationType is an error for when the authorization type is invalid
+	ErrInvalidAuthorizationType = errors.New("authorization type is not supported")
+	// ErrUnauthorized is an error for when the user is unauthorized
+	ErrUnauthorized = errors.New("user is unauthorized to access the resource")
+	// ErrForbidden is an error for when the user is forbidden to access the resource
+	ErrForbidden         = errors.New("user is forbidden to access the resource")
+	ErrForbiddenToDelete = errors.New("you cannot delete the given live sessions schedule")
+
+	ErrNoRows = errors.New("no rows in result set")
+)
