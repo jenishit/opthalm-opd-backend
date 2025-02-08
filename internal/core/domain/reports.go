@@ -27,3 +27,32 @@ type PatientDue struct {
 	PaidAmount   float64
 	DueAmount    float64
 	CreatedAt    time.Time
+}
+
+type VendorDue struct {
+	VendorID     uuid.UUID
+	VendorName   string
+	PurchaseID   uuid.UUID
+	TotalAmount  float64
+	PaidAmount   float64
+	DueAmount    float64
+	PurchaseDate time.Time
+}
+
+type InventoryValuation struct {
+	TotalItems     int
+	TotalUnits     int
+	TotalCostValue float64
+	TotalSellValue float64
+}
+
+type VisitsSummary struct {
+	Period     string
+	VisitCount int
+}
+
+type DoctorVisitsSummary struct {
+	DoctorID   uuid.UUID
+	DoctorName string
+	VisitCount int
+}
