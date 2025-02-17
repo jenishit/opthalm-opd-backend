@@ -60,3 +60,35 @@ func NewPasswordFromHash(hash string) (*Password, error) {
 	}
 
 	// Validate it's a valid bcrypt hash by attempting to use it
+	// Valid bcrypt hashes start with $2a$, $2b$, or $2y$
+	if len(hash) < 20 || (hash[0:3] != "$2a" && hash[0:3] != "$2b" && hash[0:3] != "$2y") {
+		return nil, ErrInvalidHash
+	}
+
+	return &Password{
+		hash: hash,
+	}, nil
+}
+
+// ValidatePassword checks if a plaintext password meets security requirements.
+// This is a public function for validation before creating a Password object.
+func ValidatePassword(plaintext string) error {
+	if plaintext == "" {
+		return ErrPasswordEmpty
+	}
+
+	if len(plaintext) < PasswordMinLength {
+		return ErrPasswordTooShort
+	}
+
+	return nil
+}
+
+// Hash returns the bcrypt hash of the password.
+// This is used when storing the password in the database.
+func (p *Password) Hash() string {
+	return p.hash
+}
+
+// Verify checks if the provided plaintext password matches this Password's hash.
+// Returns nil if the password matches, or an error if it doesn't.
