@@ -92,3 +92,34 @@ func (p *Password) Hash() string {
 
 // Verify checks if the provided plaintext password matches this Password's hash.
 // Returns nil if the password matches, or an error if it doesn't.
+func (p *Password) Verify(plaintext string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(p.hash), []byte(plaintext)); err != nil {
+		// Don't leak information about whether hash comparison failed or password was wrong
+		return errors.New("password verification failed")
+	}
+	return nil
+}
+
+// Matches checks if another Password value object has the same hash.
+// Two passwords are equal if their hashes are identical.
+func (p *Password) Matches(other *Password) bool {
+	if p == nil || other == nil {
+		return p == other
+	}
+	return p.hash == other.hash
+}
+
+// String implements the Stringer interface but returns a redacted version for security.
+// It never returns the actual hash to prevent accidental logging.
+func (p *Password) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return "Password(***)"
+}
+
+// MarshalJSON prevents the password hash from being accidentally serialized.
+// This protects against accidental exposure in logs or API responses.
+func (p *Password) MarshalJSON() ([]byte, error) {
+	return []byte(`"Password(***)"` + "\n"), nil
+}
