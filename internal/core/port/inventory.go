@@ -30,3 +30,36 @@ type InventoryItemService interface {
 	Update(ctx context.Context, clinicID uuid.UUID, item *domain.InventoryItem) error
 	Delete(ctx context.Context, clinicID, id uuid.UUID) error
 	LowStock(ctx context.Context, clinicID uuid.UUID) ([]*domain.InventoryItem, error)
+	AddStock(ctx context.Context, clinicID, itemID uuid.UUID, qty int, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error)
+	ListMovements(ctx context.Context, clinicID, itemID uuid.UUID, limit, offset int) ([]*domain.StockMovement, error)
+}
+
+type VendorRepository interface {
+	Create(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) (*domain.Vendor, error)
+	GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Vendor, error)
+	List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.Vendor, error)
+	Search(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Vendor, error)
+	Update(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) error
+	Delete(ctx context.Context, clinicID, id uuid.UUID) error
+}
+
+type VendorService interface {
+	Create(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) (*domain.Vendor, error)
+	GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Vendor, error)
+	List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.Vendor, error)
+	Search(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Vendor, error)
+	Update(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) error
+	Delete(ctx context.Context, clinicID, id uuid.UUID) error
+}
+
+type StockPurchaseRepository interface {
+	CreatePurchase(ctx context.Context, clinicID uuid.UUID, purchase *domain.StockPurchase, items []*domain.StockPurchaseItem) (*domain.StockPurchaseDetails, error)
+	GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.StockPurchaseDetails, error)
+	List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.StockPurchaseDetails, error)
+}
+
+type StockPurchaseService interface {
+	CreatePurchase(ctx context.Context, clinicID uuid.UUID, purchase *domain.StockPurchase, items []*domain.StockPurchaseItem) (*domain.StockPurchaseDetails, error)
+	GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.StockPurchaseDetails, error)
+	List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.StockPurchaseDetails, error)
+}
