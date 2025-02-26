@@ -52,3 +52,30 @@ CREATE TABLE refraction_readings (
     visit_id UUID REFERENCES visits(id) NOT NULL,
     eye VARCHAR(2) NOT NULL,
     stage VARCHAR(25) NOT NULL,
+    sphere NUMERIC(4,2),
+    cylinder NUMERIC(4,2),
+    axis INTEGER,
+    add_power NUMERIC(4,2),
+    va_achieved VARCHAR(10),
+    pd_mm NUMERIC(4,1),
+    lens_type VARCHAR(50),
+    remarks VARCHAR(255),
+    created_by UUID REFERENCES users(id)
+);
+
+CREATE TABLE follow_ups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    visit_id UUID REFERENCES visits(id) NOT NULL,
+    followup_date DATE,
+    reason VARCHAR(255),
+    reminder_sent_at TIMESTAMP, 
+    created_by UUID REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+-- +goose Down
+DROP TABLE follow_ups;
+DROP TABLE refraction_readings;
+DROP TABLE investigations;
+DROP TABLE examination_findings;
+DROP TABLE visit_symptoms;
