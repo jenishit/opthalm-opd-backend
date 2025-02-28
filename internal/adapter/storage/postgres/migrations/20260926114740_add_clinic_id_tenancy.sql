@@ -27,3 +27,31 @@ CREATE INDEX idx_visits_clinic_id ON visits (clinic_id);
 
 ALTER TABLE visit_symptoms ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
 ALTER TABLE examination_findings ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE investigations ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE refraction_readings ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE follow_ups ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+
+ALTER TABLE invoices ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+CREATE INDEX idx_invoices_clinic_id ON invoices (clinic_id);
+ALTER TABLE invoice_items ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE payments ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+
+ALTER TABLE inventory_items ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+CREATE INDEX idx_inventory_items_clinic_id ON inventory_items (clinic_id);
+ALTER TABLE inventory_stock_movements ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE vendors ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+CREATE INDEX idx_vendors_clinic_id ON vendors (clinic_id);
+ALTER TABLE stock_purchases ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+ALTER TABLE stock_purchase_items ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+
+ALTER TABLE lab_jobs ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+CREATE INDEX idx_lab_jobs_clinic_id ON lab_jobs (clinic_id);
+ALTER TABLE lab_job_status_history ADD COLUMN clinic_id UUID NOT NULL REFERENCES clinic_settings(id);
+
+CREATE TABLE subscriptions (
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id          UUID NOT NULL UNIQUE REFERENCES clinic_settings(id),
+    plan_name          VARCHAR(50) NOT NULL DEFAULT 'trial',
+    status             VARCHAR(20) NOT NULL DEFAULT 'trialing'
+                           CHECK (status IN ('trialing', 'active', 'past_due', 'cancelled')),
+    current_period_end TIMESTAMP NOT NULL,
