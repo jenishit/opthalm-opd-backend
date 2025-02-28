@@ -55,3 +55,32 @@ CREATE TABLE subscriptions (
     status             VARCHAR(20) NOT NULL DEFAULT 'trialing'
                            CHECK (status IN ('trialing', 'active', 'past_due', 'cancelled')),
     current_period_end TIMESTAMP NOT NULL,
+    created_at         TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at         TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- +goose Down
+DROP TABLE subscriptions;
+
+ALTER TABLE lab_job_status_history DROP COLUMN clinic_id;
+ALTER TABLE lab_jobs DROP COLUMN clinic_id;
+
+ALTER TABLE stock_purchase_items DROP COLUMN clinic_id;
+ALTER TABLE stock_purchases DROP COLUMN clinic_id;
+ALTER TABLE vendors DROP COLUMN clinic_id;
+ALTER TABLE inventory_stock_movements DROP COLUMN clinic_id;
+ALTER TABLE inventory_items DROP COLUMN clinic_id;
+
+ALTER TABLE payments DROP COLUMN clinic_id;
+ALTER TABLE invoice_items DROP COLUMN clinic_id;
+ALTER TABLE invoices DROP COLUMN clinic_id;
+
+ALTER TABLE follow_ups DROP COLUMN clinic_id;
+ALTER TABLE refraction_readings DROP COLUMN clinic_id;
+ALTER TABLE investigations DROP COLUMN clinic_id;
+ALTER TABLE examination_findings DROP COLUMN clinic_id;
+ALTER TABLE visit_symptoms DROP COLUMN clinic_id;
+
+ALTER TABLE visits DROP COLUMN clinic_id;
+ALTER TABLE patients DROP COLUMN clinic_id;
+ALTER TABLE users DROP COLUMN clinic_id;
