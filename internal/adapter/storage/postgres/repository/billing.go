@@ -31,3 +31,37 @@ func (r *InvoiceRepository) CreateInvoice(ctx context.Context, clinicID uuid.UUI
 				"tax_amount", "total_amount", "paid_amount", "due_amount",
 				"payment_status", "created_by", "updated_by",
 			).
+			Values(
+				clinicID, invoice.PatientID, nullUUIDPtr(invoice.VisitID), string(invoice.Status), invoice.Subtotal, invoice.DiscountAmount,
+				invoice.TaxAmount, invoice.TotalAmount, invoice.PaidAmount, invoice.DueAmount,
+				string(invoice.PaymentStatus), invoice.CreatedBy, invoice.UpdatedBy,
+			).
+			Suffix("RETURNING id").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.CreateInvoice build invoice: %w", err)
+		}
+
+		if err := tx.QueryRow(ctx, query, args...).Scan(&invoice.ID); err != nil {
+			return fmt.Errorf("InvoiceRepo.CreateInvoice insert invoice: %w", err)
+		}
+
+		for _, item := range items {
+			ib := sq.Insert("invoice_items").
+				Columns(
+					"clinic_id", "invoice_id", "bundle_id", "item_type", "description", "inventory_item_id",
+					"quantity", "unit_price", "discount_amount", "line_total",
+				).
+				Values(
+					clinicID, invoice.ID, nullUUIDPtr(item.BundleID), string(item.ItemType), item.Description, nullUUIDPtr(item.InventoryItemID),
+					item.Quantity, item.UnitPrice, item.DiscountAmount, item.LineTotal,
+				).
+				Suffix("RETURNING id").
+				PlaceholderFormat(sq.Dollar)
+
+			query, args, err := ib.ToSql()
+			if err != nil {
+				return fmt.Errorf("InvoiceRepo.CreateInvoice build item: %w", err)
+			}
+			if err := tx.QueryRow(ctx, query, args...).Scan(&item.ID); err != nil {
