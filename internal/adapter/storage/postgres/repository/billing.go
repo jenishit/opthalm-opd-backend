@@ -65,3 +65,36 @@ func (r *InvoiceRepository) CreateInvoice(ctx context.Context, clinicID uuid.UUI
 				return fmt.Errorf("InvoiceRepo.CreateInvoice build item: %w", err)
 			}
 			if err := tx.QueryRow(ctx, query, args...).Scan(&item.ID); err != nil {
+				return fmt.Errorf("InvoiceRepo.CreateInvoice insert item: %w", err)
+			}
+			item.InvoiceID = invoice.ID
+
+			if item.InventoryItemID != nil {
+				itemID := item.ID
+				if _, err := r.Stock.deductStockTx(ctx, tx, clinicID, *item.InventoryItemID, item.Quantity, domain.MovementSaleOut, &referenceType, &itemID, nil, invoice.CreatedBy); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetByID(ctx, clinicID, invoice.ID)
+}
+
+func (r *InvoiceRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.id": id, "i.clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.GetByID build: %w", err)
+	}
+
+	details, err := scanInvoiceDetails(ctx, r.DB, query, args)
+	if err != nil {
+		return nil, err
