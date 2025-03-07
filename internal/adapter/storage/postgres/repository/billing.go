@@ -266,3 +266,36 @@ func (r *InvoiceRepository) listItems(ctx context.Context, invoiceID uuid.UUID) 
 			it.InventoryItemID = &inventoryItemID.UUID
 		}
 		items = append(items, &it)
+	}
+	return items, rows.Err()
+}
+
+func (r *InvoiceRepository) listPayments(ctx context.Context, invoiceID uuid.UUID) ([]*domain.Payment, error) {
+	query, args, err := sq.Select(
+		"id", "invoice_id", "amount", "method", "reference_no", "paid_at", "created_by", "created_at",
+	).
+		From("payments").
+		Where(sq.Eq{"invoice_id": invoiceID}).
+		OrderBy("paid_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listPayments build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listPayments query: %w", err)
+	}
+	defer rows.Close()
+
+	var payments []*domain.Payment
+	for rows.Next() {
+		var p domain.Payment
+		var method string
+		var referenceNo sql.NullString
+		if err := rows.Scan(&p.ID, &p.InvoiceID, &p.Amount, &method, &referenceNo, &p.PaidAt, &p.CreatedBy, &p.CreatedAt); err != nil {
+			return nil, fmt.Errorf("InvoiceRepo.listPayments scan: %w", err)
+		}
+		p.Method = domain.PaymentMethod(method)
+		if referenceNo.Valid {
