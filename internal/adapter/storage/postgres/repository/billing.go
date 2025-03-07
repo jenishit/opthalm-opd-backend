@@ -98,3 +98,37 @@ func (r *InvoiceRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID)
 	details, err := scanInvoiceDetails(ctx, r.DB, query, args)
 	if err != nil {
 		return nil, err
+	}
+
+	if details.Items, err = r.listItems(ctx, id); err != nil {
+		return nil, err
+	}
+	if details.Payments, err = r.listPayments(ctx, id); err != nil {
+		return nil, err
+	}
+
+	return details, nil
+}
+
+func (r *InvoiceRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.clinic_id": clinicID}).
+		OrderBy("i.created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.List build: %w", err)
+	}
+	return scanInvoiceDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *InvoiceRepository) Search(ctx context.Context, clinicID uuid.UUID, queryStr string, limit int) ([]*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.clinic_id": clinicID}).
+		Where(sq.Or{
+			sq.Expr("i.invoice_no ILIKE '%' || ? || '%'", queryStr),
+			sq.Expr("p.full_name ILIKE '%' || ? || '%'", queryStr),
+			sq.Expr("p.phone ILIKE '%' || ? || '%'", queryStr),
+		}).
