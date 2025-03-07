@@ -132,3 +132,36 @@ func (r *InvoiceRepository) Search(ctx context.Context, clinicID uuid.UUID, quer
 			sq.Expr("p.full_name ILIKE '%' || ? || '%'", queryStr),
 			sq.Expr("p.phone ILIKE '%' || ? || '%'", queryStr),
 		}).
+		OrderBy("i.created_at DESC").
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.Search build: %w", err)
+	}
+	return scanInvoiceDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *InvoiceRepository) UpdateStatus(ctx context.Context, clinicID, id uuid.UUID, status domain.InvoiceStatus, updatedBy uuid.UUID) error {
+	query, args, err := sq.Update("invoices").
+		Set("status", string(status)).
+		Set("updated_by", updatedBy).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("InvoiceRepo.UpdateStatus build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("InvoiceRepo.UpdateStatus exec: %w", err)
+	}
+	return nil
+}
+
+func (r *InvoiceRepository) RecordPayment(ctx context.Context, clinicID uuid.UUID, payment *domain.Payment) (*domain.Payment, error) {
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		var totalAmount, paidAmount float64
+		var paymentStatus string
+		err := tx.QueryRow(ctx,
+			`SELECT total_amount, paid_amount, payment_status FROM invoices WHERE id = $1 AND clinic_id = $2 FOR UPDATE`,
