@@ -232,3 +232,37 @@ func (r *InvoiceRepository) listItems(ctx context.Context, invoiceID uuid.UUID) 
 		"id", "invoice_id", "bundle_id", "item_type", "description", "inventory_item_id",
 		"quantity", "unit_price", "discount_amount", "line_total", "created_at",
 	).
+		From("invoice_items").
+		Where(sq.Eq{"invoice_id": invoiceID}).
+		OrderBy("created_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listItems build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listItems query: %w", err)
+	}
+	defer rows.Close()
+
+	var items []*domain.InvoiceItem
+	for rows.Next() {
+		var it domain.InvoiceItem
+		var bundleID, inventoryItemID uuid.NullUUID
+		var itemType string
+		if err := rows.Scan(
+			&it.ID, &it.InvoiceID, &bundleID, &itemType, &it.Description, &inventoryItemID,
+			&it.Quantity, &it.UnitPrice, &it.DiscountAmount, &it.LineTotal, &it.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("InvoiceRepo.listItems scan: %w", err)
+		}
+		it.ItemType = domain.ItemType(itemType)
+		if bundleID.Valid {
+			it.BundleID = &bundleID.UUID
+		}
+		if inventoryItemID.Valid {
+			it.InventoryItemID = &inventoryItemID.UUID
+		}
+		items = append(items, &it)
