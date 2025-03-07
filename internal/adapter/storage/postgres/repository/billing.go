@@ -165,3 +165,37 @@ func (r *InvoiceRepository) RecordPayment(ctx context.Context, clinicID uuid.UUI
 		var paymentStatus string
 		err := tx.QueryRow(ctx,
 			`SELECT total_amount, paid_amount, payment_status FROM invoices WHERE id = $1 AND clinic_id = $2 FOR UPDATE`,
+			payment.InvoiceID, clinicID,
+		).Scan(&totalAmount, &paidAmount, &paymentStatus)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				return domain.ErrDataNotFound
+			}
+			return fmt.Errorf("InvoiceRepo.RecordPayment lock invoice: %w", err)
+		}
+
+		if domain.PaymentStatus(paymentStatus) == domain.PaymentPaid {
+			return domain.ErrInvoiceAlreadyPaid
+		}
+
+		newPaid := paidAmount + payment.Amount
+		newDue := totalAmount - newPaid
+		if newDue < 0 {
+			return domain.ErrPaymentExceedsDueAmount
+		}
+
+		newStatus := domain.PaymentPartial
+		if newDue == 0 {
+			newStatus = domain.PaymentPaid
+		} else if newPaid == 0 {
+			newStatus = domain.PaymentUnpaid
+		}
+
+		query, args, err := sq.Insert("payments").
+			Columns("clinic_id", "invoice_id", "amount", "method", "reference_no", "created_by").
+			Values(clinicID, payment.InvoiceID, payment.Amount, string(payment.Method), nullStringPtr(payment.ReferenceNo), payment.CreatedBy).
+			Suffix("RETURNING id, paid_at, created_at").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment build payment: %w", err)
