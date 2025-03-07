@@ -199,3 +199,36 @@ func (r *InvoiceRepository) RecordPayment(ctx context.Context, clinicID uuid.UUI
 			ToSql()
 		if err != nil {
 			return fmt.Errorf("InvoiceRepo.RecordPayment build payment: %w", err)
+		}
+		if err := tx.QueryRow(ctx, query, args...).Scan(&payment.ID, &payment.PaidAt, &payment.CreatedAt); err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment insert payment: %w", err)
+		}
+
+		uQuery, uArgs, err := sq.Update("invoices").
+			Set("paid_amount", newPaid).
+			Set("due_amount", newDue).
+			Set("payment_status", string(newStatus)).
+			Set("updated_at", sq.Expr("NOW()")).
+			Where(sq.Eq{"id": payment.InvoiceID}).
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment build invoice update: %w", err)
+		}
+		if _, err := tx.Exec(ctx, uQuery, uArgs...); err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment update invoice: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return payment, nil
+}
+
+func (r *InvoiceRepository) listItems(ctx context.Context, invoiceID uuid.UUID) ([]*domain.InvoiceItem, error) {
+	query, args, err := sq.Select(
+		"id", "invoice_id", "bundle_id", "item_type", "description", "inventory_item_id",
+		"quantity", "unit_price", "discount_amount", "line_total", "created_at",
+	).
