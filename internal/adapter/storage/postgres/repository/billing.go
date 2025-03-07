@@ -299,3 +299,37 @@ func (r *InvoiceRepository) listPayments(ctx context.Context, invoiceID uuid.UUI
 		}
 		p.Method = domain.PaymentMethod(method)
 		if referenceNo.Valid {
+			p.ReferenceNo = &referenceNo.String
+		}
+		payments = append(payments, &p)
+	}
+	return payments, rows.Err()
+}
+
+func invoiceSelect() sq.SelectBuilder {
+	return sq.Select(
+		"i.id", "i.invoice_no", "i.patient_id", "p.full_name", "p.phone", "i.visit_id", "i.status",
+		"i.subtotal", "i.discount_amount", "i.tax_amount", "i.total_amount",
+		"i.paid_amount", "i.due_amount", "i.payment_status",
+		"i.created_by", "i.updated_by", "i.created_at", "i.updated_at",
+	).
+		From("invoices i").
+		Join("patients p ON p.id = i.patient_id")
+}
+
+func scanInvoiceDetails(ctx context.Context, db *postgres.DB, query string, args []any) (*domain.InvoiceDetails, error) {
+	row := db.QueryRow(ctx, query, args...)
+	return scanInvoiceDetailsRow(row)
+}
+
+func scanInvoiceDetailsRow(row pgx.Row) (*domain.InvoiceDetails, error) {
+	var d domain.InvoiceDetails
+	var visitID uuid.NullUUID
+	var status, paymentStatus string
+
+	err := row.Scan(
+		&d.ID, &d.InvoiceNo, &d.PatientID, &d.PatientName, &d.PatientPhone, &visitID, &status,
+		&d.Subtotal, &d.DiscountAmount, &d.TaxAmount, &d.TotalAmount,
+		&d.PaidAmount, &d.DueAmount, &paymentStatus,
+		&d.CreatedBy, &d.UpdatedBy, &d.CreatedAt, &d.UpdatedAt,
+	)
