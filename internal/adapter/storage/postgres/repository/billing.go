@@ -333,3 +333,36 @@ func scanInvoiceDetailsRow(row pgx.Row) (*domain.InvoiceDetails, error) {
 		&d.PaidAmount, &d.DueAmount, &paymentStatus,
 		&d.CreatedBy, &d.UpdatedBy, &d.CreatedAt, &d.UpdatedAt,
 	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan invoice: %w", err)
+	}
+
+	d.Status = domain.InvoiceStatus(status)
+	d.PaymentStatus = domain.PaymentStatus(paymentStatus)
+	if visitID.Valid {
+		d.VisitID = &visitID.UUID
+	}
+
+	return &d, nil
+}
+
+func scanInvoiceDetailsList(ctx context.Context, db *postgres.DB, query string, args []any) ([]*domain.InvoiceDetails, error) {
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query invoices: %w", err)
+	}
+	defer rows.Close()
+
+	var result []*domain.InvoiceDetails
+	for rows.Next() {
+		d, err := scanInvoiceDetailsRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, d)
+	}
+	return result, rows.Err()
+}
