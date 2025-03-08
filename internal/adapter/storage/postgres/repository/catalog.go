@@ -67,3 +67,38 @@ func (r *MedicineRepository) Update(ctx context.Context, m *domain.Medicine) err
 		Set("form", sq.Expr("COALESCE(?, form)", nullStringPtr(m.Form))).
 		Set("updated_at", sq.Expr("NOW()")).
 		Where(sq.Eq{"id": m.ID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return fmt.Errorf("MedicineRepo.Update build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("MedicineRepo.Update exec: %w", err)
+	}
+
+	return nil
+}
+
+func (r *MedicineRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	query, args, err := sq.
+		Update("medicines").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("MedicineRepo.Delete build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("MedicineRepo.Delete exec: %w", err)
+	}
+
+	return nil
+}
+
