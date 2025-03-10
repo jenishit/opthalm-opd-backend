@@ -240,3 +240,37 @@ func (r *HistoryConditionRepository) Update(ctx context.Context, h *domain.Histo
 		Where(sq.Eq{"id": h.ID}).
 		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("HistoryConditionRepo.Update build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("HistoryConditionRepo.Update exec: %w", err)
+	}
+
+	return nil
+}
+
+func (r *HistoryConditionRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	query, args, err := sq.
+		Update("history_conditions").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("HistoryConditionRepo.Delete build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("HistoryConditionRepo.Delete exec: %w", err)
+	}
+
+	return nil
+}
+
+// ─── Scan helpers ─────────────────────────────────────────────────────────────
+
