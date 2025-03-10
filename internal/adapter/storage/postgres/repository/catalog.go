@@ -205,3 +205,38 @@ func (r *HistoryConditionRepository) Search(ctx context.Context, query string, l
 		Where("deleted_at IS NULL").
 		Where(sq.Expr("name ILIKE '%' || ? || '%'", query)).
 		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar)
+
+	return scanHistoryConditions(ctx, r.DB, qb)
+}
+
+func (r *HistoryConditionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.HistoryCondition, error) {
+	qb := sq.Select("id", "name", "created_at", "updated_at").
+		From("history_conditions").
+		Where(sq.Eq{"id": id}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar)
+
+	return scanHistoryCondition(ctx, r.DB, qb)
+}
+
+func (r *HistoryConditionRepository) List(ctx context.Context, limit, offset int) ([]*domain.HistoryCondition, error) {
+	qb := sq.Select("id", "name", "created_at", "updated_at").
+		From("history_conditions").
+		Where("deleted_at IS NULL").
+		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar)
+
+	return scanHistoryConditions(ctx, r.DB, qb)
+}
+
+func (r *HistoryConditionRepository) Update(ctx context.Context, h *domain.HistoryCondition) error {
+	query, args, err := sq.
+		Update("history_conditions").
+		Set("name", sq.Expr("COALESCE(?, name)", nullString(h.Name))).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": h.ID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).ToSql()
