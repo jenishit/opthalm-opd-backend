@@ -102,3 +102,37 @@ func (r *MedicineRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// ─── Diagnosis Catalog ────────────────────────────────────────────────────────
+
+type DiagnosisCatalogRepository struct {
+	DB *postgres.DB
+}
+
+func NewDiagnosisCatalogRepository(db *postgres.DB) *DiagnosisCatalogRepository {
+	return &DiagnosisCatalogRepository{DB: db}
+}
+
+func (r *DiagnosisCatalogRepository) Search(ctx context.Context, query string, limit int) ([]*domain.DiagnosisCatalog, error) {
+	qb := sq.Select("id", "icd10_code", "name", "created_at", "updated_at").
+		From("diagnosis_catalog").
+		Where("deleted_at IS NULL").
+		Where(sq.Or{
+			sq.Expr("name ILIKE '%' || ? || '%'", query),
+			sq.Expr("icd10_code ILIKE '%' || ? || '%'", query),
+		}).
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar)
+
+	return scanDiagnosisCatalogs(ctx, r.DB, qb)
+}
+
+func (r *DiagnosisCatalogRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.DiagnosisCatalog, error) {
+	qb := sq.Select("id", "icd10_code", "name", "created_at", "updated_at").
+		From("diagnosis_catalog").
+		Where(sq.Eq{"id": id}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar)
+
+	return scanDiagnosisCatalog(ctx, r.DB, qb)
+}
+
