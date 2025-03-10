@@ -274,3 +274,37 @@ func (r *HistoryConditionRepository) Delete(ctx context.Context, id uuid.UUID) e
 
 // ─── Scan helpers ─────────────────────────────────────────────────────────────
 
+func scanMedicine(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*domain.Medicine, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var m domain.Medicine
+	var brandName, strength, form sql.NullString
+
+	err = db.QueryRow(ctx, query, args...).Scan(
+		&m.ID,
+		&m.MedicineName,
+		&brandName,
+		&strength,
+		&form,
+		&m.CreatedAt,
+		&m.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan: %w", err)
+	}
+
+	if brandName.Valid {
+		m.BrandName = &brandName.String
+	}
+	if strength.Valid {
+		m.Strength = &strength.String
+	}
+	if form.Valid {
+		m.Form = &form.String
+	}
