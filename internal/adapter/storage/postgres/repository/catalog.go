@@ -136,3 +136,37 @@ func (r *DiagnosisCatalogRepository) GetByID(ctx context.Context, id uuid.UUID) 
 	return scanDiagnosisCatalog(ctx, r.DB, qb)
 }
 
+func (r *DiagnosisCatalogRepository) List(ctx context.Context, limit, offset int) ([]*domain.DiagnosisCatalog, error) {
+	qb := sq.Select("id", "icd10_code", "name", "created_at", "updated_at").
+		From("diagnosis_catalog").
+		Where("deleted_at IS NULL").
+		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar)
+
+	return scanDiagnosisCatalogs(ctx, r.DB, qb)
+}
+
+func (r *DiagnosisCatalogRepository) Update(ctx context.Context, d *domain.DiagnosisCatalog) error {
+	query, args, err := sq.
+		Update("diagnosis_catalog").
+		Set("name", sq.Expr("COALESCE(?, name)", nullString(d.Name))).
+		Set("icd10_code", sq.Expr("COALESCE(?, icd10_code)", nullStringPtr(d.Icd10Code))).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": d.ID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("DiagnosisCatalogRepo.Update build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("DiagnosisCatalogRepo.Update exec: %w", err)
+	}
+
+	return nil
+}
+
