@@ -170,3 +170,38 @@ func (r *DiagnosisCatalogRepository) Update(ctx context.Context, d *domain.Diagn
 	return nil
 }
 
+func (r *DiagnosisCatalogRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	query, args, err := sq.
+		Update("diagnosis_catalog").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("DiagnosisCatalogRepo.Delete build: %w", err)
+	}
+
+	_, err = r.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("DiagnosisCatalogRepo.Delete exec: %w", err)
+	}
+
+	return nil
+}
+
+// ─── History Condition ────────────────────────────────────────────────────────
+
+type HistoryConditionRepository struct {
+	DB *postgres.DB
+}
+
+func NewHistoryConditionRepository(db *postgres.DB) *HistoryConditionRepository {
+	return &HistoryConditionRepository{DB: db}
+}
+
+func (r *HistoryConditionRepository) Search(ctx context.Context, query string, limit int) ([]*domain.HistoryCondition, error) {
+	qb := sq.Select("id", "name", "created_at", "updated_at").
+		From("history_conditions").
+		Where("deleted_at IS NULL").
+		Where(sq.Expr("name ILIKE '%' || ? || '%'", query)).
+		Limit(uint64(limit)).
