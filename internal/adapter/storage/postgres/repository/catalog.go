@@ -343,3 +343,38 @@ func scanMedicines(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([
 		}
 
 		if brandName.Valid {
+			m.BrandName = &brandName.String
+		}
+		if strength.Valid {
+			m.Strength = &strength.String
+		}
+		if form.Valid {
+			m.Form = &form.String
+		}
+
+		medicines = append(medicines, &m)
+	}
+
+	return medicines, nil
+}
+
+func scanDiagnosisCatalog(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*domain.DiagnosisCatalog, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var d domain.DiagnosisCatalog
+	var icd10Code sql.NullString
+
+	err = db.QueryRow(ctx, query, args...).Scan(
+		&d.ID,
+		&icd10Code,
+		&d.Name,
+		&d.CreatedAt,
+		&d.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
