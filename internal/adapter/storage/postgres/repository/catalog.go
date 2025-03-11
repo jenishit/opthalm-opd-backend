@@ -446,3 +446,38 @@ func scanHistoryCondition(ctx context.Context, db *postgres.DB, qb sq.SelectBuil
 		}
 		return nil, fmt.Errorf("scan: %w", err)
 	}
+
+	return &h, nil
+}
+
+func scanHistoryConditions(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([]*domain.HistoryCondition, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var conditions []*domain.HistoryCondition
+	for rows.Next() {
+		var h domain.HistoryCondition
+
+		err := rows.Scan(
+			&h.ID,
+			&h.Name,
+			&h.CreatedAt,
+			&h.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		conditions = append(conditions, &h)
+	}
+
+	return conditions, nil
+}
