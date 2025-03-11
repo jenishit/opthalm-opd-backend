@@ -378,3 +378,37 @@ func scanDiagnosisCatalog(ctx context.Context, db *postgres.DB, qb sq.SelectBuil
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domain.ErrDataNotFound
 		}
+		return nil, fmt.Errorf("scan: %w", err)
+	}
+
+	if icd10Code.Valid {
+		d.Icd10Code = &icd10Code.String
+	}
+
+	return &d, nil
+}
+
+func scanDiagnosisCatalogs(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([]*domain.DiagnosisCatalog, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var catalogs []*domain.DiagnosisCatalog
+	for rows.Next() {
+		var d domain.DiagnosisCatalog
+		var icd10Code sql.NullString
+
+		err := rows.Scan(
+			&d.ID,
+			&icd10Code,
+			&d.Name,
+			&d.CreatedAt,
+			&d.UpdatedAt,
+		)
