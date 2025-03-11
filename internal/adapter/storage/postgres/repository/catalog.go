@@ -412,3 +412,37 @@ func scanDiagnosisCatalogs(ctx context.Context, db *postgres.DB, qb sq.SelectBui
 			&d.CreatedAt,
 			&d.UpdatedAt,
 		)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		if icd10Code.Valid {
+			d.Icd10Code = &icd10Code.String
+		}
+
+		catalogs = append(catalogs, &d)
+	}
+
+	return catalogs, nil
+}
+
+func scanHistoryCondition(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*domain.HistoryCondition, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var h domain.HistoryCondition
+
+	err = db.QueryRow(ctx, query, args...).Scan(
+		&h.ID,
+		&h.Name,
+		&h.CreatedAt,
+		&h.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan: %w", err)
+	}
