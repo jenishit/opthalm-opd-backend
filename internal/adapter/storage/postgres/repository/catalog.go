@@ -308,3 +308,38 @@ func scanMedicine(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*d
 	if form.Valid {
 		m.Form = &form.String
 	}
+
+	return &m, nil
+}
+
+func scanMedicines(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([]*domain.Medicine, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var medicines []*domain.Medicine
+	for rows.Next() {
+		var m domain.Medicine
+		var brandName, strength, form sql.NullString
+
+		err := rows.Scan(
+			&m.ID,
+			&m.MedicineName,
+			&brandName,
+			&strength,
+			&form,
+			&m.CreatedAt,
+			&m.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		if brandName.Valid {
