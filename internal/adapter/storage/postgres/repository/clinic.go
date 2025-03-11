@@ -30,3 +30,36 @@ func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSe
 	query, args, err := sq.
 		Insert("clinic_settings").
 		Columns(
+			"clinic_name",
+			"tagline",
+			"address",
+			"phone",
+			"email",
+			"registration_no",
+			"report_footer",
+			"updated_at",
+			"updated_by ",
+		).
+		Values(
+			s.ClinicName,
+			s.Tagline,
+			s.Address,
+			s.Phone,
+			s.Email,
+			s.RegistrationNo,
+			s.ReportFooter,
+			now,
+			s.UpdatedBy,
+		).
+		Suffix(`RETURNING
+			id,
+			clinic_name
+		`).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	err = sr.DB.QueryRow(ctx, query, args...).Scan(
