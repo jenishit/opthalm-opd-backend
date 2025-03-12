@@ -193,3 +193,36 @@ func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.Clinic
 			"phone",
 			"email",
 			"registration_no",
+			"report_footer",
+			"updated_by",
+		).From("clinic_settings").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := sr.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("querying clinics: %w", err)
+	}
+
+	defer rows.Close()
+
+	var clinics []*domain.ClinicSettings
+
+	for rows.Next() {
+		var clinic domain.ClinicSettings
+
+		err := rows.Scan(
+			&clinic.ID,
+			&clinic.ClinicName,
+			&tagline,
+			&address,
+			&phone,
+			&email,
+			&registrationNo,
+			&reportFooter,
+			&clinic.UpdatedBy,
+		)
