@@ -96,3 +96,35 @@ func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uu
 	rows, err := sr.DB.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
+	}
+
+	defer rows.Close() //Release resources after reading the rows
+
+	clinic := &domain.ClinicSettings{}
+	err = sr.DB.QueryRow(ctx, query, args...).Scan(
+		&clinic.ID,
+		&clinic.ClinicName,
+		&tagline,
+		&address,
+		&phone,
+		&email,
+		&registrationNo,
+		&reportFooter,
+		&clinic.UpdatedBy,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	if tagline.Valid {
+		clinic.Tagline = &tagline.String
+	}
+	if address.Valid {
+		clinic.Address = &address.String
+	}
+	if email.Valid {
+		clinic.Email = &email.String
