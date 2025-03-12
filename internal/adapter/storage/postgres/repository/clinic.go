@@ -160,3 +160,36 @@ func (sr *ClinicRepository) UpdateClinic(ctx context.Context, s *domain.ClinicSe
 	if s.Phone != nil {
 		builder = builder.Set("phone", s.Phone)
 	}
+
+	if s.ReportFooter != nil {
+		builder = builder.Set("report_footer", s.ReportFooter)
+	}
+
+	builder = builder.Set("updated_by", s.UpdatedBy)
+
+	query, args, err := builder.ToSql()
+
+	if err != nil {
+		return fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	_, err = sr.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update profile: %w", err)
+	}
+
+	return nil
+}
+
+func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.ClinicSettings, error) {
+	var phone, email, tagline, address, registrationNo, reportFooter sql.NullString
+
+	query, args, err := sq.
+		Select(
+			"id",
+			"clinic_name",
+			"tagline",
+			"address",
+			"phone",
+			"email",
+			"registration_no",
