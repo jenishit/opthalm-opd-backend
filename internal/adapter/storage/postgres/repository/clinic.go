@@ -63,3 +63,36 @@ func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSe
 	}
 
 	err = sr.DB.QueryRow(ctx, query, args...).Scan(
+		&s.ID,
+		&s.ClinicName,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("inserting clinic preference: %w", err)
+	}
+
+	return s, nil
+}
+
+func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uuid.UUID) (*domain.ClinicSettings, error) {
+	var phone, email, tagline, address, registrationNo, reportFooter sql.NullString
+
+	query, args, err := sq.
+		Select(
+			"id",
+			"clinic_name",
+			"tagline",
+			"address",
+			"phone",
+			"email",
+			"registration_no",
+			"report_footer",
+			"updated_by",
+		).From("clinic_settings").
+		Where(sq.Eq{"id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	rows, err := sr.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
