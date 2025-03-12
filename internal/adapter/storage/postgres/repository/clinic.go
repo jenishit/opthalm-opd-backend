@@ -226,3 +226,35 @@ func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.Clinic
 			&reportFooter,
 			&clinic.UpdatedBy,
 		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		if tagline.Valid {
+			clinic.Tagline = &tagline.String
+		}
+		if address.Valid {
+			clinic.Address = &address.String
+		}
+		if email.Valid {
+			clinic.Email = &email.String
+		}
+		if phone.Valid {
+			clinic.Phone = &phone.String
+		}
+		if registrationNo.Valid {
+			clinic.RegistrationNo = &registrationNo.String
+		}
+		if reportFooter.Valid {
+			clinic.ReportFooter = &reportFooter.String
+		}
+
+		clinics = append(clinics, &clinic)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterating clinic rows: %w", err)
+	}
+
+	return clinics, nil
+}
