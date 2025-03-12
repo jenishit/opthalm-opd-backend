@@ -128,3 +128,35 @@ func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uu
 	}
 	if email.Valid {
 		clinic.Email = &email.String
+	}
+	if phone.Valid {
+		clinic.Phone = &phone.String
+	}
+	if registrationNo.Valid {
+		clinic.RegistrationNo = &registrationNo.String
+	}
+	if reportFooter.Valid {
+		clinic.ReportFooter = &reportFooter.String
+	}
+
+	return clinic, nil
+}
+
+func (sr *ClinicRepository) UpdateClinic(ctx context.Context, s *domain.ClinicSettings) error {
+
+	builder := sq.Update("clinic_settings").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": s.ID})
+
+	if s.ClinicName != "" {
+		builder = builder.Set("clinic_name", s.ClinicName)
+	}
+	if s.Tagline != nil {
+		builder = builder.Set("tagline", s.Tagline)
+	}
+	if s.Address != nil {
+		builder = builder.Set("address", s.Address)
+	}
+	if s.Phone != nil {
+		builder = builder.Set("phone", s.Phone)
+	}
