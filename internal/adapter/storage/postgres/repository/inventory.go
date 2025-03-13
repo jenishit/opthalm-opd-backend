@@ -93,3 +93,34 @@ func (r *InventoryRepository) Search(ctx context.Context, clinicID uuid.UUID, qu
 			sq.Expr("name ILIKE '%' || ? || '%'", query),
 			sq.Expr("sku ILIKE '%' || ? || '%'", query),
 			sq.Expr("brand ILIKE '%' || ? || '%'", query),
+		}).
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar)
+	return scanInventoryItems(ctx, r.DB, qb)
+}
+
+func (r *InventoryRepository) Update(ctx context.Context, clinicID uuid.UUID, item *domain.InventoryItem) error {
+	query, args, err := sq.Update("inventory_items").
+		Set("category", sq.Expr("COALESCE(?, category)", nullString(string(item.Category)))).
+		Set("name", sq.Expr("COALESCE(?, name)", nullString(item.Name))).
+		Set("brand", sq.Expr("COALESCE(?, brand)", nullStringPtr(item.Brand))).
+		Set("model", sq.Expr("COALESCE(?, model)", nullStringPtr(item.Model))).
+		Set("color", sq.Expr("COALESCE(?, color)", nullStringPtr(item.Color))).
+		Set("size", sq.Expr("COALESCE(?, size)", nullStringPtr(item.Size))).
+		Set("cost_price", item.CostPrice).
+		Set("selling_price", item.SellingPrice).
+		Set("reorder_threshold", item.ReorderThreshold).
+		Set("updated_by", item.UpdatedBy).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": item.ID, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("InventoryRepo.Update build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("InventoryRepo.Update exec: %w", err)
+	}
+	return nil
+}
