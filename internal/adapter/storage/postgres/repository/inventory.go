@@ -124,3 +124,35 @@ func (r *InventoryRepository) Update(ctx context.Context, clinicID uuid.UUID, it
 	}
 	return nil
 }
+
+func (r *InventoryRepository) Delete(ctx context.Context, clinicID, id uuid.UUID) error {
+	query, args, err := sq.Update("inventory_items").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("InventoryRepo.Delete build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("InventoryRepo.Delete exec: %w", err)
+	}
+	return nil
+}
+
+func (r *InventoryRepository) LowStock(ctx context.Context, clinicID uuid.UUID) ([]*domain.InventoryItem, error) {
+	qb := sq.Select(inventoryItemColumns...).
+		From("inventory_items").
+		Where(sq.Eq{"clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		Where("is_active = TRUE").
+		Where("quantity_on_hand <= reorder_threshold").
+		OrderBy("quantity_on_hand ASC").
+		PlaceholderFormat(sq.Dollar)
+	return scanInventoryItems(ctx, r.DB, qb)
+}
+
+func (r *InventoryRepository) AddStock(ctx context.Context, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
+	var movement *domain.StockMovement
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
