@@ -61,3 +61,35 @@ func (r *InventoryRepository) GetByID(ctx context.Context, clinicID, id uuid.UUI
 		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar)
 	return scanInventoryItem(ctx, r.DB, qb)
+}
+
+func (r *InventoryRepository) GetBySKU(ctx context.Context, clinicID uuid.UUID, sku string) (*domain.InventoryItem, error) {
+	qb := sq.Select(inventoryItemColumns...).
+		From("inventory_items").
+		Where(sq.Eq{"sku": sku, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar)
+	return scanInventoryItem(ctx, r.DB, qb)
+}
+
+func (r *InventoryRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.InventoryItem, error) {
+	qb := sq.Select(inventoryItemColumns...).
+		From("inventory_items").
+		Where(sq.Eq{"clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar)
+	return scanInventoryItems(ctx, r.DB, qb)
+}
+
+func (r *InventoryRepository) Search(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.InventoryItem, error) {
+	qb := sq.Select(inventoryItemColumns...).
+		From("inventory_items").
+		Where(sq.Eq{"clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		Where(sq.Or{
+			sq.Expr("name ILIKE '%' || ? || '%'", query),
+			sq.Expr("sku ILIKE '%' || ? || '%'", query),
+			sq.Expr("brand ILIKE '%' || ? || '%'", query),
