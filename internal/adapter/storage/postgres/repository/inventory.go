@@ -283,3 +283,34 @@ func (r *InventoryRepository) ListMovements(ctx context.Context, clinicID, itemI
 		if referenceID.Valid {
 			m.ReferenceID = &referenceID.UUID
 		}
+		if notes.Valid {
+			m.Notes = &notes.String
+		}
+		movements = append(movements, &m)
+	}
+	return movements, rows.Err()
+}
+
+func scanInventoryItem(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*domain.InventoryItem, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+	return scanInventoryItemRow(db.QueryRow(ctx, query, args...))
+}
+
+func scanInventoryItemRow(row pgx.Row) (*domain.InventoryItem, error) {
+	var item domain.InventoryItem
+	var category string
+	var brand, model, color, size sql.NullString
+
+	err := row.Scan(
+		&item.ID, &category, &item.SKU, &item.Name, &brand, &model, &color, &size,
+		&item.CostPrice, &item.SellingPrice, &item.QuantityOnHand, &item.ReorderThreshold,
+		&item.Unit, &item.IsActive, &item.CreatedBy, &item.UpdatedBy, &item.CreatedAt, &item.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan inventory item: %w", err)
