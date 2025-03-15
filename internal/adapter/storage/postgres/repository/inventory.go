@@ -156,3 +156,35 @@ func (r *InventoryRepository) LowStock(ctx context.Context, clinicID uuid.UUID) 
 func (r *InventoryRepository) AddStock(ctx context.Context, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
 	var movement *domain.StockMovement
 	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		m, err := r.addStockTx(ctx, tx, clinicID, itemID, qty, movementType, referenceType, referenceID, notes, createdBy)
+		movement = m
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return movement, nil
+}
+
+func (r *InventoryRepository) DeductStock(ctx context.Context, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
+	var movement *domain.StockMovement
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		m, err := r.deductStockTx(ctx, tx, clinicID, itemID, qty, movementType, referenceType, referenceID, notes, createdBy)
+		movement = m
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return movement, nil
+}
+
+// addStockTx and deductStockTx do the actual locked read + movement insert +
+// quantity update within an already-open transaction, so other repositories
+// (e.g. StockPurchaseRepository, InvoiceRepository) can compose stock
+// changes atomically with their own writes by sharing the same pgx.Tx.
+func (r *InventoryRepository) addStockTx(ctx context.Context, tx pgx.Tx, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
+	return r.applyStockDeltaTx(ctx, tx, clinicID, itemID, qty, movementType, referenceType, referenceID, notes, createdBy)
+}
+
+func (r *InventoryRepository) deductStockTx(ctx context.Context, tx pgx.Tx, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
