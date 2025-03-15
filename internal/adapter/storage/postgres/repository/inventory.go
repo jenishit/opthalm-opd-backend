@@ -251,3 +251,35 @@ func (r *InventoryRepository) ListMovements(ctx context.Context, clinicID, itemI
 	).
 		From("inventory_stock_movements").
 		Where(sq.Eq{"inventory_item_id": itemID, "clinic_id": clinicID}).
+		OrderBy("created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InventoryRepo.ListMovements build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("InventoryRepo.ListMovements query: %w", err)
+	}
+	defer rows.Close()
+
+	var movements []*domain.StockMovement
+	for rows.Next() {
+		var m domain.StockMovement
+		var movementType string
+		var referenceType sql.NullString
+		var referenceID uuid.NullUUID
+		var notes sql.NullString
+		if err := rows.Scan(&m.ID, &m.InventoryItemID, &movementType, &m.Quantity, &referenceType, &referenceID, &notes, &m.CreatedBy, &m.CreatedAt); err != nil {
+			return nil, fmt.Errorf("InventoryRepo.ListMovements scan: %w", err)
+		}
+		m.MovementType = domain.StockMovementType(movementType)
+		if referenceType.Valid {
+			m.ReferenceType = &referenceType.String
+		}
+		if referenceID.Valid {
+			m.ReferenceID = &referenceID.UUID
+		}
