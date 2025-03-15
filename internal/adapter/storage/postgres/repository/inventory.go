@@ -188,3 +188,34 @@ func (r *InventoryRepository) addStockTx(ctx context.Context, tx pgx.Tx, clinicI
 }
 
 func (r *InventoryRepository) deductStockTx(ctx context.Context, tx pgx.Tx, clinicID, itemID uuid.UUID, qty int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
+	return r.applyStockDeltaTx(ctx, tx, clinicID, itemID, -qty, movementType, referenceType, referenceID, notes, createdBy)
+}
+
+// applyStockDeltaTx locks the inventory_items row, applies delta (positive to
+// add, negative to deduct) to quantity_on_hand, and records the movement.
+// The movement's own Quantity is always stored positive (direction is
+// carried by movementType); delta's sign only decides add vs. deduct.
+func (r *InventoryRepository) applyStockDeltaTx(ctx context.Context, tx pgx.Tx, clinicID, itemID uuid.UUID, delta int, movementType domain.StockMovementType, referenceType *string, referenceID *uuid.UUID, notes *string, createdBy uuid.UUID) (*domain.StockMovement, error) {
+	var currentQty int
+	err := tx.QueryRow(ctx, `SELECT quantity_on_hand FROM inventory_items WHERE id = $1 AND clinic_id = $2 AND deleted_at IS NULL FOR UPDATE`, itemID, clinicID).Scan(&currentQty)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("InventoryRepo lock item: %w", err)
+	}
+
+	newQty := currentQty + delta
+	if newQty < 0 {
+		return nil, domain.ErrInsufficientStock
+	}
+
+	if _, err := tx.Exec(ctx, `UPDATE inventory_items SET quantity_on_hand = $1, updated_at = NOW() WHERE id = $2`, newQty, itemID); err != nil {
+		return nil, fmt.Errorf("InventoryRepo update quantity: %w", err)
+	}
+
+	absQty := delta
+	if absQty < 0 {
+		absQty = -absQty
+	}
+
