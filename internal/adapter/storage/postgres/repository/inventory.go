@@ -219,3 +219,35 @@ func (r *InventoryRepository) applyStockDeltaTx(ctx context.Context, tx pgx.Tx, 
 		absQty = -absQty
 	}
 
+	query, args, err := sq.Insert("inventory_stock_movements").
+		Columns("clinic_id", "inventory_item_id", "movement_type", "quantity", "reference_type", "reference_id", "notes", "created_by").
+		Values(clinicID, itemID, string(movementType), absQty, nullStringPtr(referenceType), nullUUIDPtr(referenceID), nullStringPtr(notes), createdBy).
+		Suffix("RETURNING id, created_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InventoryRepo build movement: %w", err)
+	}
+
+	movement := &domain.StockMovement{
+		InventoryItemID: itemID,
+		MovementType:    movementType,
+		Quantity:        absQty,
+		ReferenceType:   referenceType,
+		ReferenceID:     referenceID,
+		Notes:           notes,
+		CreatedBy:       createdBy,
+	}
+	if err := tx.QueryRow(ctx, query, args...).Scan(&movement.ID, &movement.CreatedAt); err != nil {
+		return nil, fmt.Errorf("InventoryRepo insert movement: %w", err)
+	}
+
+	return movement, nil
+}
+
+func (r *InventoryRepository) ListMovements(ctx context.Context, clinicID, itemID uuid.UUID, limit, offset int) ([]*domain.StockMovement, error) {
+	query, args, err := sq.Select(
+		"id", "inventory_item_id", "movement_type", "quantity", "reference_type", "reference_id", "notes", "created_by", "created_at",
+	).
+		From("inventory_stock_movements").
+		Where(sq.Eq{"inventory_item_id": itemID, "clinic_id": clinicID}).
