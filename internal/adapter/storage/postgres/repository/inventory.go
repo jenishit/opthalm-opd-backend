@@ -314,3 +314,35 @@ func scanInventoryItemRow(row pgx.Row) (*domain.InventoryItem, error) {
 			return nil, domain.ErrDataNotFound
 		}
 		return nil, fmt.Errorf("scan inventory item: %w", err)
+	}
+
+	item.Category = domain.InventoryCategory(category)
+	if brand.Valid {
+		item.Brand = &brand.String
+	}
+	if model.Valid {
+		item.Model = &model.String
+	}
+	if color.Valid {
+		item.Color = &color.String
+	}
+	if size.Valid {
+		item.Size = &size.String
+	}
+
+	return &item, nil
+}
+
+func scanInventoryItems(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([]*domain.InventoryItem, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query inventory items: %w", err)
+	}
+	defer rows.Close()
+
+	var items []*domain.InventoryItem
