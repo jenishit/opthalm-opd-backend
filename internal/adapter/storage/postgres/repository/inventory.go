@@ -346,3 +346,34 @@ func scanInventoryItems(ctx context.Context, db *postgres.DB, qb sq.SelectBuilde
 	defer rows.Close()
 
 	var items []*domain.InventoryItem
+	for rows.Next() {
+		item, err := scanInventoryItemRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+// ─── Vendors ─────────────────────────────────────────────────────
+
+type VendorRepository struct {
+	DB *postgres.DB
+}
+
+func NewVendorRepository(db *postgres.DB) *VendorRepository {
+	return &VendorRepository{DB: db}
+}
+
+var vendorColumns = []string{"id", "name", "contact_person", "phone", "email", "address", "created_at", "updated_at"}
+
+func (r *VendorRepository) Create(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) (*domain.Vendor, error) {
+	query, args, err := sq.Insert("vendors").
+		Columns("clinic_id", "name", "contact_person", "phone", "email", "address").
+		Values(clinicID, v.Name, nullStringPtr(v.ContactPerson), nullStringPtr(v.Phone), nullStringPtr(v.Email), nullStringPtr(v.Address)).
+		Suffix("RETURNING id, created_at, updated_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("VendorRepo.Create build: %w", err)
