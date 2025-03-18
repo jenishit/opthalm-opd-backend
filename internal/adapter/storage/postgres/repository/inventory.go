@@ -377,3 +377,35 @@ func (r *VendorRepository) Create(ctx context.Context, clinicID uuid.UUID, v *do
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("VendorRepo.Create build: %w", err)
+	}
+	if err := r.DB.QueryRow(ctx, query, args...).Scan(&v.ID, &v.CreatedAt, &v.UpdatedAt); err != nil {
+		return nil, fmt.Errorf("VendorRepo.Create exec: %w", err)
+	}
+	v.ClinicID = clinicID
+	return v, nil
+}
+
+func (r *VendorRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Vendor, error) {
+	qb := sq.Select(vendorColumns...).From("vendors").Where(sq.Eq{"id": id, "clinic_id": clinicID}).Where("deleted_at IS NULL").PlaceholderFormat(sq.Dollar)
+	return scanVendor(ctx, r.DB, qb)
+}
+
+func (r *VendorRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.Vendor, error) {
+	qb := sq.Select(vendorColumns...).From("vendors").Where(sq.Eq{"clinic_id": clinicID}).Where("deleted_at IS NULL").
+		OrderBy("created_at DESC").Limit(uint64(limit)).Offset(uint64(offset)).PlaceholderFormat(sq.Dollar)
+	return scanVendors(ctx, r.DB, qb)
+}
+
+func (r *VendorRepository) Search(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Vendor, error) {
+	qb := sq.Select(vendorColumns...).From("vendors").Where(sq.Eq{"clinic_id": clinicID}).Where("deleted_at IS NULL").
+		Where(sq.Or{
+			sq.Expr("name ILIKE '%' || ? || '%'", query),
+			sq.Expr("phone ILIKE '%' || ? || '%'", query),
+		}).Limit(uint64(limit)).PlaceholderFormat(sq.Dollar)
+	return scanVendors(ctx, r.DB, qb)
+}
+
+func (r *VendorRepository) Update(ctx context.Context, clinicID uuid.UUID, v *domain.Vendor) error {
+	query, args, err := sq.Update("vendors").
+		Set("name", sq.Expr("COALESCE(?, name)", nullString(v.Name))).
+		Set("contact_person", sq.Expr("COALESCE(?, contact_person)", nullStringPtr(v.ContactPerson))).
