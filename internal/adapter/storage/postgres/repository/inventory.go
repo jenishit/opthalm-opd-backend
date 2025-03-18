@@ -472,3 +472,35 @@ func scanVendorRow(row pgx.Row) (*domain.Vendor, error) {
 	if address.Valid {
 		v.Address = &address.String
 	}
+	return &v, nil
+}
+
+func scanVendors(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) ([]*domain.Vendor, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query vendors: %w", err)
+	}
+	defer rows.Close()
+
+	var vendors []*domain.Vendor
+	for rows.Next() {
+		v, err := scanVendorRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		vendors = append(vendors, v)
+	}
+	return vendors, rows.Err()
+}
+
+// ─── Stock Purchases ─────────────────────────────────────────────
+
+type StockPurchaseRepository struct {
+	DB    *postgres.DB
+	Stock *InventoryRepository
+}
+
