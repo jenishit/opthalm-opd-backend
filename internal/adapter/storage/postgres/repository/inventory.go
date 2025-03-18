@@ -409,3 +409,35 @@ func (r *VendorRepository) Update(ctx context.Context, clinicID uuid.UUID, v *do
 	query, args, err := sq.Update("vendors").
 		Set("name", sq.Expr("COALESCE(?, name)", nullString(v.Name))).
 		Set("contact_person", sq.Expr("COALESCE(?, contact_person)", nullStringPtr(v.ContactPerson))).
+		Set("phone", sq.Expr("COALESCE(?, phone)", nullStringPtr(v.Phone))).
+		Set("email", sq.Expr("COALESCE(?, email)", nullStringPtr(v.Email))).
+		Set("address", sq.Expr("COALESCE(?, address)", nullStringPtr(v.Address))).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": v.ID, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("VendorRepo.Update build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("VendorRepo.Update exec: %w", err)
+	}
+	return nil
+}
+
+func (r *VendorRepository) Delete(ctx context.Context, clinicID, id uuid.UUID) error {
+	query, args, err := sq.Update("vendors").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("VendorRepo.Delete build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("VendorRepo.Delete exec: %w", err)
+	}
+	return nil
+}
