@@ -441,3 +441,34 @@ func (r *VendorRepository) Delete(ctx context.Context, clinicID, id uuid.UUID) e
 	}
 	return nil
 }
+
+func scanVendor(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*domain.Vendor, error) {
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+	return scanVendorRow(db.QueryRow(ctx, query, args...))
+}
+
+func scanVendorRow(row pgx.Row) (*domain.Vendor, error) {
+	var v domain.Vendor
+	var contactPerson, phone, email, address sql.NullString
+	err := row.Scan(&v.ID, &v.Name, &contactPerson, &phone, &email, &address, &v.CreatedAt, &v.UpdatedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan vendor: %w", err)
+	}
+	if contactPerson.Valid {
+		v.ContactPerson = &contactPerson.String
+	}
+	if phone.Valid {
+		v.Phone = &phone.String
+	}
+	if email.Valid {
+		v.Email = &email.String
+	}
+	if address.Valid {
+		v.Address = &address.String
+	}
