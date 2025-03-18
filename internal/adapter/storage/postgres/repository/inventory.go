@@ -504,3 +504,35 @@ type StockPurchaseRepository struct {
 	Stock *InventoryRepository
 }
 
+func NewStockPurchaseRepository(db *postgres.DB, stock *InventoryRepository) *StockPurchaseRepository {
+	return &StockPurchaseRepository{DB: db, Stock: stock}
+}
+
+func (r *StockPurchaseRepository) CreatePurchase(ctx context.Context, clinicID uuid.UUID, purchase *domain.StockPurchase, items []*domain.StockPurchaseItem) (*domain.StockPurchaseDetails, error) {
+	referenceType := "stock_purchase"
+
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		query, args, err := sq.Insert("stock_purchases").
+			Columns("clinic_id", "vendor_id", "purchase_date", "invoice_ref_no", "total_amount", "paid_amount", "due_amount", "created_by").
+			Values(clinicID, purchase.VendorID, purchase.PurchaseDate, nullStringPtr(purchase.InvoiceRefNo), purchase.TotalAmount, purchase.PaidAmount, purchase.DueAmount, purchase.CreatedBy).
+			Suffix("RETURNING id, created_at, updated_at").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("StockPurchaseRepo.CreatePurchase build purchase: %w", err)
+		}
+		if err := tx.QueryRow(ctx, query, args...).Scan(&purchase.ID, &purchase.CreatedAt, &purchase.UpdatedAt); err != nil {
+			return fmt.Errorf("StockPurchaseRepo.CreatePurchase insert purchase: %w", err)
+		}
+
+		for _, item := range items {
+			iQuery, iArgs, err := sq.Insert("stock_purchase_items").
+				Columns("clinic_id", "purchase_id", "inventory_item_id", "quantity", "unit_cost", "line_total").
+				Values(clinicID, purchase.ID, item.InventoryItemID, item.Quantity, item.UnitCost, item.LineTotal).
+				Suffix("RETURNING id").
+				PlaceholderFormat(sq.Dollar).
+				ToSql()
+			if err != nil {
+				return fmt.Errorf("StockPurchaseRepo.CreatePurchase build item: %w", err)
+			}
+			if err := tx.QueryRow(ctx, iQuery, iArgs...).Scan(&item.ID); err != nil {
