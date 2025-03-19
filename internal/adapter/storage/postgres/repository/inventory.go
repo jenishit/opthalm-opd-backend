@@ -599,3 +599,34 @@ func (r *StockPurchaseRepository) List(ctx context.Context, clinicID uuid.UUID, 
 	var result []*domain.StockPurchaseDetails
 	for rows.Next() {
 		d, err := scanStockPurchaseDetailsRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, d)
+	}
+	return result, rows.Err()
+}
+
+func (r *StockPurchaseRepository) listItems(ctx context.Context, purchaseID uuid.UUID) ([]*domain.StockPurchaseItem, error) {
+	query, args, err := sq.Select("id", "purchase_id", "inventory_item_id", "quantity", "unit_cost", "line_total").
+		From("stock_purchase_items").
+		Where(sq.Eq{"purchase_id": purchaseID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("StockPurchaseRepo.listItems build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("StockPurchaseRepo.listItems query: %w", err)
+	}
+	defer rows.Close()
+
+	var items []*domain.StockPurchaseItem
+	for rows.Next() {
+		var it domain.StockPurchaseItem
+		if err := rows.Scan(&it.ID, &it.PurchaseID, &it.InventoryItemID, &it.Quantity, &it.UnitCost, &it.LineTotal); err != nil {
+			return nil, fmt.Errorf("StockPurchaseRepo.listItems scan: %w", err)
+		}
+		items = append(items, &it)
