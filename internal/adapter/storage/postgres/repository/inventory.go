@@ -567,3 +567,35 @@ func (r *StockPurchaseRepository) GetByID(ctx context.Context, clinicID, id uuid
 	details, err := scanStockPurchaseDetailsRow(r.DB.QueryRow(ctx, query, args...))
 	if err != nil {
 		return nil, err
+	}
+
+	items, err := r.listItems(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.Items = items
+
+	return details, nil
+}
+
+func (r *StockPurchaseRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.StockPurchaseDetails, error) {
+	query, args, err := stockPurchaseSelect().
+		Where(sq.Eq{"sp.clinic_id": clinicID}).
+		OrderBy("sp.created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("StockPurchaseRepo.List build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("StockPurchaseRepo.List query: %w", err)
+	}
+	defer rows.Close()
+
+	var result []*domain.StockPurchaseDetails
+	for rows.Next() {
+		d, err := scanStockPurchaseDetailsRow(rows)
