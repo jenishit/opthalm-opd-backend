@@ -536,3 +536,34 @@ func (r *StockPurchaseRepository) CreatePurchase(ctx context.Context, clinicID u
 				return fmt.Errorf("StockPurchaseRepo.CreatePurchase build item: %w", err)
 			}
 			if err := tx.QueryRow(ctx, iQuery, iArgs...).Scan(&item.ID); err != nil {
+				return fmt.Errorf("StockPurchaseRepo.CreatePurchase insert item: %w", err)
+			}
+			item.PurchaseID = purchase.ID
+
+			purchaseID := purchase.ID
+			if _, err := r.Stock.addStockTx(ctx, tx, clinicID, item.InventoryItemID, item.Quantity, domain.MovementPurchaseIn, &referenceType, &purchaseID, nil, purchase.CreatedBy); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetByID(ctx, clinicID, purchase.ID)
+}
+
+func (r *StockPurchaseRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.StockPurchaseDetails, error) {
+	query, args, err := stockPurchaseSelect().
+		Where(sq.Eq{"sp.id": id, "sp.clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("StockPurchaseRepo.GetByID build: %w", err)
+	}
+
+	details, err := scanStockPurchaseDetailsRow(r.DB.QueryRow(ctx, query, args...))
+	if err != nil {
+		return nil, err
