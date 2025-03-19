@@ -630,3 +630,35 @@ func (r *StockPurchaseRepository) listItems(ctx context.Context, purchaseID uuid
 			return nil, fmt.Errorf("StockPurchaseRepo.listItems scan: %w", err)
 		}
 		items = append(items, &it)
+	}
+	return items, rows.Err()
+}
+
+func stockPurchaseSelect() sq.SelectBuilder {
+	return sq.Select(
+		"sp.id", "sp.vendor_id", "v.name", "sp.purchase_date", "sp.invoice_ref_no",
+		"sp.total_amount", "sp.paid_amount", "sp.due_amount", "sp.created_by", "sp.created_at", "sp.updated_at",
+	).
+		From("stock_purchases sp").
+		Join("vendors v ON v.id = sp.vendor_id")
+}
+
+func scanStockPurchaseDetailsRow(row pgx.Row) (*domain.StockPurchaseDetails, error) {
+	var d domain.StockPurchaseDetails
+	var invoiceRefNo sql.NullString
+
+	err := row.Scan(
+		&d.ID, &d.VendorID, &d.VendorName, &d.PurchaseDate, &invoiceRefNo,
+		&d.TotalAmount, &d.PaidAmount, &d.DueAmount, &d.CreatedBy, &d.CreatedAt, &d.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan stock purchase: %w", err)
+	}
+	if invoiceRefNo.Valid {
+		d.InvoiceRefNo = &invoiceRefNo.String
+	}
+	return &d, nil
+}
