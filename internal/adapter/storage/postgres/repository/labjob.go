@@ -219,3 +219,35 @@ func scanLabJobDetailsRow(row pgx.Row) (*domain.LabJobDetails, error) {
 		d.VendorID = &vendorID.UUID
 	}
 	if vendorName.Valid {
+		d.VendorName = &vendorName.String
+	}
+	if expectedDeliveryDate.Valid {
+		d.ExpectedDeliveryDate = &expectedDeliveryDate.Time
+	}
+	if deliveredAt.Valid {
+		d.DeliveredAt = &deliveredAt.Time
+	}
+	if notes.Valid {
+		d.Notes = &notes.String
+	}
+
+	return &d, nil
+}
+
+func scanLabJobDetailsList(ctx context.Context, db *postgres.DB, query string, args []any) ([]*domain.LabJobDetails, error) {
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query lab jobs: %w", err)
+	}
+	defer rows.Close()
+
+	var result []*domain.LabJobDetails
+	for rows.Next() {
+		d, err := scanLabJobDetailsRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, d)
+	}
+	return result, rows.Err()
+}
