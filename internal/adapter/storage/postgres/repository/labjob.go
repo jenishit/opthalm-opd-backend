@@ -93,3 +93,34 @@ func (r *LabJobRepository) List(ctx context.Context, clinicID uuid.UUID, limit, 
 
 func (r *LabJobRepository) ListByPatientID(ctx context.Context, clinicID, patientID uuid.UUID) ([]*domain.LabJobDetails, error) {
 	query, args, err := labJobSelect().
+		Where(sq.Eq{"lj.patient_id": patientID, "lj.clinic_id": clinicID}).
+		OrderBy("lj.created_at DESC").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("LabJobRepo.ListByPatientID build: %w", err)
+	}
+	return scanLabJobDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *LabJobRepository) UpdateStatus(ctx context.Context, clinicID, id uuid.UUID, status domain.LabJobStatus, notes *string, changedBy uuid.UUID) error {
+	return r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		ub := sq.Update("lab_jobs").
+			Set("status", string(status)).
+			Set("updated_by", changedBy).
+			Set("updated_at", sq.Expr("NOW()"))
+		if status == domain.LabJobDelivered {
+			ub = ub.Set("delivered_at", sq.Expr("NOW()"))
+		}
+		query, args, err := ub.Where(sq.Eq{"id": id, "clinic_id": clinicID}).PlaceholderFormat(sq.Dollar).ToSql()
+		if err != nil {
+			return fmt.Errorf("LabJobRepo.UpdateStatus build: %w", err)
+		}
+		tag, err := tx.Exec(ctx, query, args...)
+		if err != nil {
+			return fmt.Errorf("LabJobRepo.UpdateStatus exec: %w", err)
+		}
+		if tag.RowsAffected() == 0 {
+			return domain.ErrDataNotFound
+		}
+
