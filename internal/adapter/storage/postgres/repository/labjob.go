@@ -124,3 +124,35 @@ func (r *LabJobRepository) UpdateStatus(ctx context.Context, clinicID, id uuid.U
 			return domain.ErrDataNotFound
 		}
 
+		return insertLabJobStatusHistory(ctx, tx, clinicID, id, status, notes, changedBy)
+	})
+}
+
+func insertLabJobStatusHistory(ctx context.Context, tx pgx.Tx, clinicID, jobID uuid.UUID, status domain.LabJobStatus, notes *string, changedBy uuid.UUID) error {
+	query, args, err := sq.Insert("lab_job_status_history").
+		Columns("clinic_id", "lab_job_id", "status", "changed_by", "notes").
+		Values(clinicID, jobID, string(status), changedBy, nullStringPtr(notes)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("insert lab job status history build: %w", err)
+	}
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("insert lab job status history exec: %w", err)
+	}
+	return nil
+}
+
+func (r *LabJobRepository) listHistory(ctx context.Context, jobID uuid.UUID) ([]*domain.LabJobStatusHistory, error) {
+	query, args, err := sq.Select("id", "lab_job_id", "status", "changed_at", "changed_by", "notes").
+		From("lab_job_status_history").
+		Where(sq.Eq{"lab_job_id": jobID}).
+		OrderBy("changed_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("LabJobRepo.listHistory build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
