@@ -156,3 +156,35 @@ func (r *LabJobRepository) listHistory(ctx context.Context, jobID uuid.UUID) ([]
 
 	rows, err := r.DB.Query(ctx, query, args...)
 	if err != nil {
+		return nil, fmt.Errorf("LabJobRepo.listHistory query: %w", err)
+	}
+	defer rows.Close()
+
+	var history []*domain.LabJobStatusHistory
+	for rows.Next() {
+		var h domain.LabJobStatusHistory
+		var status string
+		var notes sql.NullString
+		if err := rows.Scan(&h.ID, &h.LabJobID, &status, &h.ChangedAt, &h.ChangedBy, &notes); err != nil {
+			return nil, fmt.Errorf("LabJobRepo.listHistory scan: %w", err)
+		}
+		h.Status = domain.LabJobStatus(status)
+		if notes.Valid {
+			h.Notes = &notes.String
+		}
+		history = append(history, &h)
+	}
+	return history, rows.Err()
+}
+
+func labJobSelect() sq.SelectBuilder {
+	return sq.Select(
+		"lj.id", "lj.invoice_id", "lj.invoice_item_id", "lj.patient_id", "p.full_name", "lj.vendor_id", "v.name",
+		"lj.job_type", "lj.status", "lj.expected_delivery_date", "lj.delivered_at", "lj.advance_payment", "lj.notes",
+		"lj.created_by", "lj.updated_by", "lj.created_at", "lj.updated_at",
+	).
+		From("lab_jobs lj").
+		Join("patients p ON p.id = lj.patient_id").
+		LeftJoin("vendors v ON v.id = lj.vendor_id")
+}
+
