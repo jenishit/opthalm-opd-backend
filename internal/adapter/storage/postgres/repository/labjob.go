@@ -188,3 +188,34 @@ func labJobSelect() sq.SelectBuilder {
 		LeftJoin("vendors v ON v.id = lj.vendor_id")
 }
 
+func scanLabJobDetailsRow(row pgx.Row) (*domain.LabJobDetails, error) {
+	var d domain.LabJobDetails
+	var invoiceID, invoiceItemID, vendorID uuid.NullUUID
+	var vendorName sql.NullString
+	var status string
+	var expectedDeliveryDate, deliveredAt sql.NullTime
+	var notes sql.NullString
+
+	err := row.Scan(
+		&d.ID, &invoiceID, &invoiceItemID, &d.PatientID, &d.PatientName, &vendorID, &vendorName,
+		&d.JobType, &status, &expectedDeliveryDate, &deliveredAt, &d.AdvancePayment, &notes,
+		&d.CreatedBy, &d.UpdatedBy, &d.CreatedAt, &d.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan lab job: %w", err)
+	}
+
+	d.Status = domain.LabJobStatus(status)
+	if invoiceID.Valid {
+		d.InvoiceID = &invoiceID.UUID
+	}
+	if invoiceItemID.Valid {
+		d.InvoiceItemID = &invoiceItemID.UUID
+	}
+	if vendorID.Valid {
+		d.VendorID = &vendorID.UUID
+	}
+	if vendorName.Valid {
