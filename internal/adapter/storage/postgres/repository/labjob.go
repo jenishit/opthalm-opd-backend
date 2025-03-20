@@ -61,3 +61,35 @@ func (r *LabJobRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID) 
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("LabJobRepo.GetByID build: %w", err)
+	}
+
+	details, err := scanLabJobDetailsRow(r.DB.QueryRow(ctx, query, args...))
+	if err != nil {
+		return nil, err
+	}
+
+	history, err := r.listHistory(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.History = history
+
+	return details, nil
+}
+
+func (r *LabJobRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.LabJobDetails, error) {
+	query, args, err := labJobSelect().
+		Where(sq.Eq{"lj.clinic_id": clinicID}).
+		OrderBy("lj.created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("LabJobRepo.List build: %w", err)
+	}
+	return scanLabJobDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *LabJobRepository) ListByPatientID(ctx context.Context, clinicID, patientID uuid.UUID) ([]*domain.LabJobDetails, error) {
+	query, args, err := labJobSelect().
