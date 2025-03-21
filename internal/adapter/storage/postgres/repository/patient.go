@@ -33,3 +33,38 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UU
 			"phone",
 			"address",
 			"dob",
+			"gender",
+			"occupation",
+			"registered_on",
+			"created_by",
+			"updated_by",
+		).
+		Values(
+			clinicID,
+			pt.FullName,
+			pt.Phone,
+			pt.Address,
+			pt.DOB,
+			pt.Gender,
+			pt.Occupation,
+			sq.Expr("CURRENT_DATE"),
+			pt.CreatedBy,
+			pt.CreatedBy,
+		).
+		Suffix(`
+	RETURNING
+		id,
+		full_name,
+		registered_on,
+		updated_by,
+		created_at,
+		updated_at
+	`).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("PatientRepo.CreatePatient build: %w", err)
+
+	}
+
