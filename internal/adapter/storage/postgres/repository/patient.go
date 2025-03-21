@@ -68,3 +68,38 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UU
 
 	}
 
+	err = pr.DB.QueryRow(ctx, query, args...).Scan(
+		&pt.ID,
+		&pt.FullName,
+		&pt.RegisteredOn,
+		&pt.UpdatedBy,
+		&pt.CreatedAt,
+		&pt.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("PatientRepo.CreatePatient scan: %w", err)
+	}
+
+	pt.ClinicID = clinicID
+
+	return pt, nil
+}
+
+func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Patient, error) {
+	var address, occupation sql.NullString
+
+	query, args, err := sq.
+		Select(
+			"id",
+			"full_name",
+			"phone",
+			"address",
+			"dob",
+			"gender",
+			"occupation",
+			"registered_on",
+			"created_by",
+			"created_at",
+		).From("patients").
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
