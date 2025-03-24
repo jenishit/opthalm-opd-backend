@@ -103,3 +103,38 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uu
 			"created_at",
 		).From("patients").
 		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var patient domain.Patient
+	var dob time.Time
+
+	err = pr.DB.QueryRow(ctx, query, args...).Scan(
+		&patient.ID,
+		&patient.FullName,
+		&patient.Phone,
+		&address,
+		&dob,
+		&patient.Gender,
+		&occupation,
+		&patient.RegisteredOn,
+		&patient.CreatedBy,
+		&patient.CreatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	patient.ClinicID = clinicID
+	patient.DOB = dob.Format("2006-01-02")
+
+	if address.Valid {
