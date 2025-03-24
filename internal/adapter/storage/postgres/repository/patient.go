@@ -138,3 +138,39 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uu
 	patient.DOB = dob.Format("2006-01-02")
 
 	if address.Valid {
+		patient.Address = &address.String
+	}
+	if occupation.Valid {
+		patient.Occupation = &occupation.String
+	}
+
+	return &patient, nil
+}
+
+func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID) ([]*domain.Patient, error) {
+	var address, occupation sql.NullString
+
+	query, args, err := sq.
+		Select(
+			"id",
+			"full_name",
+			"phone",
+			"address",
+			"dob",
+			"gender",
+			"occupation",
+			"registered_on",
+			"created_by",
+			"created_at",
+		).From("patients").
+		Where(sq.Eq{"clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := pr.DB.Query(ctx, query, args...)
+	if err != nil {
