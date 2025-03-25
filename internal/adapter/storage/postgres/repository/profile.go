@@ -65,3 +65,36 @@ func (p *ProfileRepository) CreateProfile(ctx context.Context, pr *domain.Profil
 func (p *ProfileRepository) GetProfileByID(ctx context.Context, id uuid.UUID) (*domain.GetProfileDetails, error) {
 	var phone, email sql.NullString
 
+	query, args, err := sq.
+		Select(
+			"P.ID",
+			"P.FIRST_NAME",
+			"P.LAST_NAME",
+			"R.ROLE_NAME",
+			"P.USER_ID",
+			"U.EMAIL",
+			"P.PHONE",
+		).
+		From("PROFILE P").
+		LeftJoin("USERS U ON U.ID = P.USER_ID").
+		LeftJoin("ROLE R ON R.ID = U.ROLE_ID").
+		Where(sq.Eq{"P.USER_ID": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var profile domain.GetProfileDetails
+
+	err = p.DB.QueryRow(ctx, query, args...).Scan(
+		&profile.ID,
+		&profile.FirstName,
+		&profile.LastName,
+		&profile.RoleName,
+		&profile.UserID,
+		&email,
+		&phone,
+	)
+
