@@ -244,3 +244,38 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.U
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := pr.DB.Query(ctx, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var patients []*domain.Patient
+
+	for rows.Next() {
+		var p domain.Patient
+		var dob time.Time
+
+		err := rows.Scan(
+			&p.ID,
+			&p.FullName,
+			&p.Phone,
+			&address,
+			&dob,
+			&p.Gender,
+			&occupation,
+			&p.RegisteredOn,
+			&p.CreatedBy,
+			&p.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		p.ClinicID = clinicID
