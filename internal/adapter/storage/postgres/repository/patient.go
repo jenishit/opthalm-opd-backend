@@ -314,3 +314,38 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, clinicID uui
 		Set("updated_by", pt.UpdatedBy).
 		Where(sq.Eq{"id": pt.ID, "clinic_id": clinicID}).
 		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	_, err = pr.DB.Exec(ctx, query, args...)
+
+	if err != nil {
+		return fmt.Errorf("Failed to update result: %w", err)
+	}
+
+	return nil
+}
+
+func (pr *PatientRepository) DeletePatientByID(ctx context.Context, clinicID, id uuid.UUID) error {
+	query, args, err := sq.
+		Update("patients").
+		Set("deleted_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	_, err = pr.DB.Exec(ctx, query, args...)
+
+	if err != nil {
+		return fmt.Errorf("Failed to Delete patient: %w", err)
+	}
+
+	return nil
+}
