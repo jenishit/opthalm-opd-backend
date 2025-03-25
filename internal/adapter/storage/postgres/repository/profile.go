@@ -31,3 +31,37 @@ func (p *ProfileRepository) CreateProfile(ctx context.Context, pr *domain.Profil
 			"first_name",
 			"last_name",
 			"phone",
+		).
+		Values(
+			pr.UserID,
+			pr.FirstName,
+			pr.LastName,
+			pr.Phone,
+		).
+		Suffix(`
+			RETURNING
+				id,
+				created_at,
+				updated_at
+		`).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("ProfileRepo.CreateProfile build: %w", err)
+	}
+
+	err = p.DB.QueryRow(ctx, query, args...).Scan(
+		&pr.ID,
+		&pr.CreatedAt,
+		&pr.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("ProfileRepo.CreateProfile scan: %w", err)
+	}
+
+	return pr, nil
+}
+
+func (p *ProfileRepository) GetProfileByID(ctx context.Context, id uuid.UUID) (*domain.GetProfileDetails, error) {
+	var phone, email sql.NullString
+
