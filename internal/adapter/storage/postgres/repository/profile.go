@@ -98,3 +98,37 @@ func (p *ProfileRepository) GetProfileByID(ctx context.Context, id uuid.UUID) (*
 		&phone,
 	)
 
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	if email.Valid {
+		profile.Email = email.String
+	}
+	if phone.Valid {
+		profile.Phone = &phone.String
+	}
+
+	return &profile, nil
+}
+
+func (pr *ProfileRepository) GetProfiles(ctx context.Context) ([]*domain.GetProfileDetails, error) {
+	var phone, email sql.NullString
+
+	query, args, err := sq.
+		Select(
+			"P.ID",
+			"P.FIRST_NAME",
+			"P.LAST_NAME",
+			"R.ROLE_NAME",
+			"P.USER_ID",
+			"U.EMAIL",
+			"P.PHONE",
+		).From("PROFILE P").
+		LeftJoin("USERS U ON U.ID = P.USER_ID").
+		LeftJoin("ROLE R ON R.ID = U.ROLE_ID").
+		PlaceholderFormat(sq.Dollar).ToSql()
+
