@@ -279,3 +279,38 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.U
 		}
 
 		p.ClinicID = clinicID
+		p.DOB = dob.Format("2006-01-02")
+
+		if address.Valid {
+			p.Address = &address.String
+		}
+		if occupation.Valid {
+			p.Occupation = &occupation.String
+		}
+
+		patients = append(patients, &p)
+	}
+
+	return patients, nil
+}
+
+func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, clinicID uuid.UUID, pt *domain.Patient) error {
+	name := nullString(pt.FullName)
+	phone := nullString(pt.Phone)
+	address := nullStringPtr(pt.Address)
+	dob := nullString(pt.DOB)
+	gender := nullString(pt.Gender)
+	occupation := nullStringPtr(pt.Occupation)
+
+	query, args, err := sq.
+		Update("patients").
+		Set("full_name", sq.Expr("COALESCE(?, full_name)", name)).
+		Set("phone", sq.Expr("COALESCE(?, phone)", phone)).
+		Set("address", sq.Expr("COALESCE(?, address)", address)).
+		Set("dob", sq.Expr("COALESCE(?, dob)", dob)).
+		Set("gender", sq.Expr("COALESCE(?, gender)", gender)).
+		Set("occupation", sq.Expr("COALESCE(?, occupation)", occupation)).
+		Set("updated_at", sq.Expr("NOW()")).
+		Set("updated_by", pt.UpdatedBy).
+		Where(sq.Eq{"id": pt.ID, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
