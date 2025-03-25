@@ -132,3 +132,36 @@ func (pr *ProfileRepository) GetProfiles(ctx context.Context) ([]*domain.GetProf
 		LeftJoin("ROLE R ON R.ID = U.ROLE_ID").
 		PlaceholderFormat(sq.Dollar).ToSql()
 
+	rows, err := pr.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close() //Release resources after reading the rows
+
+	var profiles []*domain.GetProfileDetails
+
+	for rows.Next() {
+		var c domain.GetProfileDetails
+
+		err := rows.Scan(
+			&c.ID,
+			&c.FirstName,
+			&c.LastName,
+			&c.RoleName,
+			&c.UserID,
+			&email,
+			&phone,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		if email.Valid {
+			c.Email = email.String
+		}
+		if phone.Valid {
+			c.Phone = &phone.String
+		}
+
