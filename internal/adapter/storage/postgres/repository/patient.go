@@ -209,3 +209,38 @@ func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID
 			p.Address = &address.String
 		}
 		if occupation.Valid {
+			p.Occupation = &occupation.String
+		}
+
+		patients = append(patients, &p)
+	}
+
+	return patients, nil
+}
+
+func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Patient, error) {
+	var address, occupation sql.NullString
+
+	querySql, args, err := sq.
+		Select(
+			"id",
+			"full_name",
+			"phone",
+			"address",
+			"dob",
+			"gender",
+			"occupation",
+			"registered_on",
+			"created_by",
+			"created_at",
+		).From("patients").
+		Where(sq.Eq{"clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
+		Where(sq.Or{
+			sq.Expr("full_name ILIKE '%' || ? || '%'", query),
+			sq.Expr("phone ILIKE '%' || ? || '%'", query),
+		}).
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
