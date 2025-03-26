@@ -232,3 +232,36 @@ func (pr *ProfileRepository) SearchProfiles(ctx context.Context, query string, l
 
 		profiles = append(profiles, &c)
 	}
+
+	return profiles, nil
+}
+
+func (pr *ProfileRepository) UpdateProfileByUserID(ctx context.Context, prof *domain.GetProfileDetails) error {
+	builder := sq.Update("profile").
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"user_id": prof.UserID})
+
+	if prof.FirstName != "" {
+		builder = builder.Set("first_name", prof.FirstName)
+	}
+
+	if prof.LastName != "" {
+		builder = builder.Set("last_name", prof.LastName)
+	}
+
+	if prof.Phone != nil {
+		builder = builder.Set("phone", prof.Phone)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build SQL query: %w", err)
+	}
+
+	_, err = pr.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update profile: %w", err)
+	}
+
+	return nil
+}
