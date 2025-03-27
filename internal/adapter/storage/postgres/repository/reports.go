@@ -66,3 +66,36 @@ func (r *ReportsRepository) PatientDues(ctx context.Context, clinicID uuid.UUID)
 		dues = append(dues, &d)
 	}
 	return dues, rows.Err()
+}
+
+func (r *ReportsRepository) VendorDues(ctx context.Context, clinicID uuid.UUID) ([]*domain.VendorDue, error) {
+	query := `
+		SELECT sp.vendor_id, v.name, sp.id, sp.total_amount, sp.paid_amount, sp.due_amount, sp.purchase_date
+		FROM stock_purchases sp
+		JOIN vendors v ON v.id = sp.vendor_id
+		WHERE sp.clinic_id = $1 AND sp.due_amount > 0
+		ORDER BY sp.purchase_date DESC
+	`
+
+	rows, err := r.DB.Query(ctx, query, clinicID)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.VendorDues query: %w", err)
+	}
+	defer rows.Close()
+
+	var dues []*domain.VendorDue
+	for rows.Next() {
+		var d domain.VendorDue
+		if err := rows.Scan(&d.VendorID, &d.VendorName, &d.PurchaseID, &d.TotalAmount, &d.PaidAmount, &d.DueAmount, &d.PurchaseDate); err != nil {
+			return nil, fmt.Errorf("ReportsRepo.VendorDues scan: %w", err)
+		}
+		dues = append(dues, &d)
+	}
+	return dues, rows.Err()
+}
+
+func (r *ReportsRepository) InventoryValuation(ctx context.Context, clinicID uuid.UUID) (*domain.InventoryValuation, error) {
+	query := `
+		SELECT
+			COUNT(*),
+			COALESCE(SUM(quantity_on_hand), 0),
