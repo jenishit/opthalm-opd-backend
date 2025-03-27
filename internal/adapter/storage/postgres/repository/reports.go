@@ -99,3 +99,37 @@ func (r *ReportsRepository) InventoryValuation(ctx context.Context, clinicID uui
 		SELECT
 			COUNT(*),
 			COALESCE(SUM(quantity_on_hand), 0),
+			COALESCE(SUM(quantity_on_hand * cost_price), 0),
+			COALESCE(SUM(quantity_on_hand * selling_price), 0)
+		FROM inventory_items
+		WHERE clinic_id = $1 AND deleted_at IS NULL AND is_active = TRUE
+	`
+
+	v := &domain.InventoryValuation{}
+	err := r.DB.QueryRow(ctx, query, clinicID).Scan(&v.TotalItems, &v.TotalUnits, &v.TotalCostValue, &v.TotalSellValue)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.InventoryValuation: %w", err)
+	}
+	return v, nil
+}
+
+func (r *ReportsRepository) VisitsSummaryByDay(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.VisitsSummary, error) {
+	query := `
+		SELECT to_char(date_trunc('day', visit_date), 'YYYY-MM-DD') AS period, COUNT(*)
+		FROM visits
+		WHERE clinic_id = $1 AND visit_date >= $2 AND visit_date < $3
+		GROUP BY period
+		ORDER BY period
+	`
+
+	rows, err := r.DB.Query(ctx, query, clinicID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.VisitsSummaryByDay query: %w", err)
+	}
+	defer rows.Close()
+
+	var summary []*domain.VisitsSummary
+	for rows.Next() {
+		var s domain.VisitsSummary
+		if err := rows.Scan(&s.Period, &s.VisitCount); err != nil {
+			return nil, fmt.Errorf("ReportsRepo.VisitsSummaryByDay scan: %w", err)
