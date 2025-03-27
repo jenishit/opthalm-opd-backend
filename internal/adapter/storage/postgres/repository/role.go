@@ -63,3 +63,36 @@ func (r *RoleRepository) GetRoleIDByRoleName(ctx context.Context, role string) (
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("RoleRepo.GetRoleIDByRoleName scan: %w", err)
+	}
+
+	return &roleID, nil
+}
+
+func (r *RoleRepository) GetRoleNameByRoleID(ctx context.Context, id uuid.UUID) (*string, error) {
+	query, args, err := sq.
+		Select("role_name").
+		From("role").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("RoleRepo.GetRoleIDByRoleName build: %w", err)
+	}
+	var role string
+	err = r.DB.QueryRow(ctx, query, args...).Scan(
+		&role,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("RoleRepo.GetRoleNameByRoleID scan: %w", err)
+	}
+
+	return &role, nil
+}
