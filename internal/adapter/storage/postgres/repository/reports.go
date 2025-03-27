@@ -133,3 +133,37 @@ func (r *ReportsRepository) VisitsSummaryByDay(ctx context.Context, clinicID uui
 		var s domain.VisitsSummary
 		if err := rows.Scan(&s.Period, &s.VisitCount); err != nil {
 			return nil, fmt.Errorf("ReportsRepo.VisitsSummaryByDay scan: %w", err)
+		}
+		summary = append(summary, &s)
+	}
+	return summary, rows.Err()
+}
+
+func (r *ReportsRepository) VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error) {
+	query := `
+		SELECT v.examined_by, COALESCE(CONCAT(p.first_name, ' ', p.last_name), ''), COUNT(*)
+		FROM visits v
+		LEFT JOIN profile p ON p.user_id = v.examined_by
+		WHERE v.clinic_id = $1 AND v.visit_date >= $2 AND v.visit_date < $3
+		GROUP BY v.examined_by, p.first_name, p.last_name
+		ORDER BY COUNT(*) DESC
+	`
+
+	rows, err := r.DB.Query(ctx, query, clinicID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.VisitsSummaryByDoctor query: %w", err)
+	}
+	defer rows.Close()
+
+	var summary []*domain.DoctorVisitsSummary
+	for rows.Next() {
+		var s domain.DoctorVisitsSummary
+		var doctorID uuid.UUID
+		if err := rows.Scan(&doctorID, &s.DoctorName, &s.VisitCount); err != nil {
+			return nil, fmt.Errorf("ReportsRepo.VisitsSummaryByDoctor scan: %w", err)
+		}
+		s.DoctorID = doctorID
+		summary = append(summary, &s)
+	}
+	return summary, rows.Err()
+}
