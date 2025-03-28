@@ -59,3 +59,34 @@ func (r *SessionRepository) Rotate(ctx context.Context, oldSessionID uuid.UUID, 
 			Values(newSession.UserID, newSession.RefreshTokenHash, nullStringPtr(newSession.UserAgent), nullStringPtr(newSession.IPAddress), newSession.ExpiresAt).
 			Suffix("RETURNING id, issued_at").
 			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("SessionRepo.Rotate build insert: %w", err)
+		}
+		if err := tx.QueryRow(ctx, query, args...).Scan(&newSession.ID, &newSession.IssuedAt); err != nil {
+			return fmt.Errorf("SessionRepo.Rotate insert: %w", err)
+		}
+
+		uQuery, uArgs, err := sq.Update("sessions").
+			Set("revoked_at", sq.Expr("NOW()")).
+			Set("replaced_by", newSession.ID).
+			Where(sq.Eq{"id": oldSessionID}).
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("SessionRepo.Rotate build update: %w", err)
+		}
+		if _, err := tx.Exec(ctx, uQuery, uArgs...); err != nil {
+			return fmt.Errorf("SessionRepo.Rotate update: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return newSession, nil
+}
+
+func (r *SessionRepository) Revoke(ctx context.Context, id uuid.UUID) error {
+	query, args, err := sq.Update("sessions").
+		Set("revoked_at", sq.Expr("NOW()")).
