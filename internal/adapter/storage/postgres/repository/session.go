@@ -120,3 +120,34 @@ func (r *SessionRepository) RevokeAllForUser(ctx context.Context, userID uuid.UU
 }
 
 func scanSession(row pgx.Row) (*domain.Session, error) {
+	var s domain.Session
+	var userAgent, ipAddress sql.NullString
+	var revokedAt sql.NullTime
+	var replacedBy uuid.NullUUID
+
+	err := row.Scan(
+		&s.ID, &s.UserID, &s.RefreshTokenHash, &userAgent, &ipAddress,
+		&s.IssuedAt, &s.ExpiresAt, &revokedAt, &replacedBy,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan session: %w", err)
+	}
+
+	if userAgent.Valid {
+		s.UserAgent = &userAgent.String
+	}
+	if ipAddress.Valid {
+		s.IPAddress = &ipAddress.String
+	}
+	if revokedAt.Valid {
+		s.RevokedAt = &revokedAt.Time
+	}
+	if replacedBy.Valid {
+		s.ReplacedBy = &replacedBy.UUID
+	}
+
+	return &s, nil
+}
