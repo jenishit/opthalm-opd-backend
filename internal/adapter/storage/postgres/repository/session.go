@@ -90,3 +90,33 @@ func (r *SessionRepository) Rotate(ctx context.Context, oldSessionID uuid.UUID, 
 func (r *SessionRepository) Revoke(ctx context.Context, id uuid.UUID) error {
 	query, args, err := sq.Update("sessions").
 		Set("revoked_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id}).
+		Where("revoked_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("SessionRepo.Revoke build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("SessionRepo.Revoke exec: %w", err)
+	}
+	return nil
+}
+
+func (r *SessionRepository) RevokeAllForUser(ctx context.Context, userID uuid.UUID) error {
+	query, args, err := sq.Update("sessions").
+		Set("revoked_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"user_id": userID}).
+		Where("revoked_at IS NULL").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("SessionRepo.RevokeAllForUser build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("SessionRepo.RevokeAllForUser exec: %w", err)
+	}
+	return nil
+}
+
+func scanSession(row pgx.Row) (*domain.Session, error) {
