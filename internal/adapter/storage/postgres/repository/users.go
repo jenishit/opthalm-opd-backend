@@ -29,3 +29,34 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*do
 		Columns(
 			"role_id",
 			"clinic_id",
+			"email",
+			"password",
+		).
+		Values(
+			user.RoleID,
+			user.ClinicID,
+			user.Email,
+			user.Password.Hash(),
+		).
+		//The returning data when a user is created is placed in the suffix
+		Suffix(`
+			RETURNING
+				id,
+				created_at,
+				updated_at
+		`). //To be safe from SQLInjection, the variables are replaced with dollar
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("UserRepo.CreateUser build: %w", err)
+	}
+
+	err = r.DB.QueryRow(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
