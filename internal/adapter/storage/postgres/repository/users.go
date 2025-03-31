@@ -60,3 +60,35 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*do
 
 	if err != nil {
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) GetUserByEmail(ctx context.Context, login *domain.Login) (*domain.BasicDetails, error) {
+	var passwordHash string
+	query, args, err := sq.
+		Select(
+			"u.id",
+			"u.email",
+			"u.password",
+			"u.clinic_id",
+			"r.role_name",
+		).
+		From("users u").
+		LeftJoin("role r on r.id = u.role_id").
+		Where(sq.Eq{"u.email": login.Email}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("User.FindByEmail build: %w", err)
+	}
+
+	var u domain.BasicDetails
+	err = r.DB.QueryRow(ctx, query, args...).Scan(
+		&u.ID,
+		&u.Email,
+		&passwordHash,
+		&u.ClinicID,
+		&u.UserRole,
