@@ -154,3 +154,34 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain
 		).
 		From("users u").
 		LeftJoin("role r on r.id = u.role_id").
+		Where(sq.Eq{"u.id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("UserRepo.GetUserByID build: %w", err)
+	}
+
+	var u domain.BasicDetails
+	err = r.DB.QueryRow(ctx, query, args...).Scan(
+		&u.ID,
+		&u.Email,
+		&passwordHash,
+		&u.ClinicID,
+		&u.UserRole,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("UserRepo.GetUserByID scan: %w", err)
+	}
+
+	password, err := valueobjects.NewPasswordFromHash(passwordHash)
+	if err != nil {
+		return nil, fmt.Errorf("UserRepo.GetUserByID wrap password: %w", err)
+	}
+	u.Password = *password
+
+	return &u, nil
+}
