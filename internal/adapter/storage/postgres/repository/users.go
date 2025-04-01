@@ -123,3 +123,34 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, p
 	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("UserRepo.UpdatePassword exec: %w", err)
 	}
+	return nil
+}
+
+func (r *UserRepository) MarkEmailVerified(ctx context.Context, userID uuid.UUID) error {
+	query, args, err := sq.
+		Update("users").
+		Set("email_verified_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": userID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("UserRepo.MarkEmailVerified build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("UserRepo.MarkEmailVerified exec: %w", err)
+	}
+	return nil
+}
+
+func (r *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.BasicDetails, error) {
+	var passwordHash string
+	query, args, err := sq.
+		Select(
+			"u.id",
+			"u.email",
+			"u.password",
+			"u.clinic_id",
+			"r.role_name",
+		).
+		From("users u").
+		LeftJoin("role r on r.id = u.role_id").
