@@ -92,3 +92,34 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, login *domain.Login
 		&passwordHash,
 		&u.ClinicID,
 		&u.UserRole,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrInvalidCredentials
+		}
+		return nil, fmt.Errorf("UserRepo.GetUserByEmail scan: %w", err)
+	}
+
+	password, err := valueobjects.NewPasswordFromHash(passwordHash)
+	if err != nil {
+		return nil, fmt.Errorf("UserRepo.CreateUser wrap password: %w", err)
+	}
+	u.Password = *password
+
+	return &u, nil
+}
+
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
+	query, args, err := sq.
+		Update("users").
+		Set("password", passwordHash).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": userID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("UserRepo.UpdatePassword build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("UserRepo.UpdatePassword exec: %w", err)
+	}
