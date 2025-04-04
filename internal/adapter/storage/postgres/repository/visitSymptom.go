@@ -34,3 +34,38 @@ func (vsr *VisitSymptomRepository) UpsertVisitSymptom(ctx context.Context, vr *d
 		EYE_PAIN,
 		WATERY_EYES,
 		DISCHARGE,
+		ITCHING,
+		PHOTOPHOBIA,
+		FLOATERS,
+		FLASHES,
+		DOUBLE_VISION,
+		RECENT_FEVER,
+		COMPLAINT_DURATION,
+		CREATED_BY,
+		UPDATED_BY
+	)
+VALUES
+	(
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11,
+		$12,
+		$13,
+		$14,
+		$15,
+		$16,
+		$17,
+		$18,
+		$19,
+		$20
+	)
+ON CONFLICT (VISIT_ID) DO UPDATE
+SET
