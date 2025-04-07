@@ -105,3 +105,38 @@ RETURNING
 	)
 
 	if err != nil {
+		return nil, fmt.Errorf("VisitSymptom.UpsertVisitSymptom scan: %w", err)
+	}
+
+	return &vs, nil
+}
+
+func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitSymptom, error) {
+	query, args, err := sq.
+		Select(
+			"VISIT_ID",
+			"FOREIGN_BODY_SENSATION",
+			"REDNESS",
+			"SWELLING",
+			"DIMINISHED_DISTANCE_VISION",
+			"DIMINISHED_NEAR_VISION",
+			"BLURRING",
+			"HEADACHE",
+			"EYE_PAIN",
+			"WATERY_EYES",
+			"DISCHARGE",
+			"ITCHING",
+			"PHOTOPHOBIA",
+			"FLOATERS",
+			"FLASHES",
+			"DOUBLE_VISION",
+			"RECENT_FEVER",
+			"COMPLAINT_DURATION",
+			"CREATED_BY",
+			"UPDATED_BY",
+		).
+		From("VISIT_SYMPTOMS").
+		Where(sq.Eq{"VISIT_ID": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
