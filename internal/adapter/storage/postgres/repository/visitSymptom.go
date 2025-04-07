@@ -140,3 +140,39 @@ func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context,
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
+	if err != nil {
+		return nil, err
+	}
+
+	var vs domain.VisitSymptom
+
+	err = vsr.DB.QueryRow(ctx, query, args...).Scan(
+		&vs.VisitID,
+		&vs.ForeignBodySensation,
+		&vs.Redness,
+		&vs.Swelling,
+		&vs.DiminishedDistanceVision,
+		&vs.DiminishedNearVision,
+		&vs.Blurring,
+		&vs.Headache,
+		&vs.EyePain,
+		&vs.WateryEyes,
+		&vs.Discharge,
+		&vs.Itching,
+		&vs.PhotoPhobia,
+		&vs.Floaters,
+		&vs.Flashes,
+		&vs.DoubleVision,
+		&vs.RecentFever,
+		&vs.ComplaintDuration,
+		&vs.CreatedBy,
+		&vs.UpdatedBy,
+		&vs.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	return &vs, nil
+}
