@@ -90,3 +90,33 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, clinicID, id 
 			"v.visit_date",
 			"v.chief_complaint",
 			"v.created_by",
+			"COALESCE(CONCAT(cp.first_name, ' ', cp.last_name), '') AS created_by_name",
+			"v.updated_by",
+			"COALESCE(CONCAT(up.first_name, ' ', up.last_name), '') AS updated_by_name",
+			"v.created_at",
+			"v.updated_at",
+		).
+		From("visits v").
+		LeftJoin("patients p ON p.id = v.patient_id").
+		LeftJoin("users eu ON eu.id = v.examined_by").
+		LeftJoin("profile ep ON ep.user_id = eu.id").
+		LeftJoin("users cu ON cu.id = v.created_by").
+		LeftJoin("profile cp ON cp.user_id = cu.id").
+		LeftJoin("users uu ON uu.id = v.updated_by").
+		LeftJoin("profile up ON up.user_id = uu.id").
+		Where(sq.Eq{"v.id": id, "v.clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var v domain.VisitDetails
+	var visitDate time.Time
+
+	err = vr.DB.QueryRow(ctx, query, args...).Scan(
+		&v.ID,
+		&v.PatientID,
+		&v.PatientName,
+		&v.ExamineBy,
