@@ -120,3 +120,33 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, clinicID, id 
 		&v.PatientID,
 		&v.PatientName,
 		&v.ExamineBy,
+		&v.ExamineByName,
+		&v.Status,
+		&visitDate,
+		&v.CheifComplaint,
+		&v.CreatedBy,
+		&v.CreatedByName,
+		&v.UpdatedBy,
+		&v.UpdatedByName,
+		&v.CreatedAt,
+		&v.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	v.VisitDate = visitDate.Format(time.RFC3339)
+
+	return &v, nil
+}
+
+func (vr *VisitsRepository) UpdateVisitByVisitID(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) error {
+	query, args, err := sq.
+		Update("visits").
+		Set("examined_by", sq.Expr("COALESCE(?, examined_by)", nullUUID(v.ExamineBy))).
+		Set("status", sq.Expr("COALESCE(?, status)", nullString(string(v.Status)))).
+		Set("visit_date", sq.Expr("COALESCE(?, visit_date)", nullString(v.VisitDate))).
