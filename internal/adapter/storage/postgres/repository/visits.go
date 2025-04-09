@@ -212,3 +212,33 @@ func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, clinicID, 
 	var visits []*domain.VisitDetails
 
 	for rows.Next() {
+		var v domain.VisitDetails
+		var visitDate time.Time
+
+		err := rows.Scan(
+			&v.ID,
+			&v.PatientID,
+			&v.PatientName,
+			&v.ExamineBy,
+			&v.ExamineByName,
+			&v.Status,
+			&visitDate,
+			&v.CheifComplaint,
+			&v.CreatedBy,
+			&v.CreatedByName,
+			&v.UpdatedBy,
+			&v.UpdatedByName,
+			&v.CreatedAt,
+			&v.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		v.VisitDate = visitDate.Format(time.RFC3339)
+
+		visits = append(visits, &v)
+	}
+
+	return visits, nil
+}
