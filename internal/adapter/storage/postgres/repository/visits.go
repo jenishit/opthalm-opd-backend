@@ -150,3 +150,34 @@ func (vr *VisitsRepository) UpdateVisitByVisitID(ctx context.Context, clinicID u
 		Set("examined_by", sq.Expr("COALESCE(?, examined_by)", nullUUID(v.ExamineBy))).
 		Set("status", sq.Expr("COALESCE(?, status)", nullString(string(v.Status)))).
 		Set("visit_date", sq.Expr("COALESCE(?, visit_date)", nullString(v.VisitDate))).
+		Set("chief_complaint", sq.Expr("COALESCE(?, chief_complaint)", nullString(v.CheifComplaint))).
+		Set("updated_at", sq.Expr("NOW()")).
+		Set("updated_by", v.UpdatedBy).
+		Where(sq.Eq{"id": v.ID, "clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("VisitRepo.UpdateVisitByVisitID build: %w", err)
+	}
+
+	_, err = vr.DB.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("VisitRepo.UpdateVisitByVisitID exec: %w", err)
+	}
+
+	return nil
+}
+
+func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, clinicID, id uuid.UUID) ([]*domain.VisitDetails, error) {
+	query, args, err := sq.
+		Select(
+			"v.id",
+			"v.patient_id",
+			"COALESCE(p.full_name, '') AS patient_name",
+			"v.examined_by",
+			"COALESCE(CONCAT(ep.first_name, ' ', ep.last_name), '') AS examined_by_name",
+			"v.status",
+			"v.visit_date",
+			"v.chief_complaint",
+			"v.created_by",
+			"COALESCE(CONCAT(cp.first_name, ' ', cp.last_name), '') AS created_by_name",
