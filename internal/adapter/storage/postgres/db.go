@@ -34,3 +34,40 @@ func New(ctx context.Context, config *config.DB) (*DB, error) {
 	url := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=disable",
 		config.Connection,
 		config.User,
+		config.Password,
+		config.Host,
+		config.Port,
+		config.Name,
+	)
+
+	db, err := pgxpool.New(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	psql := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+
+	return &DB{
+		db,
+		&psql,
+		url,
+	}, nil
+}
+
+// WithTx runs fn inside a single database transaction, committing if fn
+// returns nil and rolling back otherwise (including on panic).
+func (db *DB) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error {
+	tx, err := db.Pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck // no-op if already committed
+
+	if err := fn(tx); err != nil {
+		return err
+	}
