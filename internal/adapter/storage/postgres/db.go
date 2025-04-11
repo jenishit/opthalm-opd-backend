@@ -71,3 +71,39 @@ func (db *DB) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error {
 	if err := fn(tx); err != nil {
 		return err
 	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+	return nil
+}
+
+// Migrate runs the database migration
+func (db *DB) Migrate() error {
+	driver, err := iofs.New(migrationsFS, "migrations")
+	if err != nil {
+		return err
+	}
+
+	migrations, err := migrate.NewWithSourceInstance("iofs", driver, db.url)
+	if err != nil {
+		return err
+	}
+
+	err = migrations.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
+}
+
+// ErrorCode returns the error code of the given error
+func (db *DB) ErrorCode(err error) string {
+	pgErr := err.(*pgconn.PgError)
+	return pgErr.Code
+}
+
+// Close closes the database connection
+func (db *DB) Close() {
+	db.Pool.Close()
+}
