@@ -186,3 +186,34 @@ func (as *AuthService) issueTokenPair(ctx context.Context, user *domain.BasicDet
 // callers always get the same response — so this endpoint can't be used to
 // enumerate registered accounts.
 func (as *AuthService) RequestPasswordReset(ctx context.Context, email string) error {
+	user, err := as.repo.GetUserByEmail(ctx, &domain.Login{Email: email})
+	if err != nil {
+		return nil
+	}
+
+	return as.issueVerificationToken(ctx, user.ID, domain.PurposePasswordReset, passwordResetTokenTTL, func(plain string) (string, string) {
+		return "Reset your password",
+			fmt.Sprintf("Use this code to reset your password: %s\n\nThis code expires in 1 hour. If you didn't request this, you can ignore this email.", plain)
+	}, email)
+}
+
+// ConfirmPasswordReset applies a new password using a token minted by
+// RequestPasswordReset, then revokes every existing session for that user —
+// a password reset should force re-login everywhere, including on whatever
+// device the attacker (if any) was using.
+func (as *AuthService) ConfirmPasswordReset(ctx context.Context, plainToken, newPassword string) error {
+	vt, err := as.consumeVerificationToken(ctx, plainToken, domain.PurposePasswordReset)
+	if err != nil {
+		return err
+	}
+
+	pwd, err := valueobjects.NewPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := as.repo.UpdatePassword(ctx, vt.UserID, pwd.Hash()); err != nil {
+		return err
+	}
+
+	return as.sessionRepo.RevokeAllForUser(ctx, vt.UserID)
