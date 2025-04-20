@@ -61,3 +61,34 @@ func (as *AuthService) Signup(ctx context.Context, req *domain.SignupRequest) (*
 	}
 
 	return as.issueTokenPair(ctx, user)
+}
+
+func (as *AuthService) Login(ctx context.Context, details *domain.Login) (*domain.LoginResponse, error) {
+	user, err := as.repo.GetUserByEmail(ctx, details)
+	if err != nil {
+		return nil, err
+	}
+
+	passwordVO, err := valueobjects.NewPasswordFromHash(user.Password.Hash())
+	if err != nil {
+		return nil, domain.ErrInvalidCredentials
+	}
+	if err := passwordVO.Verify(details.Password); err != nil {
+		return nil, domain.ErrInvalidCredentials
+	}
+
+	return as.issueTokenPair(ctx, user)
+}
+
+func (as *AuthService) Refresh(ctx context.Context, refreshToken string) (*domain.LoginResponse, error) {
+	hash := as.ts.HashRefreshToken(refreshToken)
+
+	session, err := as.sessionRepo.GetByRefreshTokenHash(ctx, hash)
+	if err != nil {
+		if err == domain.ErrDataNotFound {
+			return nil, domain.ErrInvalidToken
+		}
+		return nil, err
+	}
+
+	if session.RevokedAt != nil {
