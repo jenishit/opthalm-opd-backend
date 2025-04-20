@@ -123,3 +123,34 @@ func (as *AuthService) Refresh(ctx context.Context, refreshToken string) (*domai
 	if err != nil {
 		return nil, err
 	}
+
+	accessToken, err := as.ts.CreateAccessToken(user, newSession.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: newPlain,
+		SessionID:    newSession.ID,
+		UserID:       user.ID,
+		UserRole:     string(user.UserRole),
+	}, nil
+}
+
+func (as *AuthService) Logout(ctx context.Context, refreshToken string) error {
+	hash := as.ts.HashRefreshToken(refreshToken)
+
+	session, err := as.sessionRepo.GetByRefreshTokenHash(ctx, hash)
+	if err != nil {
+		if err == domain.ErrDataNotFound {
+			return nil
+		}
+		return err
+	}
+
+	return as.sessionRepo.Revoke(ctx, session.ID)
+}
+
+func (as *AuthService) issueTokenPair(ctx context.Context, user *domain.BasicDetails) (*domain.LoginResponse, error) {
+	plain, hash, err := as.ts.GenerateRefreshToken()
