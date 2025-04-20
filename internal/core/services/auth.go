@@ -92,3 +92,34 @@ func (as *AuthService) Refresh(ctx context.Context, refreshToken string) (*domai
 	}
 
 	if session.RevokedAt != nil {
+		// This refresh token was already rotated away and is being presented
+		// again — a strong signal it was stolen. Revoke every session for
+		// this user so both the thief and the legitimate holder are forced
+		// to log in again.
+		_ = as.sessionRepo.RevokeAllForUser(ctx, session.UserID)
+		return nil, domain.ErrInvalidToken
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		return nil, domain.ErrExpiredToken
+	}
+
+	user, err := as.repo.GetUserByID(ctx, session.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	newPlain, newHash, err := as.ts.GenerateRefreshToken()
+	if err != nil {
+		return nil, err
+	}
+
+	newSession := &domain.Session{
+		UserID:           user.ID,
+		RefreshTokenHash: newHash,
+		ExpiresAt:        time.Now().Add(as.refreshDuration),
+	}
+	newSession, err = as.sessionRepo.Rotate(ctx, session.ID, newSession)
+	if err != nil {
+		return nil, err
+	}
