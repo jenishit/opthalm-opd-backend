@@ -217,3 +217,34 @@ func (as *AuthService) ConfirmPasswordReset(ctx context.Context, plainToken, new
 	}
 
 	return as.sessionRepo.RevokeAllForUser(ctx, vt.UserID)
+}
+
+// RequestEmailVerification issues and emails a verification token for the
+// given (already-authenticated) user.
+func (as *AuthService) RequestEmailVerification(ctx context.Context, userID uuid.UUID) error {
+	user, err := as.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if user.Email == nil || *user.Email == "" {
+		return domain.ErrBadRequest
+	}
+	email := *user.Email
+
+	return as.issueVerificationToken(ctx, userID, domain.PurposeEmailVerification, emailVerificationTokenTTL, func(plain string) (string, string) {
+		return "Verify your email",
+			fmt.Sprintf("Use this code to verify your email address: %s\n\nThis code expires in 24 hours.", plain)
+	}, email)
+}
+
+// ConfirmEmailVerification marks the token's owning user's email verified.
+func (as *AuthService) ConfirmEmailVerification(ctx context.Context, plainToken string) error {
+	vt, err := as.consumeVerificationToken(ctx, plainToken, domain.PurposeEmailVerification)
+	if err != nil {
+		return err
+	}
+	return as.repo.MarkEmailVerified(ctx, vt.UserID)
+}
+
+// issueVerificationToken invalidates any still-pending token of the same
+// purpose for this user, mints a fresh one, persists its hash, and emails
