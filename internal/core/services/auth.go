@@ -29,3 +29,35 @@ type AuthService struct {
 	refreshDuration  time.Duration
 }
 
+func NewAuthService(
+	userRepo port.UserRepository,
+	sessionRepo port.SessionRepository,
+	signupRepo port.SignupRepository,
+	verificationRepo port.VerificationTokenRepository,
+	emailSender port.EmailSender,
+	tokenService port.TokenService,
+	refreshDuration time.Duration,
+) *AuthService {
+	return &AuthService{
+		repo:             userRepo,
+		sessionRepo:      sessionRepo,
+		signupRepo:       signupRepo,
+		verificationRepo: verificationRepo,
+		emailSender:      emailSender,
+		ts:               tokenService,
+		refreshDuration:  refreshDuration,
+	}
+}
+
+func (as *AuthService) Signup(ctx context.Context, req *domain.SignupRequest) (*domain.LoginResponse, error) {
+	pwd, err := valueobjects.NewPassword(req.AdminPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := as.signupRepo.CreateTenant(ctx, req, pwd.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	return as.issueTokenPair(ctx, user)
