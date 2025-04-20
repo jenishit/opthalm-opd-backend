@@ -154,3 +154,35 @@ func (as *AuthService) Logout(ctx context.Context, refreshToken string) error {
 
 func (as *AuthService) issueTokenPair(ctx context.Context, user *domain.BasicDetails) (*domain.LoginResponse, error) {
 	plain, hash, err := as.ts.GenerateRefreshToken()
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := as.sessionRepo.Create(ctx, &domain.Session{
+		UserID:           user.ID,
+		RefreshTokenHash: hash,
+		ExpiresAt:        time.Now().Add(as.refreshDuration),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := as.ts.CreateAccessToken(user, session.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: plain,
+		SessionID:    session.ID,
+		UserID:       user.ID,
+		UserRole:     string(user.UserRole),
+	}, nil
+}
+
+// RequestPasswordReset issues a password-reset token and emails it, if the
+// address belongs to a user. It never reports whether the email exists —
+// callers always get the same response — so this endpoint can't be used to
+// enumerate registered accounts.
+func (as *AuthService) RequestPasswordReset(ctx context.Context, email string) error {
