@@ -280,3 +280,34 @@ func (as *AuthService) issueVerificationToken(
 	subject, body := subjectAndBody(plain)
 	if err := as.emailSender.Send(ctx, toEmail, subject, body); err != nil {
 		slog.Error("failed to deliver verification email", "purpose", purpose, "error", err)
+	}
+
+	return nil
+}
+
+// consumeVerificationToken looks up a token by its plaintext, validates it's
+// for the expected purpose, unused, and unexpired, and marks it used.
+func (as *AuthService) consumeVerificationToken(ctx context.Context, plainToken string, purpose domain.TokenPurpose) (*domain.VerificationToken, error) {
+	hash := as.ts.HashRefreshToken(plainToken)
+
+	vt, err := as.verificationRepo.GetByHash(ctx, hash)
+	if err != nil {
+		if err == domain.ErrDataNotFound {
+			return nil, domain.ErrInvalidToken
+		}
+		return nil, err
+	}
+
+	if vt.Purpose != purpose || vt.UsedAt != nil {
+		return nil, domain.ErrInvalidToken
+	}
+	if time.Now().After(vt.ExpiresAt) {
+		return nil, domain.ErrExpiredToken
+	}
+
+	if err := as.verificationRepo.MarkUsed(ctx, vt.ID); err != nil {
+		return nil, err
+	}
+
+	return vt, nil
+}
