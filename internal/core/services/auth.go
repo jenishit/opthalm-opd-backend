@@ -248,3 +248,35 @@ func (as *AuthService) ConfirmEmailVerification(ctx context.Context, plainToken 
 
 // issueVerificationToken invalidates any still-pending token of the same
 // purpose for this user, mints a fresh one, persists its hash, and emails
+// the plaintext via subjectAndBody(plain). Delivery failure (e.g. SMTP
+// misconfigured) is logged but doesn't fail the request — the token still
+// exists and a resend can be requested.
+func (as *AuthService) issueVerificationToken(
+	ctx context.Context,
+	userID uuid.UUID,
+	purpose domain.TokenPurpose,
+	ttl time.Duration,
+	subjectAndBody func(plain string) (subject, body string),
+	toEmail string,
+) error {
+	if err := as.verificationRepo.InvalidateAllForUser(ctx, userID, purpose); err != nil {
+		return err
+	}
+
+	plain, hash, err := as.ts.GenerateRefreshToken()
+	if err != nil {
+		return err
+	}
+
+	if _, err := as.verificationRepo.Create(ctx, &domain.VerificationToken{
+		UserID:    userID,
+		Purpose:   purpose,
+		TokenHash: hash,
+		ExpiresAt: time.Now().Add(ttl),
+	}); err != nil {
+		return err
+	}
+
+	subject, body := subjectAndBody(plain)
+	if err := as.emailSender.Send(ctx, toEmail, subject, body); err != nil {
+		slog.Error("failed to deliver verification email", "purpose", purpose, "error", err)
