@@ -60,3 +60,34 @@ func (s *DiagnosisCatalogService) Update(ctx context.Context, d *domain.Diagnosi
 	return s.repo.Update(ctx, d)
 }
 
+func (s *DiagnosisCatalogService) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, id)
+}
+
+type HistoryConditionService struct {
+	repo port.HistoryConditionRepository
+}
+
+func NewHistoryConditionService(r port.HistoryConditionRepository) *HistoryConditionService {
+	return &HistoryConditionService{repo: r}
+}
+
+func (s *HistoryConditionService) Search(ctx context.Context, query string, limit int) ([]*domain.HistoryCondition, error) {
+	return s.repo.Search(ctx, query, limit)
+}
+
+func (s *HistoryConditionService) GetByID(ctx context.Context, id uuid.UUID) (*domain.HistoryCondition, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *HistoryConditionService) List(ctx context.Context, limit, offset int) ([]*domain.HistoryCondition, error) {
+	return s.repo.List(ctx, limit, offset)
+}
+
+func (s *HistoryConditionService) Update(ctx context.Context, h *domain.HistoryCondition) error {
+	return s.repo.Update(ctx, h)
+}
+
+func (s *HistoryConditionService) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, id)
+}
