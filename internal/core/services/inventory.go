@@ -97,3 +97,36 @@ func (s *VendorService) Delete(ctx context.Context, clinicID, id uuid.UUID) erro
 // ─── Stock Purchases ─────────────────────────────────────────────
 
 type StockPurchaseService struct {
+	repo port.StockPurchaseRepository
+}
+
+func NewStockPurchaseService(r port.StockPurchaseRepository) *StockPurchaseService {
+	return &StockPurchaseService{repo: r}
+}
+
+func (s *StockPurchaseService) CreatePurchase(ctx context.Context, clinicID uuid.UUID, purchase *domain.StockPurchase, items []*domain.StockPurchaseItem) (*domain.StockPurchaseDetails, error) {
+	var total float64
+	for _, item := range items {
+		item.LineTotal = item.UnitCost * float64(item.Quantity)
+		total += item.LineTotal
+	}
+	purchase.TotalAmount = total
+	if purchase.PaidAmount > total {
+		purchase.PaidAmount = total
+	}
+	purchase.DueAmount = total - purchase.PaidAmount
+
+	if purchase.PurchaseDate.IsZero() {
+		purchase.PurchaseDate = time.Now()
+	}
+
+	return s.repo.CreatePurchase(ctx, clinicID, purchase, items)
+}
+
+func (s *StockPurchaseService) GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.StockPurchaseDetails, error) {
+	return s.repo.GetByID(ctx, clinicID, id)
+}
+
+func (s *StockPurchaseService) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.StockPurchaseDetails, error) {
+	return s.repo.List(ctx, clinicID, limit, offset)
+}
