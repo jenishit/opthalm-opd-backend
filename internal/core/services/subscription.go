@@ -59,3 +59,34 @@ func (s *SubscriptionService) GetByClinicID(
 
 	// Populate cache
 	if s.redis != nil && sub != nil {
+		if b, err := json.Marshal(sub); err == nil {
+			_ = s.redis.Set(ctx, key, b, subscriptionCacheTTL).Err()
+		}
+	}
+
+	return sub, nil
+}
+
+func (s *SubscriptionService) Upsert(
+	ctx context.Context,
+	sub *domain.Subscription,
+) (*domain.Subscription, error) {
+	if sub.PlanName == "" {
+		sub.PlanName = "trial"
+	}
+	if sub.Status == "" {
+		sub.Status = domain.SubscriptionTrialing
+	}
+
+	updated, err := s.repo.Upsert(ctx, sub)
+	if err != nil {
+		return nil, err
+	}
+
+	// Invalidate cache
+	if s.redis != nil {
+		_ = s.redis.Del(ctx, s.cacheKey(updated.ClinicID)).Err()
+	}
+
+	return updated, nil
+}
