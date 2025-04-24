@@ -29,3 +29,33 @@ func NewSubscriptionService(
 }
 
 func (s *SubscriptionService) cacheKey(clinicID uuid.UUID) string {
+	return "subscription:" + clinicID.String()
+}
+
+func (s *SubscriptionService) GetByClinicID(
+	ctx context.Context,
+	clinicID uuid.UUID,
+) (*domain.Subscription, error) {
+	key := s.cacheKey(clinicID)
+
+	// Cache lookup
+	if s.redis != nil {
+		cached, err := s.redis.Get(ctx, key).Result()
+		if err == nil {
+			var sub domain.Subscription
+			if json.Unmarshal([]byte(cached), &sub) == nil {
+				return &sub, nil
+			}
+		} else if err != redis.Nil {
+			// Ignore Redis errors and fall back to DB
+		}
+	}
+
+	// DB fallback
+	sub, err := s.repo.GetByClinicID(ctx, clinicID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate cache
+	if s.redis != nil && sub != nil {
