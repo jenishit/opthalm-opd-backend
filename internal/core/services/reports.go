@@ -35,3 +35,40 @@ func (s *ReportsService) SalesMonthly(ctx context.Context, clinicID uuid.UUID, y
 	summary, err := s.repo.SalesSummary(ctx, clinicID, from, to)
 	if err != nil {
 		return nil, err
+	}
+	summary.Period = from.Format("2006-01")
+	return summary, nil
+}
+
+func (s *ReportsService) SalesRange(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.SalesSummary, error) {
+	summary, err := s.repo.SalesSummary(ctx, clinicID, from, to.AddDate(0, 0, 1))
+	if err != nil {
+		return nil, err
+	}
+	summary.Period = from.Format("2006-01-02") + " to " + to.Format("2006-01-02")
+	return summary, nil
+}
+
+func (s *ReportsService) PatientDues(ctx context.Context, clinicID uuid.UUID) ([]*domain.PatientDue, error) {
+	return s.repo.PatientDues(ctx, clinicID)
+}
+
+func (s *ReportsService) VendorDues(ctx context.Context, clinicID uuid.UUID) ([]*domain.VendorDue, error) {
+	return s.repo.VendorDues(ctx, clinicID)
+}
+
+func (s *ReportsService) InventoryLowStock(ctx context.Context, clinicID uuid.UUID) ([]*domain.InventoryItem, error) {
+	return s.inventorySvc.LowStock(ctx, clinicID)
+}
+
+func (s *ReportsService) InventoryValuation(ctx context.Context, clinicID uuid.UUID) (*domain.InventoryValuation, error) {
+	return s.repo.InventoryValuation(ctx, clinicID)
+}
+
+func (s *ReportsService) VisitsSummaryByDay(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.VisitsSummary, error) {
+	return s.repo.VisitsSummaryByDay(ctx, clinicID, from, to.AddDate(0, 0, 1))
+}
+
+func (s *ReportsService) VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error) {
+	return s.repo.VisitsSummaryByDoctor(ctx, clinicID, from, to.AddDate(0, 0, 1))
+}
