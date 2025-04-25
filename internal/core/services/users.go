@@ -31,3 +31,36 @@ func (u *UserService) CreateUser(ctx context.Context, data *dto.CreateUser, clin
 		return nil, err
 	}
 	pwd, err := valueobjects.NewPassword(data.Password)
+	if err != nil {
+		return nil, err
+	}
+	us := &domain.User{
+		Email:    data.Email,
+		RoleID:   *roleID,
+		ClinicID: clinicID,
+		Password: *pwd,
+	}
+
+	user, err := u.repo.CreateUser(ctx, us)
+	if err != nil {
+		return nil, err
+	}
+
+	profile := &domain.Profile{
+		UserID:    user.ID,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Email:     data.Email,
+		Phone:     &data.Phone,
+	}
+	_, err = u.profileService.CreateProfile(ctx, profile)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, err
+}
+
+func (u *UserService) GetUserByEmail(ctx context.Context, data *domain.Login) (*domain.BasicDetails, error) {
+	return u.repo.GetUserByEmail(ctx, data)
+}
