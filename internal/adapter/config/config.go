@@ -61,3 +61,34 @@ type (
 	}
 	Refresh struct {
 		Duration string
+	}
+	// Database contains all the environment variables for the database
+	DB struct {
+		Connection string
+		Host       string
+		Port       string
+		User       string
+		Password   string
+		Name       string
+	}
+	// HTTP contains all the environment variables for the http server
+	HTTP struct {
+		Env                string
+		URL                string
+		Port               string
+		AllowedOrigins     string
+		UseFunctionURLCORS bool
+	}
+	// SMTP contains the environment variables for outbound email. When Host
+	// is empty, main.go wires a log-only EmailSender instead of net/smtp, so
+	// password-reset/verification flows still work end-to-end without a
+	// mail server configured — just without real delivery.
+	SMTP struct {
+		Host     string
+		Port     string
+		Username string
+		Password string
+		From     string
+	}
+)
+
