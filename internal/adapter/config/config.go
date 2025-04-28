@@ -92,3 +92,34 @@ type (
 	}
 )
 
+// New creates a new container instance
+func New() (*Container, error) {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("No .env file found, using environment variables")
+	}
+
+	app := &App{
+		Name: os.Getenv("APP_NAME"),
+		Env:  os.Getenv("APP_ENV"),
+	}
+
+	token := &Token{
+		Duration: os.Getenv("TOKEN_DURATION"),
+		Secret:   os.Getenv("TOKEN_SECRET"),
+	}
+
+	refreshToken := &Refresh{
+		Duration: os.Getenv("REFRESH_TOKEN_DURATION"),
+	}
+
+	redisAddr := envOrDefault(os.Getenv("REDIS_ADDR"), "")
+
+	redisPassword := envOrDefault(os.Getenv("REDIS_PASSWORD"), "")
+
+	session := &Session{
+		Driver: strings.ToLower(envOrDefault(os.Getenv("SESSION_DRIVER"), "")),
+		TTL:    parseDurationOrDefault(os.Getenv("SESSION_TTL"), 24*time.Hour),
+		Redis: &Redis{
+			Addr:     envOrDefault(os.Getenv("SESSION_REDIS_ADDR"), redisAddr),
+			Password: envOrDefault(os.Getenv("SESSION_REDIS_PASSWORD"), redisPassword),
+			DB:       parseIntOrDefault(os.Getenv("SESSION_REDIS_DB"), 0),
