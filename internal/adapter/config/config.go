@@ -123,3 +123,35 @@ func New() (*Container, error) {
 			Addr:     envOrDefault(os.Getenv("SESSION_REDIS_ADDR"), redisAddr),
 			Password: envOrDefault(os.Getenv("SESSION_REDIS_PASSWORD"), redisPassword),
 			DB:       parseIntOrDefault(os.Getenv("SESSION_REDIS_DB"), 0),
+			Prefix:   envOrDefault(os.Getenv("SESSION_REDIS_PREFIX"), "session"),
+		},
+	}
+	db := &DB{
+		Connection: os.Getenv("DB_CONNECTION"),
+		Host:       os.Getenv("DB_HOST"),
+		Port:       os.Getenv("DB_PORT"),
+		User:       os.Getenv("DB_USER"),
+		Password:   os.Getenv("DB_PASSWORD"),
+		Name:       os.Getenv("DB_NAME"),
+	}
+
+	redisCfg := &RedisConfig{
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       parseIntOrDefault(os.Getenv("REDIS_DB"), 0),
+	}
+
+	http := &HTTP{
+		Env:                os.Getenv("APP_ENV"),
+		URL:                os.Getenv("HTTP_URL"),
+		Port:               os.Getenv("HTTP_PORT"),
+		AllowedOrigins:     os.Getenv("HTTP_ALLOWED_ORIGINS"),
+		UseFunctionURLCORS: parseBool(os.Getenv("HTTP_USE_FUNCTION_URL_CORS"), false),
+	}
+
+	smtp := &SMTP{
+		Host:     os.Getenv("SMTP_HOST"),
+		Port:     envOrDefault(os.Getenv("SMTP_PORT"), "587"),
+		Username: os.Getenv("SMTP_USERNAME"),
+		Password: os.Getenv("SMTP_PASSWORD"),
+		From:     envOrDefault(os.Getenv("SMTP_FROM"), "no-reply@example.com"),
