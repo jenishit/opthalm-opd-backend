@@ -280,3 +280,35 @@ func resolveDatabaseField(secretValue string, envValue string, fallback string) 
 	return envOrDefault(envValue, envOrDefault(secretValue, fallback))
 }
 
+func firstSecretString(payload map[string]any, keys ...string) string {
+	for _, key := range keys {
+		value, ok := payload[key]
+		if !ok || value == nil {
+			continue
+		}
+		switch v := value.(type) {
+		case string:
+			if trimmed := strings.TrimSpace(v); trimmed != "" {
+				return trimmed
+			}
+		case float64:
+			if v == float64(int64(v)) {
+				return strconv.FormatInt(int64(v), 10)
+			}
+			return strconv.FormatFloat(v, 'f', -1, 64)
+		}
+	}
+	return ""
+}
+
+func secretValue(secret *DB, selector func(*DB) string) string {
+	if secret == nil {
+		return ""
+	}
+	return selector(secret)
+}
+
+func normalizeDatabaseConnection(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "postgresql":
+		return "postgres"
