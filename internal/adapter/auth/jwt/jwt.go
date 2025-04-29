@@ -32,3 +32,37 @@ func New(config *config.Token) (port.TokenService, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if config.Secret == "" {
+		return nil, errors.New("JWT secret is missing")
+	}
+
+	return &JWTToken{
+		secret:   config.Secret,
+		duration: duration,
+	}, nil
+}
+
+func (jt *JWTToken) CreateAccessToken(user *domain.BasicDetails, sessionID uuid.UUID) (string, error) {
+	expirationTime := time.Now().Add(jt.duration)
+
+	claims := jwt.MapClaims{
+		"user_id":    user.ID,
+		"role_name":  user.UserRole,
+		"clinic_id":  user.ClinicID,
+		"exp":        expirationTime.Unix(),
+		"session_id": sessionID,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte(jt.secret))
+	if err != nil {
+		return "", fmt.Errorf("creating access token: %w", err)
+	}
+
+	return tokenString, nil
+}
+
+func (jt *JWTToken) VerifyAccessToken(tokenString string) (*domain.TokenPayload, error) {
+	var payload domain.TokenPayload
