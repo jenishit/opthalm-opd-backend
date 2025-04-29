@@ -218,3 +218,34 @@ func parseIntOrDefault(value string, fallback int) int {
 func parseFloatOrDefault(value string, fallback float64) float64 {
 	if value == "" {
 		return fallback
+	}
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return fallback
+	}
+	return f
+}
+
+func resolveDatabaseConnection(secret *DB) string {
+	return resolveDatabaseField(
+		secretValue(secret, func(s *DB) string { return s.Connection }),
+		os.Getenv("DB_CONNECTION"),
+		"postgres",
+	)
+}
+
+func resolveDatabaseHost(secret *DB) string {
+	return resolveDatabaseField(
+		secretValue(secret, func(s *DB) string { return s.Host }),
+		envOrDefault(os.Getenv("DB_HOST"), os.Getenv("DATABASE_HOST")),
+		"",
+	)
+}
+
+func resolveDatabasePort(secret *DB) string {
+	return resolveDatabaseField(
+		secretValue(secret, func(s *DB) string { return s.Port }),
+		os.Getenv("DB_PORT"),
+		"5432",
+	)
+}
