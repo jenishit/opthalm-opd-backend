@@ -312,3 +312,34 @@ func normalizeDatabaseConnection(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "postgresql":
 		return "postgres"
+	default:
+		return strings.TrimSpace(value)
+	}
+}
+
+func IsLambdaRuntime() bool {
+	return parseBool(os.Getenv("IS_LAMBDA_RUNTIME"), false)
+}
+
+func validateRuntimeDBConfig(db *DB) error {
+	if db.Connection == "" {
+		return fmt.Errorf("missing DB_CONNECTION")
+	}
+	if db.Host == "" {
+		return fmt.Errorf("missing DB_HOST or DATABASE_HOST")
+	}
+	if db.Port == "" {
+		return fmt.Errorf("missing DB_PORT")
+	}
+	if db.User == "" {
+		return fmt.Errorf("missing DB_USER or DATABASE_USER")
+	}
+	if db.Name == "" {
+		return fmt.Errorf("missing DB_NAME or DATABASE_NAME")
+	}
+	if db.Password == "" {
+		return fmt.Errorf("missing DB_PASSWORD/DATABASE_PASSWORD and DATABASE_SECRET_ARN")
+	}
+
+	return nil
+}
