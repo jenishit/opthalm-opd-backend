@@ -155,3 +155,34 @@ func New() (*Container, error) {
 		Username: os.Getenv("SMTP_USERNAME"),
 		Password: os.Getenv("SMTP_PASSWORD"),
 		From:     envOrDefault(os.Getenv("SMTP_FROM"), "no-reply@example.com"),
+	}
+
+	return &Container{
+		app,
+		token,
+		refreshToken,
+		session,
+		db,
+		http,
+		redisCfg,
+		smtp,
+	}, nil
+}
+
+func parseBool(value string, fallback bool) bool {
+	if value == "" {
+		return fallback
+	}
+	switch strings.ToLower((value)) {
+	case "1", "true", "yes", "on":
+		return true
+
+	case "0", "false", "no", "off":
+		return false
+	default:
+		return fallback
+	}
+}
+
+func envOrDefault(value, fallback string) string {
+	if value == "" {
