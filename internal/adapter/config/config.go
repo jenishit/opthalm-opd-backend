@@ -249,3 +249,34 @@ func resolveDatabasePort(secret *DB) string {
 		"5432",
 	)
 }
+
+func resolveDatabaseUser(secret *DB) string {
+	return resolveDatabaseField(
+		secretValue(secret, func(s *DB) string { return s.User }),
+		envOrDefault(os.Getenv("DB_USER"), os.Getenv("DATABASE_USER")),
+		"",
+	)
+}
+
+func resolveDatabaseName(secret *DB) string {
+	return resolveDatabaseField(
+		secretValue(secret, func(s *DB) string { return s.Name }),
+		envOrDefault(os.Getenv("DB_NAME"), os.Getenv("DATABASE_NAME")),
+		"",
+	)
+}
+
+func resolveDatabaseSSLMode() string {
+	if IsLambdaRuntime() {
+		return envOrDefault(os.Getenv("SSL_MODE"), "require")
+	}
+	return os.Getenv("SSL_MODE")
+}
+
+func resolveDatabaseField(secretValue string, envValue string, fallback string) string {
+	if IsLambdaRuntime() {
+		return envOrDefault(secretValue, envOrDefault(envValue, fallback))
+	}
+	return envOrDefault(envValue, envOrDefault(secretValue, fallback))
+}
+
