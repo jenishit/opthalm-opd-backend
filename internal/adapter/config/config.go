@@ -186,3 +186,35 @@ func parseBool(value string, fallback bool) bool {
 
 func envOrDefault(value, fallback string) string {
 	if value == "" {
+		return fallback
+	}
+	return value
+}
+
+func parseDurationOrDefault(value string, fallback time.Duration) time.Duration {
+	if value == "" {
+		return fallback
+	}
+
+	d, err := time.ParseDuration(value)
+	if err != nil {
+		return fallback
+	}
+
+	return d
+}
+
+func parseIntOrDefault(value string, fallback int) int {
+	if value == "" {
+		return fallback
+	}
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return i
+}
+
+func parseFloatOrDefault(value string, fallback float64) float64 {
+	if value == "" {
+		return fallback
