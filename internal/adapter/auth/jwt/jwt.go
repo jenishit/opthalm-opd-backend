@@ -100,3 +100,37 @@ func (jt *JWTToken) VerifyAccessToken(tokenString string) (*domain.TokenPayload,
 		return nil, domain.ErrInvalidToken
 	}
 	payload.UserId = uid
+	payload.RoleName = roleName
+
+	if cid, ok := claims["clinic_id"].(string); ok && cid != "" {
+		clinicID, err := uuid.Parse(cid)
+		if err != nil {
+			return nil, domain.ErrInvalidToken
+		}
+		payload.ClinicID = clinicID
+	}
+
+	if sid, ok := claims["session_id"].(string); ok && sid != "" {
+		sessID, err := uuid.Parse(sid)
+		if err != nil {
+			return nil, domain.ErrInvalidToken
+		}
+		payload.SessionID = sessID
+	}
+
+	return &payload, nil
+}
+
+func (jt *JWTToken) GenerateRefreshToken() (plain string, hash string, err error) {
+	buf := make([]byte, refreshTokenBytes)
+	if _, err := rand.Read(buf); err != nil {
+		return "", "", fmt.Errorf("generating refresh token: %w", err)
+	}
+	plain = base64.RawURLEncoding.EncodeToString(buf)
+	return plain, jt.HashRefreshToken(plain), nil
+}
+
+func (jt *JWTToken) HashRefreshToken(plain string) string {
+	sum := sha256.Sum256([]byte(plain))
+	return hex.EncodeToString(sum[:])
+}
