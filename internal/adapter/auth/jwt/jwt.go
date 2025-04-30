@@ -66,3 +66,37 @@ func (jt *JWTToken) CreateAccessToken(user *domain.BasicDetails, sessionID uuid.
 
 func (jt *JWTToken) VerifyAccessToken(tokenString string) (*domain.TokenPayload, error) {
 	var payload domain.TokenPayload
+
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(jt.secret), nil
+	})
+
+	if err != nil {
+		var ve *jwt.ValidationError
+		if errors.As(err, &ve) {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				return nil, domain.ErrExpiredToken
+			}
+		}
+		return nil, domain.ErrInvalidToken
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, domain.ErrInvalidToken
+	}
+
+	userID, ok := claims["user_id"].(string)
+	roleName, ok2 := claims["role_name"].(string)
+	if !ok || !ok2 {
+		return nil, domain.ErrInvalidToken
+	}
+
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, domain.ErrInvalidToken
+	}
+	payload.UserId = uid
