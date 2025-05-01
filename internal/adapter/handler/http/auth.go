@@ -96,3 +96,35 @@ func (h *AuthHandler) Refresh(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, res)
+}
+
+// Logout godoc
+//
+//	@Summary		Log out
+//	@Description	Revokes the session backing the given refresh token. The already-issued access token keeps working until it expires (at most TOKEN_DURATION) — access tokens are stateless and not checked against sessions on every request.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		domain.RefreshRequest	true	"Refresh token"
+//	@Success		200		{object}	response
+//	@Router			/auth/logout [post]
+func (h *AuthHandler) Logout(ctx *gin.Context) {
+	var req domain.RefreshRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	if err := h.authService.Logout(ctx, req.RefreshToken); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Logged out successfully"})
+}
+
+// RequestPasswordReset godoc
+//
+//	@Summary		Request a password reset code
