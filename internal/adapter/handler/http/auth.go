@@ -63,3 +63,36 @@ func (h *AuthHandler) Signup(ctx *gin.Context) {
 		validationError(ctx, err)
 		return
 	}
+
+	res, err := h.authService.Signup(ctx, &req)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, res)
+}
+
+// Refresh godoc
+//
+//	@Summary		Refresh an access token
+//	@Description	Exchanges a valid, not-yet-used refresh token for a new access+refresh pair, rotating the old one. Presenting an already-rotated-out refresh token is treated as theft and revokes every session for that user.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		domain.RefreshRequest	true	"Refresh token"
+//	@Success		200		{object}	response{data=domain.LoginResponse}
+//	@Failure		401		{object}	errorResponse	"invalid, expired, or reused refresh token"
+//	@Router			/auth/refresh [post]
+func (h *AuthHandler) Refresh(ctx *gin.Context) {
+	var req domain.RefreshRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	res, err := h.authService.Refresh(ctx, req.RefreshToken)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
