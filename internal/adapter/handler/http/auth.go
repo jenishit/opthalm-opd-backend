@@ -193,3 +193,36 @@ func (h *AuthHandler) RequestEmailVerification(ctx *gin.Context) {
 		return
 	}
 
+	if err := h.authService.RequestEmailVerification(ctx, payload.UserId); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Verification email sent."})
+}
+
+// ConfirmEmailVerification godoc
+//
+//	@Summary		Confirm email verification
+//	@Description	Marks the token's owning user's email as verified.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		domain.ConfirmEmailVerificationRequest	true	"Verification code"
+//	@Success		200		{object}	response
+//	@Failure		401		{object}	errorResponse	"invalid, expired, or already-used code"
+//	@Router			/auth/email/verify/confirm [post]
+func (h *AuthHandler) ConfirmEmailVerification(ctx *gin.Context) {
+	var req domain.ConfirmEmailVerificationRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	if err := h.authService.ConfirmEmailVerification(ctx, req.Token); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Email verified."})
+}
