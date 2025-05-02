@@ -161,3 +161,35 @@ func (h *AuthHandler) RequestPasswordReset(ctx *gin.Context) {
 //	@Param			request	body		domain.ConfirmPasswordResetRequest	true	"Reset code + new password"
 //	@Success		200		{object}	response
 //	@Failure		401		{object}	errorResponse	"invalid, expired, or already-used code"
+//	@Router			/auth/password-reset/confirm [post]
+func (h *AuthHandler) ConfirmPasswordReset(ctx *gin.Context) {
+	var req domain.ConfirmPasswordResetRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	if err := h.authService.ConfirmPasswordReset(ctx, req.Token, req.NewPassword); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Password has been reset. Please log in again."})
+}
+
+// RequestEmailVerification godoc
+//
+//	@Summary		Resend the email verification code
+//	@Description	Sends a fresh verification code (valid 24h) to the authenticated caller's own email address, invalidating any previously issued one.
+//	@Tags			auth
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response
+//	@Failure		401	{object}	errorResponse
+//	@Router			/auth/email/verify/resend [post]
+func (h *AuthHandler) RequestEmailVerification(ctx *gin.Context) {
+	payload, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
