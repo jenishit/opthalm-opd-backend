@@ -128,3 +128,36 @@ func (h *AuthHandler) Logout(ctx *gin.Context) {
 // RequestPasswordReset godoc
 //
 //	@Summary		Request a password reset code
+//	@Description	Always returns the same success response regardless of whether the email belongs to an account, so this endpoint can't be used to enumerate registered emails. If it does, a single-use code valid for 1 hour is emailed.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		domain.RequestPasswordResetRequest	true	"Account email"
+//	@Success		200		{object}	response
+//	@Failure		429		{object}	errorResponse	"rate limited"
+//	@Router			/auth/password-reset/request [post]
+func (h *AuthHandler) RequestPasswordReset(ctx *gin.Context) {
+	var req domain.RequestPasswordResetRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	if err := h.authService.RequestPasswordReset(ctx, req.Email); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "If an account exists for that email, a reset code has been sent."})
+}
+
+// ConfirmPasswordReset godoc
+//
+//	@Summary		Confirm a password reset
+//	@Description	Applies a new password using the code from RequestPasswordReset, then revokes every existing session for that user (forcing re-login everywhere).
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		domain.ConfirmPasswordResetRequest	true	"Reset code + new password"
+//	@Success		200		{object}	response
+//	@Failure		401		{object}	errorResponse	"invalid, expired, or already-used code"
