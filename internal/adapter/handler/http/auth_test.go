@@ -100,3 +100,36 @@ func TestAuth_RefreshReuseDetectionRevokesWholeChain(t *testing.T) {
 	resp := ts.DoData(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
 		"refresh_token": refresh1,
 	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	refresh2 := out.RefreshToken
+
+	// Replay the already-rotated-out refresh1 — this should be treated as
+	// theft and revoke the whole chain, including the still-fresh refresh2.
+	resp = ts.Do(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh1,
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	resp = ts.Do(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh2,
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "reuse detection should have revoked the whole session chain")
+}
+
+func TestAuth_LogoutRevokesSessionSoRefreshFails(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	_, refresh, _ := ts.LoginWithRefresh(t, "refreshuser4@test.local", "ROLE_ADMIN")
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/logout", "", map[string]string{
+		"refresh_token": refresh,
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.Do(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh,
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestAuth_RefreshWithGarbageTokenRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
