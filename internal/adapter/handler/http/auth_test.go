@@ -167,3 +167,37 @@ func TestAuth_ProtectedRouteWithoutToken(t *testing.T) {
 	resp := ts.Do(t, http.MethodGet, "/api/patient", "", nil, nil)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
+
+func TestAuth_ProtectedRouteWithMalformedToken(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	resp := ts.Do(t, http.MethodGet, "/api/patient", "not-a-real-jwt", nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestRBAC_NonAdminRejectedFromBillingInventoryReports(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "doctor@test.local", "ROLE_DOCTOR")
+
+	for _, path := range []string{"/api/billing/invoice", "/api/inventory/items", "/api/reports/dues"} {
+		resp := ts.Do(t, http.MethodGet, path, doctorToken, nil, nil)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "ROLE_DOCTOR should be rejected from %s", path)
+	}
+}
+
+func TestRBAC_NonAdminAllowedOnCalculators(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "doctor2@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodPost, "/api/calculators/spherical-equivalent", doctorToken, map[string]float64{
+		"sphere": 1, "cylinder": 1,
+	}, nil)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestRBAC_AdminAllowedEverywhere(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	adminToken, _ := ts.AdminToken(t)
+
+	for _, path := range []string{"/api/billing/invoice", "/api/inventory/items", "/api/reports/dues"} {
+		resp := ts.Do(t, http.MethodGet, path, adminToken, nil, nil)
