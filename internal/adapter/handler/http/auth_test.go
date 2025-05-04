@@ -66,3 +66,37 @@ func TestAuth_LoginReturnsRefreshToken(t *testing.T) {
 	assert.NotEmpty(t, refresh)
 	assert.NotEqual(t, uuid.Nil, userID)
 }
+
+func TestAuth_RefreshIssuesNewPairAndRotatesOldOne(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	_, refresh1, _ := ts.LoginWithRefresh(t, "refreshuser2@test.local", "ROLE_ADMIN")
+
+	var out struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh1,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.NotEmpty(t, out.AccessToken)
+	require.NotEmpty(t, out.RefreshToken)
+	assert.NotEqual(t, refresh1, out.RefreshToken, "refresh should rotate to a new token")
+
+	// The old (now-rotated-out) refresh token must no longer work on its own.
+	resp = ts.Do(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh1,
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestAuth_RefreshReuseDetectionRevokesWholeChain(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	_, refresh1, _ := ts.LoginWithRefresh(t, "refreshuser3@test.local", "ROLE_ADMIN")
+
+	var out struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": refresh1,
+	}, &out)
