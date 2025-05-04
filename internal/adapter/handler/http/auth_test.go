@@ -201,3 +201,37 @@ func TestRBAC_AdminAllowedEverywhere(t *testing.T) {
 
 	for _, path := range []string{"/api/billing/invoice", "/api/inventory/items", "/api/reports/dues"} {
 		resp := ts.Do(t, http.MethodGet, path, adminToken, nil, nil)
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "ROLE_ADMIN should be allowed on %s", path)
+	}
+}
+
+func TestCORS_PreflightAllowedOrigin(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	req, err := http.NewRequest(http.MethodOptions, ts.Server.URL+"/api/patient", nil)
+	require.NoError(t, err)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", "GET")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+	assert.Equal(t, "http://localhost:3000", resp.Header.Get("Access-Control-Allow-Origin"))
+}
+
+func TestCORS_DisallowedOriginGetsNoCORSHeader(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	req, err := http.NewRequest(http.MethodOptions, ts.Server.URL+"/api/patient", nil)
+	require.NoError(t, err)
+	req.Header.Set("Origin", "http://evil.example.com")
+	req.Header.Set("Access-Control-Request-Method", "GET")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Empty(t, resp.Header.Get("Access-Control-Allow-Origin"))
+}
