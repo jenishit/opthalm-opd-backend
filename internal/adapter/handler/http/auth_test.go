@@ -133,3 +133,37 @@ func TestAuth_LogoutRevokesSessionSoRefreshFails(t *testing.T) {
 
 func TestAuth_RefreshWithGarbageTokenRejected(t *testing.T) {
 	ts := testutil.NewTestServer(t)
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/refresh", "", map[string]string{
+		"refresh_token": "not-a-real-refresh-token",
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestAuth_LoginWrongPassword(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	ts.CreateUser(t, "wrongpw@test.local", "ROLE_ADMIN")
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/login", "", map[string]string{
+		"email":    "wrongpw@test.local",
+		"password": "not-the-real-password",
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestAuth_LoginUnknownEmail(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/login", "", map[string]string{
+		"email":    "nobody@test.local",
+		"password": "whatever",
+	}, nil)
+	assert.NotEqual(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestAuth_ProtectedRouteWithoutToken(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	resp := ts.Do(t, http.MethodGet, "/api/patient", "", nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
