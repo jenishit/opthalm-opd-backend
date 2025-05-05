@@ -63,3 +63,35 @@ func (h *InvoiceHandler) CreateInvoice(ctx *gin.Context) {
 			BundleID:        it.BundleID,
 			ItemType:        domain.ItemType(it.ItemType),
 			Description:     it.Description,
+			InventoryItemID: it.InventoryItemID,
+			Quantity:        it.Quantity,
+			UnitPrice:       it.UnitPrice,
+			DiscountAmount:  it.DiscountAmount,
+		})
+	}
+
+	invoiceDetails, err := h.svc.CreateInvoice(ctx, user.ClinicID, invoice, items)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InvoiceRes(invoiceDetails))
+}
+
+// ListInvoices godoc
+//
+//	@Summary		List invoices
+//	@Tags			billing
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.InvoiceResponse}
+//	@Router			/billing/invoice [get]
+func (h *InvoiceHandler) ListInvoices(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
