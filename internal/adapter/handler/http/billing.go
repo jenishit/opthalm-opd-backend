@@ -95,3 +95,35 @@ func (h *InvoiceHandler) ListInvoices(ctx *gin.Context) {
 
 	user, ok := currentUser(ctx)
 	if !ok {
+		return
+	}
+
+	invoices, err := h.svc.List(ctx, user.ClinicID, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InvoiceResList(invoices))
+}
+
+// SearchInvoices godoc
+//
+//	@Summary		Search invoices
+//	@Tags			billing
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.InvoiceResponse}
+//	@Router			/billing/invoice/search [get]
+func (h *InvoiceHandler) SearchInvoices(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	invoices, err := h.svc.Search(ctx, user.ClinicID, query, limit)
