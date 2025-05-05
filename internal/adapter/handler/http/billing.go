@@ -224,3 +224,35 @@ func (h *InvoiceHandler) RecordPayment(ctx *gin.Context) {
 	}
 
 	var req dto.RecordPaymentReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	payment := &domain.Payment{
+		InvoiceID:   id,
+		Amount:      req.Amount,
+		Method:      domain.PaymentMethod(req.Method),
+		ReferenceNo: req.ReferenceNo,
+		CreatedBy:   user.UserId,
+	}
+
+	p, err := h.svc.RecordPayment(ctx, user.ClinicID, payment)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.PaymentRes(p))
+}
+
+// GetInvoicePDF godoc
+//
+//	@Summary		Download an invoice as PDF
+//	@Tags			billing
+//	@Produce		application/pdf
