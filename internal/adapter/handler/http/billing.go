@@ -159,3 +159,36 @@ func (h *InvoiceHandler) GetInvoiceByID(ctx *gin.Context) {
 
 	invoice, err := h.svc.GetByID(ctx, user.ClinicID, id)
 	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InvoiceRes(invoice))
+}
+
+// UpdateInvoiceStatus godoc
+//
+//	@Summary		Update invoice status
+//	@Tags			billing
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Invoice ID"
+//	@Param			request	body		dto.UpdateInvoiceStatusReq	true	"New status"
+//	@Success		200		{object}	response
+//	@Failure		409		{object}	errorResponse	"invoice already paid"
+//	@Router			/billing/invoice/{id}/status [patch]
+func (h *InvoiceHandler) UpdateInvoiceStatus(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateInvoiceStatusReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
