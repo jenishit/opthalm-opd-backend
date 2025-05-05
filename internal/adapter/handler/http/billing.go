@@ -127,3 +127,35 @@ func (h *InvoiceHandler) SearchInvoices(ctx *gin.Context) {
 	}
 
 	invoices, err := h.svc.Search(ctx, user.ClinicID, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InvoiceResList(invoices))
+}
+
+// GetInvoiceByID godoc
+//
+//	@Summary		Get an invoice
+//	@Tags			billing
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Invoice ID"
+//	@Success		200	{object}	response{data=dto.InvoiceResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/billing/invoice/{id} [get]
+func (h *InvoiceHandler) GetInvoiceByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	invoice, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
