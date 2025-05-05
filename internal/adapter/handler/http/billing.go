@@ -192,3 +192,35 @@ func (h *InvoiceHandler) UpdateInvoiceStatus(ctx *gin.Context) {
 	}
 
 	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	if err := h.svc.UpdateStatus(ctx, user.ClinicID, id, domain.InvoiceStatus(req.Status), user.UserId); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Invoice status updated successfully"})
+}
+
+// RecordPayment godoc
+//
+//	@Summary		Record a payment against an invoice
+//	@Tags			billing
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string					true	"Invoice ID"
+//	@Param			request	body		dto.RecordPaymentReq	true	"Payment details"
+//	@Success		200		{object}	response{data=dto.PaymentResponse}
+//	@Failure		400		{object}	errorResponse	"payment exceeds due amount"
+//	@Router			/billing/invoice/{id}/payments [post]
+func (h *InvoiceHandler) RecordPayment(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.RecordPaymentReq
