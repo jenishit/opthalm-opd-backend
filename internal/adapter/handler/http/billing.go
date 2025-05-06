@@ -385,3 +385,36 @@ func renderInvoicePDF(invoice *domain.InvoiceDetails, clinic *domain.ClinicSetti
 	pdf.Cell(0, 10, clinicName)
 	pdf.Ln(8)
 
+	if clinic != nil {
+		pdf.SetFont("Arial", "", 10)
+		if clinic.Address != nil {
+			pdf.Cell(0, 6, *clinic.Address)
+			pdf.Ln(5)
+		}
+		if clinic.Phone != nil {
+			pdf.Cell(0, 6, "Phone: "+*clinic.Phone)
+			pdf.Ln(5)
+		}
+	}
+	pdf.Ln(4)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(0, 8, "Invoice "+invoice.InvoiceNo)
+	pdf.Ln(6)
+	pdf.SetFont("Arial", "", 10)
+	pdf.Cell(0, 6, "Date: "+invoice.CreatedAt.Format("2006-01-02"))
+	pdf.Ln(5)
+	pdf.Cell(0, 6, "Patient: "+invoice.PatientName+"  ("+invoice.PatientPhone+")")
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 10)
+	pdf.CellFormat(90, 7, "Description", "1", 0, "L", false, 0, "")
+	pdf.CellFormat(20, 7, "Qty", "1", 0, "R", false, 0, "")
+	pdf.CellFormat(30, 7, "Unit Price", "1", 0, "R", false, 0, "")
+	pdf.CellFormat(30, 7, "Line Total", "1", 0, "R", false, 0, "")
+	pdf.Ln(-1)
+
+	pdf.SetFont("Arial", "", 10)
+	for _, item := range invoice.Items {
+		pdf.CellFormat(90, 7, item.Description, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(20, 7, fmt.Sprintf("%d", item.Quantity), "1", 0, "R", false, 0, "")
