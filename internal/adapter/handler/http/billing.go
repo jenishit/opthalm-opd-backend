@@ -321,3 +321,35 @@ func (h *InvoiceHandler) GetInvoiceQR(ctx *gin.Context) {
 	}
 
 	content := fmt.Sprintf("Invoice %s\nTotal: %.2f\nPaid: %.2f\nDue: %.2f",
+		invoice.InvoiceNo, invoice.TotalAmount, invoice.PaidAmount, invoice.DueAmount)
+
+	png, err := qrcode.Encode(content, qrcode.Medium, 256)
+	if err != nil {
+		handleError(ctx, domain.ErrInternal)
+		return
+	}
+
+	ctx.Data(200, "image/png", png)
+}
+
+// GetInvoiceWhatsAppLink godoc
+//
+//	@Summary		Get a wa.me link to share an invoice summary
+//	@Tags			billing
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Invoice ID"
+//	@Success		200	{object}	response{data=object{link=string}}
+//	@Router			/billing/invoice/{id}/whatsapp-link [get]
+func (h *InvoiceHandler) GetInvoiceWhatsAppLink(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
