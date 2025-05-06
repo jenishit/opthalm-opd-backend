@@ -418,3 +418,35 @@ func renderInvoicePDF(invoice *domain.InvoiceDetails, clinic *domain.ClinicSetti
 	for _, item := range invoice.Items {
 		pdf.CellFormat(90, 7, item.Description, "1", 0, "L", false, 0, "")
 		pdf.CellFormat(20, 7, fmt.Sprintf("%d", item.Quantity), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(30, 7, fmt.Sprintf("%.2f", item.UnitPrice), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(30, 7, fmt.Sprintf("%.2f", item.LineTotal), "1", 0, "R", false, 0, "")
+		pdf.Ln(-1)
+	}
+	pdf.Ln(4)
+
+	pdf.SetFont("Arial", "B", 10)
+	totalsLine := func(label string, value float64) {
+		pdf.CellFormat(140, 7, "", "", 0, "", false, 0, "")
+		pdf.CellFormat(30, 7, label, "", 0, "R", false, 0, "")
+		pdf.CellFormat(30, 7, fmt.Sprintf("%.2f", value), "", 0, "R", false, 0, "")
+		pdf.Ln(-1)
+	}
+	totalsLine("Subtotal", invoice.Subtotal)
+	totalsLine("Discount", invoice.DiscountAmount)
+	totalsLine("Tax", invoice.TaxAmount)
+	totalsLine("Total", invoice.TotalAmount)
+	totalsLine("Paid", invoice.PaidAmount)
+	totalsLine("Due", invoice.DueAmount)
+
+	if clinic != nil && clinic.ReportFooter != nil {
+		pdf.Ln(10)
+		pdf.SetFont("Arial", "I", 8)
+		pdf.MultiCell(0, 5, *clinic.ReportFooter, "", "L", false)
+	}
+
+	var buf bytes.Buffer
+	if err := pdf.Output(&buf); err != nil {
+		return nil, err
+	}
+	return &buf, nil
+}
