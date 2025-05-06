@@ -256,3 +256,36 @@ func (h *InvoiceHandler) RecordPayment(ctx *gin.Context) {
 //	@Summary		Download an invoice as PDF
 //	@Tags			billing
 //	@Produce		application/pdf
+//	@Security		BearerAuth
+//	@Param			id	path	string	true	"Invoice ID"
+//	@Success		200	{file}	binary
+//	@Router			/billing/invoice/{id}/pdf [get]
+func (h *InvoiceHandler) GetInvoicePDF(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	invoice, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	// Branding is best-effort: an unconfigured clinic still gets a usable invoice.
+	var clinic *domain.ClinicSettings
+	if c, err := h.clinicSvc.GetClinicByClinicID(ctx, user.ClinicID); err == nil {
+		clinic = c
+	}
+
+	buf, err := renderInvoicePDF(invoice, clinic)
+	if err != nil {
+		handleError(ctx, domain.ErrInternal)
+		return
+	}
