@@ -353,3 +353,35 @@ func (h *InvoiceHandler) GetInvoiceWhatsAppLink(ctx *gin.Context) {
 		return
 	}
 
+	invoice, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	text := fmt.Sprintf(
+		"Invoice %s\nTotal: %.2f\nPaid: %.2f\nDue: %.2f\nThank you for your visit!",
+		invoice.InvoiceNo, invoice.TotalAmount, invoice.PaidAmount, invoice.DueAmount,
+	)
+
+	// PatientPhone is stored as entered at registration; the frontend/operator
+	// is responsible for making sure it's in a WhatsApp-resolvable format
+	// (wa.me tolerates a leading '+' and digits, and falls back to a contact
+	// picker if the number can't be resolved).
+	link := fmt.Sprintf("https://wa.me/%s?text=%s", url.QueryEscape(invoice.PatientPhone), url.QueryEscape(text))
+
+	handleSuccess(ctx, gin.H{"link": link})
+}
+
+func renderInvoicePDF(invoice *domain.InvoiceDetails, clinic *domain.ClinicSettings) (*bytes.Buffer, error) {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+
+	pdf.SetFont("Arial", "B", 16)
+	clinicName := "Invoice"
+	if clinic != nil && clinic.ClinicName != "" {
+		clinicName = clinic.ClinicName
+	}
+	pdf.Cell(0, 10, clinicName)
+	pdf.Ln(8)
+
