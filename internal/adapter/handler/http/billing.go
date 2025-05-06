@@ -289,3 +289,35 @@ func (h *InvoiceHandler) GetInvoicePDF(ctx *gin.Context) {
 		handleError(ctx, domain.ErrInternal)
 		return
 	}
+
+	ctx.Data(200, "application/pdf", buf.Bytes())
+}
+
+// GetInvoiceQR godoc
+//
+//	@Summary		Get an invoice summary as a QR code
+//	@Tags			billing
+//	@Produce		image/png
+//	@Security		BearerAuth
+//	@Param			id	path	string	true	"Invoice ID"
+//	@Success		200	{file}	binary
+//	@Router			/billing/invoice/{id}/qr [get]
+func (h *InvoiceHandler) GetInvoiceQR(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	invoice, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	content := fmt.Sprintf("Invoice %s\nTotal: %.2f\nPaid: %.2f\nDue: %.2f",
