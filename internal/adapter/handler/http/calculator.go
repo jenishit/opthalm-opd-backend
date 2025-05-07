@@ -58,3 +58,32 @@ func (h *CalculatorHandler) SphericalEquivalent(ctx *gin.Context) {
 	handleSuccess(ctx, dto.ScalarResultRes{Result: h.svc.SphericalEquivalent(req.Sphere, req.Cylinder)})
 }
 
+// NearAdd godoc
+//
+//	@Summary		Compute near-add power
+//	@Tags			calculators
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.NearAddReq	true	"Distance sphere + add power"
+//	@Success		200		{object}	response{data=dto.ScalarResultRes}
+//	@Router			/calculators/near-add [post]
+func (h *CalculatorHandler) NearAdd(ctx *gin.Context) {
+	var req dto.NearAddReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.ScalarResultRes{Result: h.svc.NearAdd(req.DistanceSphere, req.AddPower)})
+}
+
+// VertexDistance godoc
+//
+//	@Summary		Adjust power for a change in vertex distance
+//	@Tags			calculators
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.VertexDistanceReq	true	"Power + from/to vertex distance (mm)"
+//	@Success		200		{object}	response{data=dto.ScalarResultRes}
