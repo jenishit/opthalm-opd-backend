@@ -132,3 +132,37 @@ func TestBilling_PDF_QR_WhatsAppLink(t *testing.T) {
 		"patient_id": patientID,
 		"items": []map[string]any{
 			{"item_type": "service", "description": "Consultation", "quantity": 1, "unit_price": 500},
+		},
+	}, &invoice)
+
+	resp := ts.Do(t, http.MethodGet, "/api/billing/invoice/"+invoice.ID.String()+"/pdf", token, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "application/pdf", resp.Header.Get("Content-Type"))
+
+	resp = ts.Do(t, http.MethodGet, "/api/billing/invoice/"+invoice.ID.String()+"/qr", token, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "image/png", resp.Header.Get("Content-Type"))
+
+	var link struct {
+		Link string `json:"link"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/billing/invoice/"+invoice.ID.String()+"/whatsapp-link", token, nil, &link)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Contains(t, link.Link, "wa.me")
+	assert.Contains(t, link.Link, "9800000022")
+}
+
+func TestBilling_DeductMoreThanOnHandFails(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	patientID := ts.CreatePatient(t, token, "Billing Patient 4", "9800000023")
+	itemID := createInventoryItem(t, ts, token, "FRM-BILL-2", 1)
+
+	resp := ts.Do(t, http.MethodPost, "/api/billing/invoice", token, map[string]any{
+		"patient_id": patientID,
+		"items": []map[string]any{
+			{"item_type": "frame", "description": "Test Frame", "inventory_item_id": itemID, "quantity": 5, "unit_price": 2000},
+		},
+	}, nil)
+	assert.Equal(t, http.StatusConflict, resp.StatusCode, "should reject when quantity exceeds stock on hand")
+}
