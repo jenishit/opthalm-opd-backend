@@ -99,3 +99,36 @@ func TestBilling_PartialPaymentThenOverpayRejected(t *testing.T) {
 	}, nil)
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
+	// Pay off the remaining due exactly.
+	resp = ts.Do(t, http.MethodPost, "/api/billing/invoice/"+invoice.ID.String()+"/payments", token, map[string]any{
+		"amount": 600, "method": "cash",
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var afterFull struct {
+		PaymentStatus string `json:"payment_status"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/billing/invoice/"+invoice.ID.String(), token, nil, &afterFull)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "paid", afterFull.PaymentStatus)
+
+	// Paying an already-fully-paid invoice is rejected.
+	resp = ts.Do(t, http.MethodPost, "/api/billing/invoice/"+invoice.ID.String()+"/payments", token, map[string]any{
+		"amount": 1, "method": "cash",
+	}, nil)
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+}
+
+func TestBilling_PDF_QR_WhatsAppLink(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	patientID := ts.CreatePatient(t, token, "Billing Patient 3", "9800000022")
+
+	var invoice struct {
+		ID        uuid.UUID `json:"id"`
+		InvoiceNo string    `json:"invoice_no"`
+	}
+	ts.DoData(t, http.MethodPost, "/api/billing/invoice", token, map[string]any{
+		"patient_id": patientID,
+		"items": []map[string]any{
+			{"item_type": "service", "description": "Consultation", "quantity": 1, "unit_price": 500},
