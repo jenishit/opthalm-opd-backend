@@ -65,3 +65,37 @@ func TestBilling_PartialPaymentThenOverpayRejected(t *testing.T) {
 	token, _ := ts.AdminToken(t)
 	patientID := ts.CreatePatient(t, token, "Billing Patient 2", "9800000021")
 
+	var invoice struct {
+		ID uuid.UUID `json:"id"`
+	}
+	ts.DoData(t, http.MethodPost, "/api/billing/invoice", token, map[string]any{
+		"patient_id": patientID,
+		"items": []map[string]any{
+			{"item_type": "service", "description": "Consultation", "quantity": 1, "unit_price": 1000},
+		},
+	}, &invoice)
+
+	var paid struct {
+		Amount float64 `json:"amount"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/billing/invoice/"+invoice.ID.String()+"/payments", token, map[string]any{
+		"amount": 400, "method": "cash",
+	}, &paid)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, float64(400), paid.Amount)
+
+	var afterPartial struct {
+		DueAmount     float64 `json:"due_amount"`
+		PaymentStatus string  `json:"payment_status"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/billing/invoice/"+invoice.ID.String(), token, nil, &afterPartial)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, float64(600), afterPartial.DueAmount)
+	assert.Equal(t, "partial", afterPartial.PaymentStatus)
+
+	// Overpay: due is 600, try to pay 9999.
+	resp = ts.Do(t, http.MethodPost, "/api/billing/invoice/"+invoice.ID.String()+"/payments", token, map[string]any{
+		"amount": 9999, "method": "cash",
+	}, nil)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
