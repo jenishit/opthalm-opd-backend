@@ -55,3 +55,32 @@ func TestCalculator_NearAdd(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, 0.5, out.Result)
 }
+
+func TestCalculator_VertexDistance(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+
+	var out struct {
+		Result float64 `json:"result"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/calculators/vertex-distance", token, map[string]any{
+		"power": 10.0, "from_distance_mm": 12.0, "to_distance_mm": 0.0,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	// F' = F / (1 - d*F), d = (0-12)/1000 = -0.012 -> 10 / 1.12
+	assert.InDelta(t, 8.9286, out.Result, 0.001)
+}
+
+func TestCalculator_TelescopeFOV(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+
+	var out struct {
+		Result float64 `json:"result"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/calculators/telescope-fov", token, map[string]any{
+		"true_fov_degrees": 5.0, "magnification": 8.0,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 40.0, out.Result)
+}
