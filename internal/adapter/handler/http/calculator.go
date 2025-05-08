@@ -87,3 +87,33 @@ func (h *CalculatorHandler) NearAdd(ctx *gin.Context) {
 //	@Security		BearerAuth
 //	@Param			request	body		dto.VertexDistanceReq	true	"Power + from/to vertex distance (mm)"
 //	@Success		200		{object}	response{data=dto.ScalarResultRes}
+//	@Router			/calculators/vertex-distance [post]
+func (h *CalculatorHandler) VertexDistance(ctx *gin.Context) {
+	var req dto.VertexDistanceReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.ScalarResultRes{Result: h.svc.VertexDistanceAdjust(req.Power, req.FromDistanceMM, req.ToDistanceMM)})
+}
+
+// TelescopeFOV godoc
+//
+//	@Summary		Compute apparent field of view for a telescope/loupe
+//	@Tags			calculators
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.TelescopeFOVReq	true	"True FOV (degrees) + magnification"
+//	@Success		200		{object}	response{data=dto.ScalarResultRes}
+//	@Router			/calculators/telescope-fov [post]
+func (h *CalculatorHandler) TelescopeFOV(ctx *gin.Context) {
+	var req dto.TelescopeFOVReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.ScalarResultRes{Result: h.svc.TelescopeFOV(req.TrueFOVDegrees, req.Magnification)})
+}
