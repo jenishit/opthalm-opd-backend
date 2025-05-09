@@ -61,3 +61,35 @@ func (h *CatalogHandler) ListMedicines(ctx *gin.Context) {
 //	@Tags			catalog
 //	@Produce		json
 //	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.MedicineResponse}
+//	@Router			/admin/catalog/medicines/search [get]
+func (h *CatalogHandler) SearchMedicines(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	items, err := h.medicineSvc.Search(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.MedicineResList(items))
+}
+
+// GetMedicineByID godoc
+//
+//	@Summary		Get a medicine
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Medicine ID"
+//	@Success		200	{object}	response{data=dto.MedicineResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/medicines/{id} [get]
+func (h *CatalogHandler) GetMedicineByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
