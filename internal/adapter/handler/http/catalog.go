@@ -30,3 +30,34 @@ func NewCatalogHandler(
 
 // ─── Medicine ─────────────────────────────────────────────────────────────────
 
+// ListMedicines godoc
+//
+//	@Summary		List medicines
+//	@Description	Admin-only. Medicines are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.MedicineResponse}
+//	@Router			/admin/catalog/medicines [get]
+func (h *CatalogHandler) ListMedicines(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	items, err := h.medicineSvc.List(ctx, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.MedicineResList(items))
+}
+
+// SearchMedicines godoc
+//
+//	@Summary		Search medicines
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
