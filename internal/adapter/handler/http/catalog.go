@@ -93,3 +93,34 @@ func (h *CatalogHandler) GetMedicineByID(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	item, err := h.medicineSvc.GetByID(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.MedicineRes(item))
+}
+
+// UpdateMedicine godoc
+//
+//	@Summary		Update a medicine
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string					true	"Medicine ID"
+//	@Param			request	body		dto.UpdateMedicineReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/medicines/{id} [patch]
+func (h *CatalogHandler) UpdateMedicine(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
