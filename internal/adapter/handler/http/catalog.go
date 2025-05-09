@@ -124,3 +124,35 @@ func (h *CatalogHandler) UpdateMedicine(ctx *gin.Context) {
 		return
 	}
 
+	var req dto.UpdateMedicineReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	medicineName := ""
+	if req.MedicineName != nil {
+		medicineName = *req.MedicineName
+	}
+
+	item := &domain.Medicine{
+		ID:           id,
+		MedicineName: medicineName,
+		BrandName:    req.BrandName,
+		Strength:     req.Strength,
+		Form:         req.Form,
+	}
+
+	err = h.medicineSvc.Update(ctx, item)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Medicine updated successfully"})
+}
+
+// DeleteMedicine godoc
+//
+//	@Summary		Soft-delete a medicine
+//	@Description	Admin-only.
