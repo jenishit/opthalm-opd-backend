@@ -156,3 +156,35 @@ func (h *CatalogHandler) UpdateMedicine(ctx *gin.Context) {
 //
 //	@Summary		Soft-delete a medicine
 //	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Medicine ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/medicines/{id}/delete [patch]
+func (h *CatalogHandler) DeleteMedicine(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	err = h.medicineSvc.Delete(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Medicine deleted successfully"})
+}
+
+// ─── Diagnosis Catalog ────────────────────────────────────────────────────────
+
+// ListDiagnoses godoc
+//
+//	@Summary		List diagnoses
+//	@Description	Admin-only. Diagnoses are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
