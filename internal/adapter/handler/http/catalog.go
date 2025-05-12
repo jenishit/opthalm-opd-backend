@@ -346,3 +346,34 @@ func (h *CatalogHandler) ListConditions(ctx *gin.Context) {
 	items, err := h.conditionSvc.List(ctx, limit, offset)
 	if err != nil {
 		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.HistoryConditionResList(items))
+}
+
+// SearchConditions godoc
+//
+//	@Summary		Search history conditions
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.HistoryConditionResponse}
+//	@Router			/admin/catalog/conditions/search [get]
+func (h *CatalogHandler) SearchConditions(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	items, err := h.conditionSvc.Search(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.HistoryConditionResList(items))
+}
+
+// GetConditionByID godoc
