@@ -314,3 +314,35 @@ func (h *CatalogHandler) DeleteDiagnosis(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	err = h.diagnosisSvc.Delete(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Diagnosis deleted successfully"})
+}
+
+// ─── History Condition ────────────────────────────────────────────────────────
+
+// ListConditions godoc
+//
+//	@Summary		List history conditions
+//	@Description	Admin-only. History conditions are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.HistoryConditionResponse}
+//	@Router			/admin/catalog/conditions [get]
+func (h *CatalogHandler) ListConditions(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	items, err := h.conditionSvc.List(ctx, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
