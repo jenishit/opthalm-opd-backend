@@ -282,3 +282,35 @@ func (h *CatalogHandler) UpdateDiagnosis(ctx *gin.Context) {
 
 	name := ""
 	if req.Name != nil {
+		name = *req.Name
+	}
+
+	item := &domain.DiagnosisCatalog{
+		ID:        id,
+		Name:      name,
+		Icd10Code: req.Icd10Code,
+	}
+
+	err = h.diagnosisSvc.Update(ctx, item)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Diagnosis updated successfully"})
+}
+
+// DeleteDiagnosis godoc
+//
+//	@Summary		Soft-delete a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Diagnosis ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/diagnoses/{id}/delete [patch]
+func (h *CatalogHandler) DeleteDiagnosis(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
