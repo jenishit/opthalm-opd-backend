@@ -377,3 +377,35 @@ func (h *CatalogHandler) SearchConditions(ctx *gin.Context) {
 }
 
 // GetConditionByID godoc
+//
+//	@Summary		Get a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Condition ID"
+//	@Success		200	{object}	response{data=dto.HistoryConditionResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/conditions/{id} [get]
+func (h *CatalogHandler) GetConditionByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	item, err := h.conditionSvc.GetByID(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.HistoryConditionRes(item))
+}
+
+// UpdateCondition godoc
+//
+//	@Summary		Update a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
