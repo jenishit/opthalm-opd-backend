@@ -251,3 +251,34 @@ func (h *CatalogHandler) GetDiagnosisByID(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, dto.DiagnosisCatalogRes(item))
+}
+
+// UpdateDiagnosis godoc
+//
+//	@Summary		Update a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Diagnosis ID"
+//	@Param			request	body		dto.UpdateDiagnosisCatalogReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/diagnoses/{id} [patch]
+func (h *CatalogHandler) UpdateDiagnosis(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateDiagnosisCatalogReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	name := ""
+	if req.Name != nil {
