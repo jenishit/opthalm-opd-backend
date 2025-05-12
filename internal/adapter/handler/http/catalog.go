@@ -219,3 +219,35 @@ func (h *CatalogHandler) SearchDiagnoses(ctx *gin.Context) {
 	query := ctx.Query("query")
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 
+	items, err := h.diagnosisSvc.Search(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.DiagnosisCatalogResList(items))
+}
+
+// GetDiagnosisByID godoc
+//
+//	@Summary		Get a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Diagnosis ID"
+//	@Success		200	{object}	response{data=dto.DiagnosisCatalogResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/diagnoses/{id} [get]
+func (h *CatalogHandler) GetDiagnosisByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	item, err := h.diagnosisSvc.GetByID(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
