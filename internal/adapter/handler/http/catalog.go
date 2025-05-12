@@ -188,3 +188,34 @@ func (h *CatalogHandler) DeleteMedicine(ctx *gin.Context) {
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.DiagnosisCatalogResponse}
+//	@Router			/admin/catalog/diagnoses [get]
+func (h *CatalogHandler) ListDiagnoses(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	items, err := h.diagnosisSvc.List(ctx, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.DiagnosisCatalogResList(items))
+}
+
+// SearchDiagnoses godoc
+//
+//	@Summary		Search diagnoses
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.DiagnosisCatalogResponse}
+//	@Router			/admin/catalog/diagnoses/search [get]
+func (h *CatalogHandler) SearchDiagnoses(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
