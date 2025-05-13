@@ -54,3 +54,31 @@ func TestCatalog_MedicinesListSearchGetUpdateDelete(t *testing.T) {
 	resp = ts.Do(t, http.MethodPatch, "/api/admin/catalog/medicines/"+medID.String(), token, map[string]any{
 		"medicine_name": "Timolol Maleate",
 	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/catalog/medicines/"+medID.String(), token, nil, &got)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "Timolol Maleate", got.MedicineName)
+
+	resp = ts.Do(t, http.MethodPatch, "/api/admin/catalog/medicines/"+medID.String()+"/delete", token, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.Do(t, http.MethodGet, "/api/admin/catalog/medicines/"+medID.String(), token, nil, nil)
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestCatalog_GetNonexistentMedicineReturns404(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+
+	resp := ts.Do(t, http.MethodGet, "/api/admin/catalog/medicines/"+uuid.New().String(), token, nil, nil)
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestCatalog_NonAdminRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "cataloguser@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodGet, "/api/admin/catalog/medicines", doctorToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
