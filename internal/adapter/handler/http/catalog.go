@@ -440,3 +440,35 @@ func (h *CatalogHandler) UpdateCondition(ctx *gin.Context) {
 
 	err = h.conditionSvc.Update(ctx, item)
 	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Condition updated successfully"})
+}
+
+// DeleteCondition godoc
+//
+//	@Summary		Soft-delete a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Condition ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/conditions/{id}/delete [patch]
+func (h *CatalogHandler) DeleteCondition(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	err = h.conditionSvc.Delete(ctx, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Condition deleted successfully"})
+}
