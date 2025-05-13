@@ -409,3 +409,34 @@ func (h *CatalogHandler) GetConditionByID(ctx *gin.Context) {
 //	@Description	Admin-only.
 //	@Tags			catalog
 //	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Condition ID"
+//	@Param			request	body		dto.UpdateHistoryConditionReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/conditions/{id} [patch]
+func (h *CatalogHandler) UpdateCondition(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateHistoryConditionReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	name := ""
+	if req.Name != nil {
+		name = *req.Name
+	}
+
+	item := &domain.HistoryCondition{
+		ID:   id,
+		Name: name,
+	}
+
+	err = h.conditionSvc.Update(ctx, item)
+	if err != nil {
