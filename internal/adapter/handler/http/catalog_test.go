@@ -26,3 +26,31 @@ func seedMedicine(t *testing.T, ts *testutil.TestServer, name string) uuid.UUID 
 
 func TestCatalog_MedicinesListSearchGetUpdateDelete(t *testing.T) {
 	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	medID := seedMedicine(t, ts, "Timolol")
+
+	var list []struct {
+		ID uuid.UUID `json:"id"`
+	}
+	resp := ts.DoData(t, http.MethodGet, "/api/admin/catalog/medicines", token, nil, &list)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Len(t, list, 1)
+
+	var search []struct {
+		ID uuid.UUID `json:"id"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/catalog/medicines/search?query=Timo", token, nil, &search)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Len(t, search, 1)
+
+	var got struct {
+		ID           uuid.UUID `json:"id"`
+		MedicineName string    `json:"medicine_name"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/catalog/medicines/"+medID.String(), token, nil, &got)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "Timolol", got.MedicineName)
+
+	resp = ts.Do(t, http.MethodPatch, "/api/admin/catalog/medicines/"+medID.String(), token, map[string]any{
+		"medicine_name": "Timolol Maleate",
+	}, nil)
