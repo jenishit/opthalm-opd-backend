@@ -88,3 +88,32 @@ func (ch *ClinicHandler) GetClinicByID(ctx *gin.Context) {
 		return
 	}
 
+	clinic, err := ch.svc.GetClinicByClinicID(ctx, clinicUUID)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	handleSuccess(ctx, dto.ClinicsResponse(clinic))
+}
+
+// UpdateClinic godoc
+//
+//	@Summary		Update clinic settings
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Clinic ID"
+//	@Param			request	body		dto.ClinicRequest	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/clinic/{id} [patch]
+func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
+	clinicID := ctx.Param("id")
+	clinicUUID, err := uuid.Parse(clinicID)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
