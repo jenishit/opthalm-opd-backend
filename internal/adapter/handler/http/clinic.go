@@ -28,3 +28,33 @@ func NewClinicHandler(svc port.ClinicService) *ClinicHandler {
 //	@Security		BearerAuth
 //	@Param			request	body		dto.ClinicRequest	true	"Clinic details"
 //	@Success		200		{object}	response{data=dto.ClinicResponse}
+//	@Router			/admin/clinic [post]
+func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
+	var req dto.ClinicRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	payload, exists := ctx.Get(authorizationPayloadKey)
+	if !exists {
+		validationError(ctx, domain.ErrEmptyAuthorizationHeader)
+		return
+	}
+
+	userPayload, ok := payload.(*domain.TokenPayload)
+	if !ok {
+		validationError(ctx, domain.ErrInvalidAuthorizationHeader)
+		return
+	}
+
+	clinic := &domain.ClinicSettings{
+		ClinicName:     req.ClinicName,
+		Tagline:        &req.Tagline,
+		Address:        &req.Address,
+		Phone:          &req.Phone,
+		Email:          &req.Email,
+		RegistrationNo: &req.RegistrationNo,
+		ReportFooter:   &req.ReportFooter,
+		UpdatedBy:      userPayload.UserId,
