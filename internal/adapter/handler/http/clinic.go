@@ -58,3 +58,33 @@ func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
 		RegistrationNo: &req.RegistrationNo,
 		ReportFooter:   &req.ReportFooter,
 		UpdatedBy:      userPayload.UserId,
+	}
+
+	s, err := ch.svc.InsertClinic(ctx, clinic)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	handleSuccess(ctx, dto.ClinicsResponse(s))
+}
+
+// GetClinicByID godoc
+//
+//	@Summary		Get clinic settings
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Clinic ID"
+//	@Success		200	{object}	response{data=dto.ClinicResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/clinic/{id} [get]
+func (ch *ClinicHandler) GetClinicByID(ctx *gin.Context) {
+	clinicID := ctx.Param("id")
+	clinicUUID, err := uuid.Parse(clinicID)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
