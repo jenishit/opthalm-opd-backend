@@ -31,3 +31,36 @@ func TestClinic_InsertGetAllGetByIDUpdate(t *testing.T) {
 
 	var all []struct {
 		ID uuid.UUID `json:"id"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/clinic", token, nil, &all)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	// GetAllClinics is a deliberately global, unscoped listing (a
+	// superadmin-style operation) — the harness's own primary test clinic is
+	// already in there alongside the one just created.
+	assert.GreaterOrEqual(t, len(all), 2)
+
+	var got struct {
+		ClinicName string `json:"clinic_name"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/clinic/"+created.ID.String(), token, nil, &got)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "Test Eye Clinic", got.ClinicName)
+
+	resp = ts.Do(t, http.MethodPatch, "/api/admin/clinic/"+created.ID.String(), token, map[string]any{
+		"clinic_name":     "Renamed Clinic",
+		"registration_no": "REG-001",
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/clinic/"+created.ID.String(), token, nil, &got)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "Renamed Clinic", got.ClinicName)
+}
+
+func TestClinic_NonAdminRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "clinicuser@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodGet, "/api/admin/clinic", doctorToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
