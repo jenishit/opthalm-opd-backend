@@ -147,3 +147,33 @@ func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
 		UpdatedBy:      userPayload.UserId,
 	}
 
+	err = ch.svc.UpdateClinic(ctx, clinic)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	handleSuccess(ctx, gin.H{"message": "Clinic settings updated successfully"})
+}
+
+// GetAllClinics godoc
+//
+//	@Summary		List clinics
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.ClinicResponse}
+//	@Router			/admin/clinic [get]
+func (ch *ClinicHandler) GetAllClinics(ctx *gin.Context) {
+
+	res, err := ch.svc.GetAllClinics(ctx)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.ClinicsResponses(res)
+
+	handleSuccess(ctx, rsp)
+}
