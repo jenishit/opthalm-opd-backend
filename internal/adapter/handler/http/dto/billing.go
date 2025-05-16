@@ -96,3 +96,52 @@ func InvoiceItemRes(it *domain.InvoiceItem) InvoiceItemResponse {
 	}
 }
 
+func PaymentRes(p *domain.Payment) PaymentResponse {
+	return PaymentResponse{
+		ID:          p.ID,
+		InvoiceID:   p.InvoiceID,
+		Amount:      p.Amount,
+		Method:      string(p.Method),
+		ReferenceNo: p.ReferenceNo,
+		PaidAt:      p.PaidAt,
+		CreatedAt:   p.CreatedAt,
+	}
+}
+
+func InvoiceRes(d *domain.InvoiceDetails) *InvoiceResponse {
+	res := &InvoiceResponse{
+		ID:             d.ID,
+		InvoiceNo:      d.InvoiceNo,
+		PatientID:      d.PatientID,
+		PatientName:    d.PatientName,
+		PatientPhone:   d.PatientPhone,
+		VisitID:        d.VisitID,
+		Status:         string(d.Status),
+		Subtotal:       d.Subtotal,
+		DiscountAmount: d.DiscountAmount,
+		TaxAmount:      d.TaxAmount,
+		TotalAmount:    d.TotalAmount,
+		PaidAmount:     d.PaidAmount,
+		DueAmount:      d.DueAmount,
+		PaymentStatus:  string(d.PaymentStatus),
+		CreatedBy:      d.CreatedBy,
+		UpdatedBy:      d.UpdatedBy,
+		CreatedAt:      d.CreatedAt,
+		UpdatedAt:      d.UpdatedAt,
+	}
+	for _, it := range d.Items {
+		res.Items = append(res.Items, InvoiceItemRes(it))
+	}
+	for _, p := range d.Payments {
+		res.Payments = append(res.Payments, PaymentRes(p))
+	}
+	return res
+}
+
+func InvoiceResList(ds []*domain.InvoiceDetails) []*InvoiceResponse {
+	items := make([]*InvoiceResponse, 0, len(ds))
+	for _, d := range ds {
+		items = append(items, InvoiceRes(d))
+	}
+	return items
+}
