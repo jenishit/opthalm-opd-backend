@@ -47,3 +47,52 @@ type InvoiceItemResponse struct {
 	LineTotal       float64    `json:"line_total"`
 	CreatedAt       time.Time  `json:"created_at"`
 }
+
+type PaymentResponse struct {
+	ID          uuid.UUID `json:"id"`
+	InvoiceID   uuid.UUID `json:"invoice_id"`
+	Amount      float64   `json:"amount"`
+	Method      string    `json:"method"`
+	ReferenceNo *string   `json:"reference_no"`
+	PaidAt      time.Time `json:"paid_at"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type InvoiceResponse struct {
+	ID             uuid.UUID             `json:"id"`
+	InvoiceNo      string                `json:"invoice_no"`
+	PatientID      uuid.UUID             `json:"patient_id"`
+	PatientName    string                `json:"patient_name"`
+	PatientPhone   string                `json:"patient_phone"`
+	VisitID        *uuid.UUID            `json:"visit_id"`
+	Status         string                `json:"status"`
+	Subtotal       float64               `json:"subtotal"`
+	DiscountAmount float64               `json:"discount_amount"`
+	TaxAmount      float64               `json:"tax_amount"`
+	TotalAmount    float64               `json:"total_amount"`
+	PaidAmount     float64               `json:"paid_amount"`
+	DueAmount      float64               `json:"due_amount"`
+	PaymentStatus  string                `json:"payment_status"`
+	CreatedBy      uuid.UUID             `json:"created_by"`
+	UpdatedBy      uuid.UUID             `json:"updated_by"`
+	CreatedAt      time.Time             `json:"created_at"`
+	UpdatedAt      time.Time             `json:"updated_at"`
+	Items          []InvoiceItemResponse `json:"items,omitempty"`
+	Payments       []PaymentResponse     `json:"payments,omitempty"`
+}
+
+func InvoiceItemRes(it *domain.InvoiceItem) InvoiceItemResponse {
+	return InvoiceItemResponse{
+		ID:              it.ID,
+		BundleID:        it.BundleID,
+		ItemType:        string(it.ItemType),
+		Description:     it.Description,
+		InventoryItemID: it.InventoryItemID,
+		Quantity:        it.Quantity,
+		UnitPrice:       it.UnitPrice,
+		DiscountAmount:  it.DiscountAmount,
+		LineTotal:       it.LineTotal,
+		CreatedAt:       it.CreatedAt,
+	}
+}
+
