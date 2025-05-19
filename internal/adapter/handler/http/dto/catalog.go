@@ -35,3 +35,39 @@ func MedicineRes(m *domain.Medicine) *MedicineResponse {
 		Form:         m.Form,
 		CreatedAt:    m.CreatedAt,
 		UpdatedAt:    m.UpdatedAt,
+	}
+}
+
+func MedicineResList(ms []*domain.Medicine) []*MedicineResponse {
+	items := make([]*MedicineResponse, 0, len(ms))
+	for _, m := range ms {
+		items = append(items, MedicineRes(m))
+	}
+	return items
+}
+
+// ─── Diagnosis Catalog ────────────────────────────────────────────────────────
+
+type UpdateDiagnosisCatalogReq struct {
+	Name      *string `json:"name"`
+	Icd10Code *string `json:"icd10_code"`
+}
+
+type DiagnosisCatalogResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Icd10Code *string   `json:"icd10_code"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func DiagnosisCatalogRes(d *domain.DiagnosisCatalog) *DiagnosisCatalogResponse {
+	return &DiagnosisCatalogResponse{
+		ID:        d.ID,
+		Icd10Code: d.Icd10Code,
+		Name:      d.Name,
+		CreatedAt: d.CreatedAt,
+		UpdatedAt: d.UpdatedAt,
+	}
+}
+
