@@ -27,3 +27,32 @@ type ClinicResponse struct {
 	UpdatedBy      uuid.UUID `json:"updated_by"`
 }
 
+func ClinicsResponse(c *domain.ClinicSettings) *ClinicResponse {
+	return &ClinicResponse{
+		ID:             c.ID,
+		ClinicName:     c.ClinicName,
+		Tagline:        deref(c.Tagline),
+		Address:        deref(c.Address),
+		Phone:          deref(c.Phone),
+		Email:          deref(c.Email),
+		RegistrationNo: deref(c.RegistrationNo),
+		ReportFooter:   deref(c.ReportFooter),
+		UpdatedBy:      c.UpdatedBy,
+	}
+}
+
+func ClinicsResponses(c []*domain.ClinicSettings) []*ClinicResponse {
+	clinics := make([]*ClinicResponse, 0, len(c))
+
+	for _, clinic := range c {
+		clinics = append(clinics, ClinicsResponse(clinic))
+	}
+	return clinics
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
