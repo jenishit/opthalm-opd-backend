@@ -71,3 +71,40 @@ func DiagnosisCatalogRes(d *domain.DiagnosisCatalog) *DiagnosisCatalogResponse {
 	}
 }
 
+func DiagnosisCatalogResList(ds []*domain.DiagnosisCatalog) []*DiagnosisCatalogResponse {
+	items := make([]*DiagnosisCatalogResponse, 0, len(ds))
+	for _, d := range ds {
+		items = append(items, DiagnosisCatalogRes(d))
+	}
+	return items
+}
+
+// ─── History Condition ─────────────────────────────────────────────────────────
+
+type UpdateHistoryConditionReq struct {
+	Name *string `json:"name"`
+}
+
+type HistoryConditionResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func HistoryConditionRes(h *domain.HistoryCondition) *HistoryConditionResponse {
+	return &HistoryConditionResponse{
+		ID:        h.ID,
+		Name:      h.Name,
+		CreatedAt: h.CreatedAt,
+		UpdatedAt: h.UpdatedAt,
+	}
+}
+
+func HistoryConditionResList(hs []*domain.HistoryCondition) []*HistoryConditionResponse {
+	items := make([]*HistoryConditionResponse, 0, len(hs))
+	for _, h := range hs {
+		items = append(items, HistoryConditionRes(h))
+	}
+	return items
+}
