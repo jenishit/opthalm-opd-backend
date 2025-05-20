@@ -58,3 +58,33 @@ type InventoryItemResponse struct {
 	IsActive         bool      `json:"is_active"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+}
+
+func InventoryItemRes(item *domain.InventoryItem) *InventoryItemResponse {
+	return &InventoryItemResponse{
+		ID:               item.ID,
+		Category:         string(item.Category),
+		SKU:              item.SKU,
+		Name:             item.Name,
+		Brand:            item.Brand,
+		Model:            item.Model,
+		Color:            item.Color,
+		Size:             item.Size,
+		CostPrice:        item.CostPrice,
+		SellingPrice:     item.SellingPrice,
+		QuantityOnHand:   item.QuantityOnHand,
+		ReorderThreshold: item.ReorderThreshold,
+		Unit:             item.Unit,
+		IsActive:         item.IsActive,
+		CreatedAt:        item.CreatedAt,
+		UpdatedAt:        item.UpdatedAt,
+	}
+}
+
+func InventoryItemResList(items []*domain.InventoryItem) []*InventoryItemResponse {
+	res := make([]*InventoryItemResponse, 0, len(items))
+	for _, item := range items {
+		res = append(res, InventoryItemRes(item))
+	}
+	return res
+}
