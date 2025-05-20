@@ -88,3 +88,33 @@ func InventoryItemResList(items []*domain.InventoryItem) []*InventoryItemRespons
 	}
 	return res
 }
+
+type StockMovementResponse struct {
+	ID              uuid.UUID  `json:"id"`
+	InventoryItemID uuid.UUID  `json:"inventory_item_id"`
+	MovementType    string     `json:"movement_type"`
+	Quantity        int        `json:"quantity"`
+	ReferenceType   *string    `json:"reference_type"`
+	ReferenceID     *uuid.UUID `json:"reference_id"`
+	Notes           *string    `json:"notes"`
+	CreatedAt       time.Time  `json:"created_at"`
+}
+
+func StockMovementRes(m *domain.StockMovement) *StockMovementResponse {
+	return &StockMovementResponse{
+		ID:              m.ID,
+		InventoryItemID: m.InventoryItemID,
+		MovementType:    string(m.MovementType),
+		Quantity:        m.Quantity,
+		ReferenceType:   m.ReferenceType,
+		ReferenceID:     m.ReferenceID,
+		Notes:           m.Notes,
+		CreatedAt:       m.CreatedAt,
+	}
+}
+
+func StockMovementResList(ms []*domain.StockMovement) []*StockMovementResponse {
+	res := make([]*StockMovementResponse, 0, len(ms))
+	for _, m := range ms {
+		res = append(res, StockMovementRes(m))
+	}
