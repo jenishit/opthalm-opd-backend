@@ -118,3 +118,33 @@ func StockMovementResList(ms []*domain.StockMovement) []*StockMovementResponse {
 	for _, m := range ms {
 		res = append(res, StockMovementRes(m))
 	}
+	return res
+}
+
+// ─── Vendors ─────────────────────────────────────────────────────
+
+type CreateVendorReq struct {
+	Name          string  `json:"name" binding:"required"`
+	ContactPerson *string `json:"contact_person"`
+	Phone         *string `json:"phone"`
+	Email         *string `json:"email"`
+	Address       *string `json:"address"`
+}
+
+type UpdateVendorReq struct {
+	Name          *string `json:"name"`
+	ContactPerson *string `json:"contact_person"`
+	Phone         *string `json:"phone"`
+	Email         *string `json:"email"`
+	Address       *string `json:"address"`
+}
+
+type VendorResponse struct {
+	ID            uuid.UUID `json:"id"`
+	Name          string    `json:"name"`
+	ContactPerson *string   `json:"contact_person"`
+	Phone         *string   `json:"phone"`
+	Email         *string   `json:"email"`
+	Address       *string   `json:"address"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
