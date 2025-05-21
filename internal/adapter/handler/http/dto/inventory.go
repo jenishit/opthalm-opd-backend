@@ -178,3 +178,33 @@ type CreateStockPurchaseItemReq struct {
 	Quantity        int       `json:"quantity" binding:"required,min=1"`
 	UnitCost        float64   `json:"unit_cost" binding:"required,min=0"`
 }
+
+type CreateStockPurchaseReq struct {
+	VendorID     uuid.UUID                    `json:"vendor_id" binding:"required"`
+	InvoiceRefNo *string                      `json:"invoice_ref_no"`
+	PaidAmount   float64                      `json:"paid_amount"`
+	Items        []CreateStockPurchaseItemReq `json:"items" binding:"required,min=1,dive"`
+}
+
+type StockPurchaseItemResponse struct {
+	ID              uuid.UUID `json:"id"`
+	InventoryItemID uuid.UUID `json:"inventory_item_id"`
+	Quantity        int       `json:"quantity"`
+	UnitCost        float64   `json:"unit_cost"`
+	LineTotal       float64   `json:"line_total"`
+}
+
+type StockPurchaseResponse struct {
+	ID           uuid.UUID                   `json:"id"`
+	VendorID     uuid.UUID                   `json:"vendor_id"`
+	VendorName   string                      `json:"vendor_name"`
+	PurchaseDate time.Time                   `json:"purchase_date"`
+	InvoiceRefNo *string                     `json:"invoice_ref_no"`
+	TotalAmount  float64                     `json:"total_amount"`
+	PaidAmount   float64                     `json:"paid_amount"`
+	DueAmount    float64                     `json:"due_amount"`
+	CreatedAt    time.Time                   `json:"created_at"`
+	Items        []StockPurchaseItemResponse `json:"items,omitempty"`
+}
+
+func StockPurchaseRes(d *domain.StockPurchaseDetails) *StockPurchaseResponse {
