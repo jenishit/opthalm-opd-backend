@@ -208,3 +208,33 @@ type StockPurchaseResponse struct {
 }
 
 func StockPurchaseRes(d *domain.StockPurchaseDetails) *StockPurchaseResponse {
+	res := &StockPurchaseResponse{
+		ID:           d.ID,
+		VendorID:     d.VendorID,
+		VendorName:   d.VendorName,
+		PurchaseDate: d.PurchaseDate,
+		InvoiceRefNo: d.InvoiceRefNo,
+		TotalAmount:  d.TotalAmount,
+		PaidAmount:   d.PaidAmount,
+		DueAmount:    d.DueAmount,
+		CreatedAt:    d.CreatedAt,
+	}
+	for _, it := range d.Items {
+		res.Items = append(res.Items, StockPurchaseItemResponse{
+			ID:              it.ID,
+			InventoryItemID: it.InventoryItemID,
+			Quantity:        it.Quantity,
+			UnitCost:        it.UnitCost,
+			LineTotal:       it.LineTotal,
+		})
+	}
+	return res
+}
+
+func StockPurchaseResList(ds []*domain.StockPurchaseDetails) []*StockPurchaseResponse {
+	res := make([]*StockPurchaseResponse, 0, len(ds))
+	for _, d := range ds {
+		res = append(res, StockPurchaseRes(d))
+	}
+	return res
+}
