@@ -148,3 +148,33 @@ type VendorResponse struct {
 	Address       *string   `json:"address"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+func VendorRes(v *domain.Vendor) *VendorResponse {
+	return &VendorResponse{
+		ID:            v.ID,
+		Name:          v.Name,
+		ContactPerson: v.ContactPerson,
+		Phone:         v.Phone,
+		Email:         v.Email,
+		Address:       v.Address,
+		CreatedAt:     v.CreatedAt,
+		UpdatedAt:     v.UpdatedAt,
+	}
+}
+
+func VendorResList(vs []*domain.Vendor) []*VendorResponse {
+	res := make([]*VendorResponse, 0, len(vs))
+	for _, v := range vs {
+		res = append(res, VendorRes(v))
+	}
+	return res
+}
+
+// ─── Stock Purchases ─────────────────────────────────────────────
+
+type CreateStockPurchaseItemReq struct {
+	InventoryItemID uuid.UUID `json:"inventory_item_id" binding:"required"`
+	Quantity        int       `json:"quantity" binding:"required,min=1"`
+	UnitCost        float64   `json:"unit_cost" binding:"required,min=0"`
+}
