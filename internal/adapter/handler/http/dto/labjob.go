@@ -57,3 +57,33 @@ func LabJobRes(d *domain.LabJobDetails) *LabJobResponse {
 		InvoiceItemID:        d.InvoiceItemID,
 		PatientID:            d.PatientID,
 		PatientName:          d.PatientName,
+		VendorID:             d.VendorID,
+		VendorName:           d.VendorName,
+		JobType:              d.JobType,
+		Status:               string(d.Status),
+		ExpectedDeliveryDate: d.ExpectedDeliveryDate,
+		DeliveredAt:          d.DeliveredAt,
+		AdvancePayment:       d.AdvancePayment,
+		Notes:                d.Notes,
+		CreatedAt:            d.CreatedAt,
+		UpdatedAt:            d.UpdatedAt,
+	}
+	for _, h := range d.History {
+		res.History = append(res.History, LabJobStatusHistoryResponse{
+			ID:        h.ID,
+			Status:    string(h.Status),
+			ChangedAt: h.ChangedAt,
+			ChangedBy: h.ChangedBy,
+			Notes:     h.Notes,
+		})
+	}
+	return res
+}
+
+func LabJobResList(ds []*domain.LabJobDetails) []*LabJobResponse {
+	res := make([]*LabJobResponse, 0, len(ds))
+	for _, d := range ds {
+		res = append(res, LabJobRes(d))
+	}
+	return res
+}
