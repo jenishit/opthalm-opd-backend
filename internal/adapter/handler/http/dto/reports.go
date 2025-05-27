@@ -124,3 +124,35 @@ func VisitsSummaryResList(ss []*domain.VisitsSummary) []*VisitsSummaryResponse {
 		res = append(res, &VisitsSummaryResponse{Period: s.Period, VisitCount: s.VisitCount})
 	}
 	return res
+}
+
+func VisitsSummaryTableRows(ss []*VisitsSummaryResponse) ([]string, [][]string) {
+	headers := []string{"Date", "Visits"}
+	rows := make([][]string, 0, len(ss))
+	for _, s := range ss {
+		rows = append(rows, []string{s.Period, fmt.Sprintf("%d", s.VisitCount)})
+	}
+	return headers, rows
+}
+
+type DoctorVisitsSummaryResponse struct {
+	DoctorName string `json:"doctor_name"`
+	VisitCount int    `json:"visit_count"`
+}
+
+func DoctorVisitsSummaryResList(ss []*domain.DoctorVisitsSummary) []*DoctorVisitsSummaryResponse {
+	res := make([]*DoctorVisitsSummaryResponse, 0, len(ss))
+	for _, s := range ss {
+		res = append(res, &DoctorVisitsSummaryResponse{DoctorName: s.DoctorName, VisitCount: s.VisitCount})
+	}
+	return res
+}
+
+func DoctorVisitsSummaryTableRows(ss []*DoctorVisitsSummaryResponse) ([]string, [][]string) {
+	headers := []string{"Doctor", "Visits"}
+	rows := make([][]string, 0, len(ss))
+	for _, s := range ss {
+		rows = append(rows, []string{s.DoctorName, fmt.Sprintf("%d", s.VisitCount)})
+	}
+	return headers, rows
+}
