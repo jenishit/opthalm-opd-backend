@@ -30,3 +30,34 @@ func (s *SalesSummaryResponse) TableRows() ([]string, [][]string) {
 	rows := [][]string{{
 		s.Period, fmt.Sprintf("%d", s.InvoiceCount), fmt.Sprintf("%.2f", s.Subtotal),
 		fmt.Sprintf("%.2f", s.Discount), fmt.Sprintf("%.2f", s.Tax), fmt.Sprintf("%.2f", s.TotalSales),
+		fmt.Sprintf("%.2f", s.TotalPaid), fmt.Sprintf("%.2f", s.TotalDue),
+	}}
+	return headers, rows
+}
+
+type PatientDueResponse struct {
+	PatientName  string    `json:"patient_name"`
+	PatientPhone string    `json:"patient_phone"`
+	InvoiceNo    string    `json:"invoice_no"`
+	TotalAmount  float64   `json:"total_amount"`
+	PaidAmount   float64   `json:"paid_amount"`
+	DueAmount    float64   `json:"due_amount"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func PatientDueResList(ds []*domain.PatientDue) []*PatientDueResponse {
+	res := make([]*PatientDueResponse, 0, len(ds))
+	for _, d := range ds {
+		res = append(res, &PatientDueResponse{
+			PatientName: d.PatientName, PatientPhone: d.PatientPhone, InvoiceNo: d.InvoiceNo,
+			TotalAmount: d.TotalAmount, PaidAmount: d.PaidAmount, DueAmount: d.DueAmount, CreatedAt: d.CreatedAt,
+		})
+	}
+	return res
+}
+
+func PatientDueTableRows(ds []*PatientDueResponse) ([]string, [][]string) {
+	headers := []string{"Patient", "Phone", "Invoice No", "Total", "Paid", "Due", "Date"}
+	rows := make([][]string, 0, len(ds))
+	for _, d := range ds {
+		rows = append(rows, []string{
