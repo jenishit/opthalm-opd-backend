@@ -61,3 +61,35 @@ func PatientDueTableRows(ds []*PatientDueResponse) ([]string, [][]string) {
 	rows := make([][]string, 0, len(ds))
 	for _, d := range ds {
 		rows = append(rows, []string{
+			d.PatientName, d.PatientPhone, d.InvoiceNo,
+			fmt.Sprintf("%.2f", d.TotalAmount), fmt.Sprintf("%.2f", d.PaidAmount), fmt.Sprintf("%.2f", d.DueAmount),
+			d.CreatedAt.Format("2006-01-02"),
+		})
+	}
+	return headers, rows
+}
+
+type VendorDueResponse struct {
+	VendorName   string    `json:"vendor_name"`
+	TotalAmount  float64   `json:"total_amount"`
+	PaidAmount   float64   `json:"paid_amount"`
+	DueAmount    float64   `json:"due_amount"`
+	PurchaseDate time.Time `json:"purchase_date"`
+}
+
+func VendorDueResList(ds []*domain.VendorDue) []*VendorDueResponse {
+	res := make([]*VendorDueResponse, 0, len(ds))
+	for _, d := range ds {
+		res = append(res, &VendorDueResponse{
+			VendorName: d.VendorName, TotalAmount: d.TotalAmount, PaidAmount: d.PaidAmount,
+			DueAmount: d.DueAmount, PurchaseDate: d.PurchaseDate,
+		})
+	}
+	return res
+}
+
+func VendorDueTableRows(ds []*VendorDueResponse) ([]string, [][]string) {
+	headers := []string{"Vendor", "Total", "Paid", "Due", "Purchase Date"}
+	rows := make([][]string, 0, len(ds))
+	for _, d := range ds {
+		rows = append(rows, []string{
