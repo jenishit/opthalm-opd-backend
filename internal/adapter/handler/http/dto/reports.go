@@ -93,3 +93,34 @@ func VendorDueTableRows(ds []*VendorDueResponse) ([]string, [][]string) {
 	rows := make([][]string, 0, len(ds))
 	for _, d := range ds {
 		rows = append(rows, []string{
+			d.VendorName, fmt.Sprintf("%.2f", d.TotalAmount), fmt.Sprintf("%.2f", d.PaidAmount),
+			fmt.Sprintf("%.2f", d.DueAmount), d.PurchaseDate.Format("2006-01-02"),
+		})
+	}
+	return headers, rows
+}
+
+type InventoryValuationResponse struct {
+	TotalItems     int     `json:"total_items"`
+	TotalUnits     int     `json:"total_units"`
+	TotalCostValue float64 `json:"total_cost_value"`
+	TotalSellValue float64 `json:"total_sell_value"`
+}
+
+func InventoryValuationRes(v *domain.InventoryValuation) *InventoryValuationResponse {
+	return &InventoryValuationResponse{
+		TotalItems: v.TotalItems, TotalUnits: v.TotalUnits, TotalCostValue: v.TotalCostValue, TotalSellValue: v.TotalSellValue,
+	}
+}
+
+type VisitsSummaryResponse struct {
+	Period     string `json:"period"`
+	VisitCount int    `json:"visit_count"`
+}
+
+func VisitsSummaryResList(ss []*domain.VisitsSummary) []*VisitsSummaryResponse {
+	res := make([]*VisitsSummaryResponse, 0, len(ss))
+	for _, s := range ss {
+		res = append(res, &VisitsSummaryResponse{Period: s.Period, VisitCount: s.VisitCount})
+	}
+	return res
