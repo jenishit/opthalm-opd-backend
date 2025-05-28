@@ -90,3 +90,34 @@ func VisitResponseFromDetails(v *domain.VisitDetails) *VisitResponse {
 		},
 		ExamineBy: EntityRef{
 			ID:   v.ExamineBy,
+			Name: v.ExamineByName,
+		},
+		Status:         v.Status,
+		VisitDate:      v.VisitDate,
+		CheifComplaint: v.CheifComplaint,
+		CreatedBy: EntityRef{
+			ID:   v.CreatedBy,
+			Name: v.CreatedByName,
+		},
+		UpdatedBy: EntityRef{
+			ID:   v.UpdatedBy,
+			Name: v.UpdatedByName,
+		},
+		CreatedAt: v.CreatedAt,
+		UpdatedAt: v.UpdatedAt,
+	}
+}
+
+func visitItemFromDetails(v *domain.VisitDetails) *VisitItemResponse {
+	return &VisitItemResponse{
+		ID: v.ID,
+		ExamineBy: EntityRef{
+			ID:   v.ExamineBy,
+			Name: v.ExamineByName,
+		},
+		Status:         v.Status,
+		VisitDate:      v.VisitDate,
+		CheifComplaint: v.CheifComplaint,
+		CreatedBy: EntityRef{
+			ID:   v.CreatedBy,
+			Name: v.CreatedByName,
