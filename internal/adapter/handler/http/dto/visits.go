@@ -121,3 +121,34 @@ func visitItemFromDetails(v *domain.VisitDetails) *VisitItemResponse {
 		CreatedBy: EntityRef{
 			ID:   v.CreatedBy,
 			Name: v.CreatedByName,
+		},
+		UpdatedBy: EntityRef{
+			ID:   v.UpdatedBy,
+			Name: v.UpdatedByName,
+		},
+		CreatedAt: v.CreatedAt,
+		UpdatedAt: v.UpdatedAt,
+	}
+}
+
+func PatientVisitsResponseFromDetails(vs []*domain.VisitDetails) *PatientVisitsResponse {
+	if len(vs) == 0 {
+		return &PatientVisitsResponse{
+			Visits: []*VisitItemResponse{},
+		}
+	}
+
+	visits := make([]*VisitItemResponse, 0, len(vs))
+
+	for _, v := range vs {
+		visits = append(visits, visitItemFromDetails(v))
+	}
+
+	return &PatientVisitsResponse{
+		Patient: PatientRef{
+			ID:   vs[0].PatientID,
+			Name: vs[0].PatientName,
+		},
+		Visits: visits,
+	}
+}
