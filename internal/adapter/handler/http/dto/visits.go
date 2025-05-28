@@ -60,3 +60,33 @@ type VisitCreateResponse struct {
 	UpdatedBy      uuid.UUID          `json:"updated_by"`
 	CreatedAt      time.Time          `json:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at"`
+}
+
+func VisitCreateRes(v *domain.Visit) *VisitCreateResponse {
+	return &VisitCreateResponse{
+		ID:             v.ID,
+		PatientID:      v.PatientID,
+		ExamineBy:      v.ExamineBy,
+		Status:         v.Status,
+		CheifComplaint: v.CheifComplaint,
+		CreatedBy:      v.CreatedBy,
+		UpdatedBy:      v.UpdatedBy,
+		CreatedAt:      v.CreatedAt,
+		UpdatedAt:      v.UpdatedAt,
+	}
+}
+
+type PatientVisitsResponse struct {
+	Patient PatientRef           `json:"patient"`
+	Visits  []*VisitItemResponse `json:"visits"`
+}
+
+func VisitResponseFromDetails(v *domain.VisitDetails) *VisitResponse {
+	return &VisitResponse{
+		ID: v.ID,
+		Patient: PatientRef{
+			ID:   v.PatientID,
+			Name: v.PatientName,
+		},
+		ExamineBy: EntityRef{
+			ID:   v.ExamineBy,
