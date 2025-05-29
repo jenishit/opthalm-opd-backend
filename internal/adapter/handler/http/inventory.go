@@ -61,3 +61,35 @@ func (h *InventoryHandler) CreateItem(ctx *gin.Context) {
 		Color:            req.Color,
 		Size:             req.Size,
 		CostPrice:        req.CostPrice,
+		SellingPrice:     req.SellingPrice,
+		QuantityOnHand:   req.QuantityOnHand,
+		ReorderThreshold: req.ReorderThreshold,
+		Unit:             unit,
+		CreatedBy:        user.UserId,
+		UpdatedBy:        user.UserId,
+	}
+
+	created, err := h.svc.Create(ctx, user.ClinicID, item)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemRes(created))
+}
+
+// ListItems godoc
+//
+//	@Summary		List inventory items
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.InventoryItemResponse}
+//	@Router			/inventory/items [get]
+func (h *InventoryHandler) ListItems(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	user, ok := currentUser(ctx)
