@@ -30,3 +30,34 @@ func NewInventoryHandler(svc port.InventoryItemService) *InventoryHandler {
 //	@Description	Requires ROLE_ADMIN or ROLE_INVENTORY.
 //	@Tags			inventory
 //	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateInventoryItemReq	true	"Item details"
+//	@Success		200		{object}	response{data=dto.InventoryItemResponse}
+//	@Router			/inventory/items [post]
+func (h *InventoryHandler) CreateItem(ctx *gin.Context) {
+	var req dto.CreateInventoryItemReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	unit := req.Unit
+	if unit == "" {
+		unit = "pcs"
+	}
+
+	item := &domain.InventoryItem{
+		Category:         domain.InventoryCategory(req.Category),
+		SKU:              req.SKU,
+		Name:             req.Name,
+		Brand:            req.Brand,
+		Model:            req.Model,
+		Color:            req.Color,
+		Size:             req.Size,
+		CostPrice:        req.CostPrice,
