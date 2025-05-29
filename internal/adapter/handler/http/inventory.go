@@ -156,3 +156,35 @@ func (h *InventoryHandler) GetItemByID(ctx *gin.Context) {
 		return
 	}
 
+	item, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemRes(item))
+}
+
+// GetItemByBarcode godoc
+//
+//	@Summary		Get an inventory item by SKU/barcode
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			sku	path		string	true	"SKU"
+//	@Success		200	{object}	response{data=dto.InventoryItemResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/inventory/items/barcode/{sku} [get]
+func (h *InventoryHandler) GetItemByBarcode(ctx *gin.Context) {
+	sku := ctx.Param("sku")
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	item, err := h.svc.GetBySKU(ctx, user.ClinicID, sku)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
