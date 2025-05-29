@@ -282,3 +282,35 @@ func (h *InventoryHandler) DeleteItem(ctx *gin.Context) {
 	handleSuccess(ctx, gin.H{"message": "Inventory item deleted successfully"})
 }
 
+// LowStock godoc
+//
+//	@Summary		List items at or below their reorder threshold
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.InventoryItemResponse}
+//	@Router			/inventory/low-stock [get]
+func (h *InventoryHandler) LowStock(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	items, err := h.svc.LowStock(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemResList(items))
+}
+
+// AddStock godoc
+//
+//	@Summary		Add stock to an item
+//	@Description	Records a stock movement and increments quantity on hand.
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Item ID"
