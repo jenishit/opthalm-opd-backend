@@ -188,3 +188,34 @@ func (h *InventoryHandler) GetItemByBarcode(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, dto.InventoryItemRes(item))
+}
+
+// UpdateItem godoc
+//
+//	@Summary		Update an inventory item
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Item ID"
+//	@Param			request	body		dto.UpdateInventoryItemReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/inventory/items/{id} [patch]
+func (h *InventoryHandler) UpdateItem(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateInventoryItemReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
