@@ -219,3 +219,35 @@ func (h *InventoryHandler) UpdateItem(ctx *gin.Context) {
 	user, ok := currentUser(ctx)
 	if !ok {
 		return
+	}
+
+	item := &domain.InventoryItem{
+		ID:        id,
+		Brand:     req.Brand,
+		Model:     req.Model,
+		Color:     req.Color,
+		Size:      req.Size,
+		UpdatedBy: user.UserId,
+	}
+	if req.Category != nil {
+		item.Category = domain.InventoryCategory(*req.Category)
+	}
+	if req.Name != nil {
+		item.Name = *req.Name
+	}
+	if req.CostPrice != nil {
+		item.CostPrice = *req.CostPrice
+	}
+	if req.SellingPrice != nil {
+		item.SellingPrice = *req.SellingPrice
+	}
+	if req.ReorderThreshold != nil {
+		item.ReorderThreshold = *req.ReorderThreshold
+	}
+
+	if err := h.svc.Update(ctx, user.ClinicID, item); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Inventory item updated successfully"})
