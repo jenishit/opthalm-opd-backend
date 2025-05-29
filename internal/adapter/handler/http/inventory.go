@@ -93,3 +93,34 @@ func (h *InventoryHandler) ListItems(ctx *gin.Context) {
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
 
 	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	items, err := h.svc.List(ctx, user.ClinicID, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemResList(items))
+}
+
+// SearchItems godoc
+//
+//	@Summary		Search inventory items
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.InventoryItemResponse}
+//	@Router			/inventory/items/search [get]
+func (h *InventoryHandler) SearchItems(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
