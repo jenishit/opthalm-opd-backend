@@ -251,3 +251,34 @@ func (h *InventoryHandler) UpdateItem(ctx *gin.Context) {
 	}
 
 	handleSuccess(ctx, gin.H{"message": "Inventory item updated successfully"})
+}
+
+// DeleteItem godoc
+//
+//	@Summary		Soft-delete an inventory item
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Item ID"
+//	@Success		200	{object}	response
+//	@Router			/inventory/items/{id}/delete [patch]
+func (h *InventoryHandler) DeleteItem(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	if err := h.svc.Delete(ctx, user.ClinicID, id); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Inventory item deleted successfully"})
+}
+
