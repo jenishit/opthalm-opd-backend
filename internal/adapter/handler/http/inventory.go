@@ -124,3 +124,35 @@ func (h *InventoryHandler) SearchItems(ctx *gin.Context) {
 	if !ok {
 		return
 	}
+
+	items, err := h.svc.Search(ctx, user.ClinicID, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemResList(items))
+}
+
+// GetItemByID godoc
+//
+//	@Summary		Get an inventory item
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Item ID"
+//	@Success		200	{object}	response{data=dto.InventoryItemResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/inventory/items/{id} [get]
+func (h *InventoryHandler) GetItemByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
