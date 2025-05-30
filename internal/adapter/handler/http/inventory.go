@@ -314,3 +314,34 @@ func (h *InventoryHandler) LowStock(ctx *gin.Context) {
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Param			id		path		string				true	"Item ID"
+//	@Param			request	body		dto.AddStockReq	true	"Quantity + notes"
+//	@Success		200		{object}	response{data=dto.StockMovementResponse}
+//	@Router			/inventory/items/{id}/stock [post]
+func (h *InventoryHandler) AddStock(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.AddStockReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	movement, err := h.svc.AddStock(ctx, user.ClinicID, id, req.Quantity, req.Notes, user.UserId)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.StockMovementRes(movement))
+}
+
+// ListMovements godoc
