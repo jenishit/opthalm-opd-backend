@@ -440,3 +440,35 @@ func NewVendorHandler(svc port.VendorService) *VendorHandler {
 // CreateVendor godoc
 //
 //	@Summary		Create a vendor
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateVendorReq	true	"Vendor details"
+//	@Success		200		{object}	response{data=dto.VendorResponse}
+//	@Router			/inventory/vendors [post]
+func (h *VendorHandler) CreateVendor(ctx *gin.Context) {
+	var req dto.CreateVendorReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	vendor := &domain.Vendor{
+		Name:          req.Name,
+		ContactPerson: req.ContactPerson,
+		Phone:         req.Phone,
+		Email:         req.Email,
+		Address:       req.Address,
+	}
+
+	created, err := h.svc.Create(ctx, user.ClinicID, vendor)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
