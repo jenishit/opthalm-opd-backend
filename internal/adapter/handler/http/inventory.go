@@ -472,3 +472,34 @@ func (h *VendorHandler) CreateVendor(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, dto.VendorRes(created))
+}
+
+// ListVendors godoc
+//
+//	@Summary		List vendors
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.VendorResponse}
+//	@Router			/inventory/vendors [get]
+func (h *VendorHandler) ListVendors(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	vendors, err := h.svc.List(ctx, user.ClinicID, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.VendorResList(vendors))
+}
