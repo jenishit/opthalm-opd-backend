@@ -503,3 +503,35 @@ func (h *VendorHandler) ListVendors(ctx *gin.Context) {
 
 	handleSuccess(ctx, dto.VendorResList(vendors))
 }
+
+// SearchVendors godoc
+//
+//	@Summary		Search vendors
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.VendorResponse}
+//	@Router			/inventory/vendors/search [get]
+func (h *VendorHandler) SearchVendors(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	vendors, err := h.svc.Search(ctx, user.ClinicID, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.VendorResList(vendors))
+}
+
+// GetVendorByID godoc
+//
+//	@Summary		Get a vendor
