@@ -345,3 +345,35 @@ func (h *InventoryHandler) AddStock(ctx *gin.Context) {
 }
 
 // ListMovements godoc
+//
+//	@Summary		List an item's stock movements
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string	true	"Item ID"
+//	@Param			limit	query		int		false	"Max results"	default(20)
+//	@Param			offset	query		int		false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.StockMovementResponse}
+//	@Router			/inventory/items/{id}/movements [get]
+func (h *InventoryHandler) ListMovements(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "20"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	movements, err := h.svc.ListMovements(ctx, user.ClinicID, id, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.StockMovementResList(movements))
