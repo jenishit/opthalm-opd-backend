@@ -409,3 +409,34 @@ func (h *InventoryHandler) GetBarcodeImage(ctx *gin.Context) {
 	bc, err := code128.Encode(item.SKU)
 	if err != nil {
 		handleError(ctx, domain.ErrInternal)
+		return
+	}
+
+	scaled, err := barcode.Scale(bc, 300, 100)
+	if err != nil {
+		handleError(ctx, domain.ErrInternal)
+		return
+	}
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, scaled); err != nil {
+		handleError(ctx, domain.ErrInternal)
+		return
+	}
+
+	ctx.Data(200, "image/png", buf.Bytes())
+}
+
+// ─── Vendors ─────────────────────────────────────────────────────
+
+type VendorHandler struct {
+	svc port.VendorService
+}
+
+func NewVendorHandler(svc port.VendorService) *VendorHandler {
+	return &VendorHandler{svc: svc}
+}
+
+// CreateVendor godoc
+//
+//	@Summary		Create a vendor
