@@ -377,3 +377,35 @@ func (h *InventoryHandler) ListMovements(ctx *gin.Context) {
 	}
 
 	handleSuccess(ctx, dto.StockMovementResList(movements))
+}
+
+// GetBarcodeImage godoc
+//
+//	@Summary		Get an item's barcode as a PNG image
+//	@Tags			inventory
+//	@Produce		image/png
+//	@Security		BearerAuth
+//	@Param			id	path	string	true	"Item ID"
+//	@Success		200	{file}	binary
+//	@Router			/inventory/items/{id}/barcode-image [get]
+func (h *InventoryHandler) GetBarcodeImage(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	item, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	bc, err := code128.Encode(item.SKU)
+	if err != nil {
+		handleError(ctx, domain.ErrInternal)
