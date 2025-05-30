@@ -535,3 +535,34 @@ func (h *VendorHandler) SearchVendors(ctx *gin.Context) {
 // GetVendorByID godoc
 //
 //	@Summary		Get a vendor
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Vendor ID"
+//	@Success		200	{object}	response{data=dto.VendorResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/inventory/vendors/{id} [get]
+func (h *VendorHandler) GetVendorByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	vendor, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.VendorRes(vendor))
+}
+
+// UpdateVendor godoc
+//
+//	@Summary		Update a vendor
