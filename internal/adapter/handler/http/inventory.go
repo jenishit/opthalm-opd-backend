@@ -661,3 +661,35 @@ func NewStockPurchaseHandler(svc port.StockPurchaseService) *StockPurchaseHandle
 //	@Param			request	body		dto.CreateStockPurchaseReq	true	"Purchase details"
 //	@Success		200		{object}	response{data=dto.StockPurchaseResponse}
 //	@Router			/inventory/purchases [post]
+func (h *StockPurchaseHandler) CreatePurchase(ctx *gin.Context) {
+	var req dto.CreateStockPurchaseReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	purchase := &domain.StockPurchase{
+		VendorID:     req.VendorID,
+		InvoiceRefNo: req.InvoiceRefNo,
+		PaidAmount:   req.PaidAmount,
+		CreatedBy:    user.UserId,
+	}
+
+	items := make([]*domain.StockPurchaseItem, 0, len(req.Items))
+	for _, it := range req.Items {
+		items = append(items, &domain.StockPurchaseItem{
+			InventoryItemID: it.InventoryItemID,
+			Quantity:        it.Quantity,
+			UnitCost:        it.UnitCost,
+		})
+	}
+
+	details, err := h.svc.CreatePurchase(ctx, user.ClinicID, purchase, items)
+	if err != nil {
+		handleError(ctx, err)
+		return
