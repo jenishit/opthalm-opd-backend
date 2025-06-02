@@ -630,3 +630,34 @@ func (h *VendorHandler) DeleteVendor(ctx *gin.Context) {
 	user, ok := currentUser(ctx)
 	if !ok {
 		return
+	}
+
+	if err := h.svc.Delete(ctx, user.ClinicID, id); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Vendor deleted successfully"})
+}
+
+// ─── Stock Purchases ─────────────────────────────────────────────
+
+type StockPurchaseHandler struct {
+	svc port.StockPurchaseService
+}
+
+func NewStockPurchaseHandler(svc port.StockPurchaseService) *StockPurchaseHandler {
+	return &StockPurchaseHandler{svc: svc}
+}
+
+// CreatePurchase godoc
+//
+//	@Summary		Record a stock purchase from a vendor
+//	@Description	Creates the purchase and its line items, and increments quantity on hand for each item.
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateStockPurchaseReq	true	"Purchase details"
+//	@Success		200		{object}	response{data=dto.StockPurchaseResponse}
+//	@Router			/inventory/purchases [post]
