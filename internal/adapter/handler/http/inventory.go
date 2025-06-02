@@ -566,3 +566,35 @@ func (h *VendorHandler) GetVendorByID(ctx *gin.Context) {
 // UpdateVendor godoc
 //
 //	@Summary		Update a vendor
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Vendor ID"
+//	@Param			request	body		dto.UpdateVendorReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/inventory/vendors/{id} [patch]
+func (h *VendorHandler) UpdateVendor(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateVendorReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	vendor := &domain.Vendor{
+		ID:            id,
+		ContactPerson: req.ContactPerson,
+		Phone:         req.Phone,
+		Email:         req.Email,
+		Address:       req.Address,
