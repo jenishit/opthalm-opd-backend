@@ -598,3 +598,35 @@ func (h *VendorHandler) UpdateVendor(ctx *gin.Context) {
 		Phone:         req.Phone,
 		Email:         req.Email,
 		Address:       req.Address,
+	}
+	if req.Name != nil {
+		vendor.Name = *req.Name
+	}
+
+	if err := h.svc.Update(ctx, user.ClinicID, vendor); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Vendor updated successfully"})
+}
+
+// DeleteVendor godoc
+//
+//	@Summary		Soft-delete a vendor
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Vendor ID"
+//	@Success		200	{object}	response
+//	@Router			/inventory/vendors/{id}/delete [patch]
+func (h *VendorHandler) DeleteVendor(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
