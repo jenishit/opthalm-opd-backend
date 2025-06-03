@@ -71,3 +71,39 @@ func TestInventory_StockPurchaseIncrementsAndWritesMovement(t *testing.T) {
 		"items": []map[string]any{
 			{"inventory_item_id": itemID, "quantity": 20, "unit_cost": 1000},
 		},
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var item struct {
+		QuantityOnHand int `json:"quantity_on_hand"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/inventory/items/"+itemID.String(), token, nil, &item)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 30, item.QuantityOnHand)
+
+	var movements []struct {
+		MovementType string `json:"movement_type"`
+		Quantity     int    `json:"quantity"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/inventory/items/"+itemID.String()+"/movements", token, nil, &movements)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Len(t, movements, 1)
+	assert.Equal(t, "purchase_in", movements[0].MovementType)
+	assert.Equal(t, 20, movements[0].Quantity)
+}
+
+func TestInventory_NonAdminNonInventoryRoleRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "invuser@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodGet, "/api/inventory/items", doctorToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestInventory_RoleInventoryAllowed(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	invToken, _ := ts.Login(t, "invrole@test.local", "ROLE_INVENTORY")
+
+	resp := ts.Do(t, http.MethodGet, "/api/inventory/items", invToken, nil, nil)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
