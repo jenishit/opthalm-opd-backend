@@ -724,3 +724,35 @@ func (h *StockPurchaseHandler) ListPurchases(ctx *gin.Context) {
 	}
 
 	handleSuccess(ctx, dto.StockPurchaseResList(purchases))
+}
+
+// GetPurchaseByID godoc
+//
+//	@Summary		Get a stock purchase
+//	@Tags			inventory
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Purchase ID"
+//	@Success		200	{object}	response{data=dto.StockPurchaseResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/inventory/purchases/{id} [get]
+func (h *StockPurchaseHandler) GetPurchaseByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	purchase, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.StockPurchaseRes(purchase))
+}
