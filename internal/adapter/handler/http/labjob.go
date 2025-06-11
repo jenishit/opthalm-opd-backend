@@ -32,3 +32,36 @@ func NewLabJobHandler(svc port.LabJobService) *LabJobHandler {
 //	@Router			/lab-jobs [post]
 func (h *LabJobHandler) CreateLabJob(ctx *gin.Context) {
 	var req dto.CreateLabJobReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	var expectedDeliveryDate *time.Time
+	if req.ExpectedDeliveryDate != nil {
+		parsed, err := time.Parse("2006-01-02", *req.ExpectedDeliveryDate)
+		if err != nil {
+			validationError(ctx, domain.ErrBadRequest)
+			return
+		}
+		expectedDeliveryDate = &parsed
+	}
+
+	job := &domain.LabJob{
+		InvoiceID:            req.InvoiceID,
+		InvoiceItemID:        req.InvoiceItemID,
+		PatientID:            req.PatientID,
+		VendorID:             req.VendorID,
+		JobType:              req.JobType,
+		ExpectedDeliveryDate: expectedDeliveryDate,
+		AdvancePayment:       req.AdvancePayment,
+		Notes:                req.Notes,
+		CreatedBy:            user.UserId,
+		UpdatedBy:            user.UserId,
+	}
+
