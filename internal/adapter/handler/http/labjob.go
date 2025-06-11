@@ -98,3 +98,37 @@ func (h *LabJobHandler) ListLabJobs(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	handleSuccess(ctx, dto.LabJobResList(jobs))
+}
+
+// GetLabJobByID godoc
+//
+//	@Summary		Get a lab job
+//	@Tags			lab-jobs
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Lab job ID"
+//	@Success		200	{object}	response{data=dto.LabJobResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/lab-jobs/{id} [get]
+func (h *LabJobHandler) GetLabJobByID(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	job, err := h.svc.GetByID(ctx, user.ClinicID, id)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.LabJobRes(job))
+}
