@@ -166,3 +166,36 @@ func (h *LabJobHandler) GetLabJobsByPatientID(ctx *gin.Context) {
 // UpdateLabJobStatus godoc
 //
 //	@Summary		Update a lab job's status
+//	@Tags			lab-jobs
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string						true	"Lab job ID"
+//	@Param			request	body		dto.UpdateLabJobStatusReq	true	"New status + notes"
+//	@Success		200		{object}	response
+//	@Router			/lab-jobs/{id}/status [patch]
+func (h *LabJobHandler) UpdateLabJobStatus(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateLabJobStatusReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	if err := h.svc.UpdateStatus(ctx, user.ClinicID, id, domain.LabJobStatus(req.Status), req.Notes, user.UserId); err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Lab job status updated successfully"})
+}
