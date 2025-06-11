@@ -65,3 +65,36 @@ func (h *LabJobHandler) CreateLabJob(ctx *gin.Context) {
 		UpdatedBy:            user.UserId,
 	}
 
+	created, err := h.svc.Create(ctx, user.ClinicID, job)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.LabJobRes(created))
+}
+
+// ListLabJobs godoc
+//
+//	@Summary		List lab jobs
+//	@Tags			lab-jobs
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.LabJobResponse}
+//	@Router			/lab-jobs [get]
+func (h *LabJobHandler) ListLabJobs(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	jobs, err := h.svc.List(ctx, user.ClinicID, limit, offset)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
