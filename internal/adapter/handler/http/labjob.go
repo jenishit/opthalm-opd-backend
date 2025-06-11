@@ -132,3 +132,37 @@ func (h *LabJobHandler) GetLabJobByID(ctx *gin.Context) {
 
 	handleSuccess(ctx, dto.LabJobRes(job))
 }
+
+// GetLabJobsByPatientID godoc
+//
+//	@Summary		List a patient's lab jobs
+//	@Tags			lab-jobs
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			patientId	path		string	true	"Patient ID"
+//	@Success		200			{object}	response{data=[]dto.LabJobResponse}
+//	@Router			/lab-jobs/patient/{patientId} [get]
+func (h *LabJobHandler) GetLabJobsByPatientID(ctx *gin.Context) {
+	patientID, err := uuid.Parse(ctx.Param("patientId"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	jobs, err := h.svc.ListByPatientID(ctx, user.ClinicID, patientID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.LabJobResList(jobs))
+}
+
+// UpdateLabJobStatus godoc
+//
+//	@Summary		Update a lab job's status
