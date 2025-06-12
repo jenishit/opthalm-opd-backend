@@ -53,3 +53,31 @@ func TestLabJob_CreateAndStatusPipeline(t *testing.T) {
 	assert.Equal(t, "ready_to_deliver", fetched.History[1].Status)
 	assert.Equal(t, "delivered", fetched.History[2].Status)
 }
+
+func TestLabJob_ListByPatient(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	patientID := ts.CreatePatient(t, token, "Lab Patient 2", "9800000031")
+
+	ts.Do(t, http.MethodPost, "/api/lab-jobs", token, map[string]any{
+		"patient_id": patientID, "job_type": "frame_repair",
+	}, nil)
+	ts.Do(t, http.MethodPost, "/api/lab-jobs", token, map[string]any{
+		"patient_id": patientID, "job_type": "lens_grinding",
+	}, nil)
+
+	var list []struct {
+		ID uuid.UUID `json:"id"`
+	}
+	resp := ts.DoData(t, http.MethodGet, "/api/lab-jobs/patient/"+patientID.String(), token, nil, &list)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Len(t, list, 2)
+}
+
+func TestLabJob_NonAllowedRoleRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "labuser@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodGet, "/api/lab-jobs", doctorToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
