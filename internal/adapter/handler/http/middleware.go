@@ -58,3 +58,34 @@ func requestLoggerMiddleware() gin.HandlerFunc {
 			"status", status,
 			"latency_ms", time.Since(start).Milliseconds(),
 			"client_ip", ctx.ClientIP(),
+		}
+
+		if payload, exists := ctx.Get(authorizationPayloadKey); exists {
+			if p, ok := payload.(*domain.TokenPayload); ok {
+				attrs = append(attrs, "user_id", p.UserId, "clinic_id", p.ClinicID)
+			}
+		}
+		if len(ctx.Errors) > 0 {
+			attrs = append(attrs, "gin_errors", ctx.Errors.String())
+		}
+
+		msg := "request handled"
+		switch {
+		case status >= 500:
+			slog.Error(msg, attrs...)
+		case status >= 400:
+			slog.Warn(msg, attrs...)
+		default:
+			slog.Info(msg, attrs...)
+		}
+	}
+}
+
+// rateLimitMiddleware enforces a fixed-window limit of at most limit
+// requests per window, keyed by client IP, backed by Redis (INCR + EXPIRE)
+// so the limit holds across multiple app instances, not just in one
+// process's memory. It fails open (lets the request through) if Redis is
+// unreachable — a rate limiter should never be the reason the whole app goes
+// down when the cache does.
+func rateLimitMiddleware(rdb *redis.Client, bucket string, limit int, window time.Duration) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
