@@ -28,3 +28,33 @@ const (
 func requestIDMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetHeader(requestIDHeader)
+		if id == "" {
+			id = uuid.NewString()
+		}
+		ctx.Set(requestIDKey, id)
+		ctx.Header(requestIDHeader, id)
+		ctx.Next()
+	}
+}
+
+// requestLoggerMiddleware logs one structured line per request (method,
+// path, status, latency, and the authenticated user/clinic when present)
+// via log/slog, replacing gin's plain-text default logger.
+func requestLoggerMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		start := time.Now()
+		path := ctx.Request.URL.Path
+		if raw := ctx.Request.URL.RawQuery; raw != "" {
+			path = path + "?" + raw
+		}
+
+		ctx.Next()
+
+		status := ctx.Writer.Status()
+		attrs := []any{
+			"request_id", ctx.GetString(requestIDKey),
+			"method", ctx.Request.Method,
+			"path", path,
+			"status", status,
+			"latency_ms", time.Since(start).Milliseconds(),
+			"client_ip", ctx.ClientIP(),
