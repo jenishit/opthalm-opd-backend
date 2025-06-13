@@ -210,3 +210,33 @@ func roleMiddleware(allowed ...string) gin.HandlerFunc {
 		userPayload, ok := payload.(*domain.TokenPayload)
 		if !ok {
 			validationError(ctx, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+
+		if _, ok := allowedSet[userPayload.RoleName]; !ok {
+			handleAbort(ctx, domain.ErrUnauthorized)
+			return
+		}
+		ctx.Next()
+	}
+}
+
+func adminMiddleware() gin.HandlerFunc {
+	return roleMiddleware("ROLE_ADMIN")
+}
+
+// superadminMiddleware gates the platform-operator-only endpoints (managing
+// any clinic's subscription). Distinct from adminMiddleware: a clinic's own
+// ROLE_ADMIN must never be able to reactivate its own subscription.
+func superadminMiddleware() gin.HandlerFunc {
+	return roleMiddleware("ROLE_SUPERADMIN")
+}
+
+// subscriptionMiddleware runs after authMiddleware and rejects the request
+// with ErrSubscriptionInactive (402) unless the caller's clinic has a
+// trialing/active subscription that hasn't passed its current period end.
+func subscriptionMiddleware(subSvc port.SubscriptionService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		payload, exists := ctx.Get(authorizationPayloadKey)
+		if !exists {
+			validationError(ctx, domain.ErrEmptyAuthorizationHeader)
