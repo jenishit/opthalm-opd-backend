@@ -149,3 +149,33 @@ func CORSMiddleware(allowedOrigins string) gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+func authMiddleware(token port.TokenService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
+		isEmpty := len(authorizationHeader) == 0
+
+		if isEmpty {
+			handleAbort(ctx, domain.ErrEmptyAuthorizationHeader)
+			return
+
+		}
+
+		fields := strings.Fields(authorizationHeader)
+
+		isValid := len(fields) == 2
+
+		if !isValid {
+			handleAbort(ctx, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+		currentAuthorizationtype := fields[0]
+
+		if currentAuthorizationtype != authorizationType {
+			handleAbort(ctx, domain.ErrInvalidAuthorizationType)
+			return
+
+		}
+		accessToken := fields[1]
+
