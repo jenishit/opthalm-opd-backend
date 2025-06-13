@@ -240,3 +240,33 @@ func subscriptionMiddleware(subSvc port.SubscriptionService) gin.HandlerFunc {
 		payload, exists := ctx.Get(authorizationPayloadKey)
 		if !exists {
 			validationError(ctx, domain.ErrEmptyAuthorizationHeader)
+			return
+		}
+
+		userPayload, ok := payload.(*domain.TokenPayload)
+		if !ok {
+			validationError(ctx, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+
+		sub, err := subSvc.GetByClinicID(ctx, userPayload.ClinicID)
+		if err != nil || !sub.IsActive() {
+			handleAbort(ctx, domain.ErrSubscriptionInactive)
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+// recoveryMiddleware recovers from panics in handlers and responds with the
+// app's standard JSON error envelope instead of gin's default plain-text
+// response. Without this, gin.New() (used instead of gin.Default()) leaves
+// panics completely unrecovered, which crashes the whole process — taking
+// down every other in-flight request, not just the one that panicked.
+func recoveryMiddleware() gin.HandlerFunc {
+	return gin.CustomRecovery(func(ctx *gin.Context, recovered any) {
+		handleError(ctx, domain.ErrInternal)
+		ctx.Abort()
+	})
+}
