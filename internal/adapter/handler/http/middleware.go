@@ -179,3 +179,34 @@ func authMiddleware(token port.TokenService) gin.HandlerFunc {
 		}
 		accessToken := fields[1]
 
+		payload, err := token.VerifyAccessToken(accessToken)
+
+		if err != nil {
+			handleAbort(ctx, err)
+			return
+
+		}
+		ctx.Set(authorizationPayloadKey, payload)
+		ctx.Next()
+
+	}
+}
+
+// roleMiddleware allows the request through only if the authenticated user's
+// RoleName is one of the given allowed roles.
+func roleMiddleware(allowed ...string) gin.HandlerFunc {
+	allowedSet := make(map[string]struct{}, len(allowed))
+	for _, r := range allowed {
+		allowedSet[r] = struct{}{}
+	}
+
+	return func(ctx *gin.Context) {
+		payload, exists := ctx.Get(authorizationPayloadKey)
+		if !exists {
+			validationError(ctx, domain.ErrEmptyAuthorizationHeader)
+			return
+		}
+
+		userPayload, ok := payload.(*domain.TokenPayload)
+		if !ok {
+			validationError(ctx, domain.ErrInvalidAuthorizationHeader)
