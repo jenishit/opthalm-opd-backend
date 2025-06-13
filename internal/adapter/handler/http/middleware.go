@@ -119,3 +119,33 @@ func rateLimitMiddleware(rdb *redis.Client, bucket string, limit int, window tim
 	}
 }
 
+// CORSMiddleware allows requests from the given comma-separated list of
+// origins (e.g. "http://localhost:3000,http://localhost:5173"). It echoes
+// back the matching Origin rather than "*" because "*" is invalid alongside
+// Allow-Credentials per the CORS spec and browsers will reject it. Pass "*"
+// itself to allow any origin (credentials are then not supported, per spec).
+func CORSMiddleware(allowedOrigins string) gin.HandlerFunc {
+	origins := strings.Split(allowedOrigins, ",")
+	for i := range origins {
+		origins[i] = strings.TrimSpace(origins[i])
+	}
+
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+
+		if allowedOrigins == "*" {
+			c.Header("Access-Control-Allow-Origin", "*")
+		} else if origin != "" && slices.Contains(origins, origin) {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Vary", "Origin")
+			c.Header("Access-Control-Allow-Credentials", "true")
+		}
+
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, x-agent-code")
+		c.Header("Access-Control-Allow-Methods", "POST, HEAD, PATCH, OPTIONS, GET, PUT, DELETE")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
