@@ -89,3 +89,33 @@ func requestLoggerMiddleware() gin.HandlerFunc {
 // down when the cache does.
 func rateLimitMiddleware(rdb *redis.Client, bucket string, limit int, window time.Duration) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		if rdb == nil {
+			ctx.Next()
+			return
+		}
+
+		key := fmt.Sprintf("ratelimit:%s:%s", bucket, ctx.ClientIP())
+
+		count, err := rdb.Incr(ctx, key).Result()
+		if err != nil {
+			slog.Warn("rate limiter: redis unavailable, failing open", "bucket", bucket, "error", err)
+			ctx.Next()
+			return
+		}
+		if count == 1 {
+			rdb.Expire(ctx, key, window)
+		}
+
+		if count > int64(limit) {
+			ttl, err := rdb.TTL(ctx, key).Result()
+			if err == nil && ttl > 0 {
+				ctx.Header("Retry-After", fmt.Sprintf("%.0f", ttl.Seconds()))
+			}
+			handleAbort(ctx, domain.ErrTooManyRequests)
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
