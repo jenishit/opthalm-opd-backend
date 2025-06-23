@@ -59,3 +59,33 @@ func TestPasswordReset_FullFlow(t *testing.T) {
 		"token": token, "new_password": "AnotherPassword789!",
 	}, nil)
 	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
+
+func TestPasswordReset_UnknownEmailIsSilentlyIgnored(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/password-reset/request", "", map[string]string{
+		"email": "nobody-registered@test.local",
+	}, nil)
+
+	// Same 200 as a real account — this endpoint must not leak which emails exist.
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestEmailVerification_FullFlow(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	email := "verifyme@test.local"
+	access, _ := ts.Login(t, email, "ROLE_ADMIN")
+
+	resp := ts.Do(t, http.MethodPost, "/api/auth/email/verify/resend", access, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	token := extractToken(t, ts.Emails.Last(t).Body)
+
+	resp = ts.Do(t, http.MethodPost, "/api/auth/email/verify/confirm", "", map[string]string{"token": token}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Single-use, same as password reset tokens.
+	resp = ts.Do(t, http.MethodPost, "/api/auth/email/verify/confirm", "", map[string]string{"token": token}, nil)
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
