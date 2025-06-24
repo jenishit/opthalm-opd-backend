@@ -28,3 +28,33 @@ func NewPatientHandler(svc port.PatientService) *PatientHandler {
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Param			request	body		dto.CreatePatientReq	true	"Patient details"
+//	@Success		200		{object}	response{data=dto.PatientResponse}
+//	@Router			/patient [post]
+func (ph *PatientHandler) CreatePatient(ctx *gin.Context) {
+	var req dto.CreatePatientReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	patient := &domain.Patient{
+		FullName:   req.FullName,
+		DOB:        req.DOB,
+		Gender:     req.Gender,
+		Phone:      req.Phone,
+		Occupation: req.Occupation,
+		Email:      req.Email,
+		Address:    req.Address,
+		CreatedBy:  user.UserId,
+	}
+
+	p, err := ph.svc.CreatePatient(ctx, user.ClinicID, patient)
+
+	if err != nil {
+		handleError(ctx, err)
