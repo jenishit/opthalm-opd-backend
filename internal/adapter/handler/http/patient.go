@@ -88,3 +88,33 @@ func (ph *PatientHandler) GetPatientByID(ctx *gin.Context) {
 		return
 	}
 
+	patient, err := ph.svc.GetPatientByID(ctx, user.ClinicID, ptUUID)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.PatientRes(patient))
+}
+
+// GetPatients godoc
+//
+//	@Summary		List patients
+//	@Tags			patients
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.PatientResponse}
+//	@Router			/patient [get]
+func (ph *PatientHandler) GetPatients(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	res, err := ph.svc.GetPatients(ctx, user.ClinicID)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
