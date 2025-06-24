@@ -58,3 +58,33 @@ func (ph *PatientHandler) CreatePatient(ctx *gin.Context) {
 
 	if err != nil {
 		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.PatientRes(p))
+}
+
+// GetPatientByID godoc
+//
+//	@Summary		Get a patient
+//	@Tags			patients
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Patient ID"
+//	@Success		200	{object}	response{data=dto.PatientResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/patient/{id} [get]
+func (ph *PatientHandler) GetPatientByID(ctx *gin.Context) {
+	ptID := ctx.Param("id")
+	ptUUID, err := uuid.Parse(ptID)
+
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
