@@ -149,3 +149,33 @@ func (ph *PatientHandler) SearchPatients(ctx *gin.Context) {
 		return
 	}
 
+	rsp := dto.PatientResponses(patients)
+	handleSuccess(ctx, rsp)
+}
+
+// UpdatePatientByID godoc
+//
+//	@Summary		Update a patient
+//	@Tags			patients
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string					true	"Patient ID"
+//	@Param			request	body		dto.CreatePatientReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/patient/{id} [patch]
+func (ph *PatientHandler) UpdatePatientByID(ctx *gin.Context) {
+	ptID := ctx.Param("id")
+	ptUUID, err := uuid.Parse(ptID)
+
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.CreatePatientReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
