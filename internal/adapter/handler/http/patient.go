@@ -118,3 +118,34 @@ func (ph *PatientHandler) GetPatients(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
+
+	rsp := dto.PatientResponses(res)
+
+	handleSuccess(ctx, rsp)
+}
+
+// SearchPatients godoc
+//
+//	@Summary		Search patients
+//	@Tags			patients
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.PatientResponse}
+//	@Router			/patient/search [get]
+func (ph *PatientHandler) SearchPatients(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	patients, err := ph.svc.SearchPatients(ctx, user.ClinicID, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
