@@ -209,3 +209,33 @@ func (ph *PatientHandler) UpdatePatientByID(ctx *gin.Context) {
 
 // DeletePatientByID godoc
 //
+//	@Summary		Soft-delete a patient
+//	@Tags			patients
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Patient ID"
+//	@Success		200	{object}	response
+//	@Router			/patient/{id}/delete [patch]
+func (ph *PatientHandler) DeletePatientByID(ctx *gin.Context) {
+	ptID := ctx.Param("id")
+	ptUUID, err := uuid.Parse(ptID)
+
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	err = ph.svc.DeletePatientByID(ctx, user.ClinicID, ptUUID)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Patient deleted successfully"})
+}
