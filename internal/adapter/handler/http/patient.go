@@ -179,3 +179,33 @@ func (ph *PatientHandler) UpdatePatientByID(ctx *gin.Context) {
 		validationError(ctx, err)
 		return
 	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	patient := &domain.Patient{
+		ID:         ptUUID,
+		FullName:   req.FullName,
+		DOB:        req.DOB,
+		Gender:     req.Gender,
+		Phone:      req.Phone,
+		Occupation: req.Occupation,
+		Email:      req.Email,
+		Address:    req.Address,
+		UpdatedBy:  user.UserId,
+	}
+
+	err = ph.svc.UpdatePatientByID(ctx, user.ClinicID, patient)
+
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Patient updated successfully"})
+}
+
+// DeletePatientByID godoc
+//
