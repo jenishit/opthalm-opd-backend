@@ -67,3 +67,38 @@ func (ph *ProfileHandler) GetProfiles(ctx *gin.Context) {
 		return
 	}
 	rsp := dto.NewProfileResponses(res)
+
+	handleSuccess(ctx, rsp)
+}
+
+// SearchProfiles godoc
+//
+//	@Summary		Search profiles
+//	@Tags			profile
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.ProfileResponse}
+//	@Router			/profile/search [get]
+func (ph *ProfileHandler) SearchProfiles(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	profiles, err := ph.psvc.SearchProfiles(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.NewProfileResponses(profiles)
+	handleSuccess(ctx, rsp)
+}
+
+// UpdateProfileByUserID godoc
+//
+//	@Summary		Update a profile
+//	@Tags			profile
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
