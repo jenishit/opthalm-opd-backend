@@ -102,3 +102,37 @@ func (ph *ProfileHandler) SearchProfiles(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
+//	@Param			id		path		string						true	"User ID"
+//	@Param			request	body		dto.UpdateProfileRequest	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Failure		400		{object}	errorResponse	"invalid UUID"
+//	@Router			/profile/update-profile/{id} [patch]
+func (ph *ProfileHandler) UpdateProfileByUserID(ctx *gin.Context) {
+	user_id := ctx.Param("id")
+	id, err := uuid.Parse(user_id)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpdateProfileRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	profile := &domain.GetProfileDetails{
+		UserID:    id,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Phone:     req.Phone,
+	}
+
+	err = ph.psvc.UpdateProfileByUserID(ctx, profile)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, "profile updated successfully")
+}
