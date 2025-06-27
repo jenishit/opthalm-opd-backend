@@ -61,3 +61,35 @@ func (h *ReportsHandler) SalesDaily(ctx *gin.Context) {
 //	@Security		BearerAuth
 //	@Param			year	query		int	false	"Defaults to current year"
 //	@Param			month	query		int	false	"Defaults to current month"
+//	@Success		200		{object}	response{data=dto.SalesSummaryResponse}
+//	@Router			/reports/sales/monthly [get]
+func (h *ReportsHandler) SalesMonthly(ctx *gin.Context) {
+	now := time.Now()
+	year, _ := strconv.Atoi(ctx.DefaultQuery("year", strconv.Itoa(now.Year())))
+	month, _ := strconv.Atoi(ctx.DefaultQuery("month", strconv.Itoa(int(now.Month()))))
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	summary, err := h.svc.SalesMonthly(ctx, user.ClinicID, year, month)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.SalesSummaryRes(summary)
+	headers, rows := res.TableRows()
+	respondTable(ctx, "sales-monthly", "Monthly Sales Report - "+res.Period, headers, rows, res)
+}
+
+// SalesRange godoc
+//
+//	@Summary		Sales report over a date range
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			from	query		string	true	"YYYY-MM-DD"
+//	@Param			to		query		string	true	"YYYY-MM-DD"
