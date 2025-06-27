@@ -30,3 +30,34 @@ func NewReportsHandler(svc port.ReportsService) *ReportsHandler {
 //	@Router			/reports/sales/daily [get]
 func (h *ReportsHandler) SalesDaily(ctx *gin.Context) {
 	dateStr := ctx.DefaultQuery("date", time.Now().Format("2006-01-02"))
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		validationError(ctx, domain.ErrBadRequest)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	summary, err := h.svc.SalesDaily(ctx, user.ClinicID, date)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.SalesSummaryRes(summary)
+	headers, rows := res.TableRows()
+	respondTable(ctx, "sales-daily-"+dateStr, "Daily Sales Report - "+dateStr, headers, rows, res)
+}
+
+// SalesMonthly godoc
+//
+//	@Summary		Monthly sales report
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			year	query		int	false	"Defaults to current year"
+//	@Param			month	query		int	false	"Defaults to current month"
