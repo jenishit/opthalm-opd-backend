@@ -220,3 +220,34 @@ func (h *ReportsHandler) InventoryValuation(ctx *gin.Context) {
 // VisitsSummary godoc
 //
 //	@Summary		Visits summary report
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			from		query		string	true	"YYYY-MM-DD"
+//	@Param			to			query		string	true	"YYYY-MM-DD"
+//	@Param			group_by	query		string	false	"'day' (default) or 'doctor'"
+//	@Success		200			{object}	response{data=[]dto.VisitsSummaryResponse}
+//	@Router			/reports/visits/summary [get]
+func (h *ReportsHandler) VisitsSummary(ctx *gin.Context) {
+	from, to, ok := parseDateRange(ctx)
+	if !ok {
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	groupBy := ctx.DefaultQuery("group_by", "day")
+
+	if groupBy == "doctor" {
+		summary, err := h.svc.VisitsSummaryByDoctor(ctx, user.ClinicID, from, to)
+		if err != nil {
+			handleError(ctx, err)
+			return
+		}
+		res := dto.DoctorVisitsSummaryResList(summary)
+		headers, rows := dto.DoctorVisitsSummaryTableRows(res)
+		respondTable(ctx, "visits-by-doctor", "Visits by Doctor", headers, rows, res)
