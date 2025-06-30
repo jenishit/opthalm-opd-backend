@@ -156,3 +156,35 @@ func (h *ReportsHandler) VendorDues(ctx *gin.Context) {
 	user, ok := currentUser(ctx)
 	if !ok {
 		return
+	}
+
+	dues, err := h.svc.VendorDues(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.VendorDueResList(dues)
+	headers, rows := dto.VendorDueTableRows(res)
+	respondTable(ctx, "vendor-dues", "Vendor Dues", headers, rows, res)
+}
+
+// InventoryLowStock godoc
+//
+//	@Summary		Inventory low-stock report
+//	@Description	Admin-only.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.InventoryItemResponse}
+//	@Router			/reports/inventory/low-stock [get]
+func (h *ReportsHandler) InventoryLowStock(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	items, err := h.svc.InventoryLowStock(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
