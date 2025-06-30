@@ -93,3 +93,35 @@ func (h *ReportsHandler) SalesMonthly(ctx *gin.Context) {
 //	@Security		BearerAuth
 //	@Param			from	query		string	true	"YYYY-MM-DD"
 //	@Param			to		query		string	true	"YYYY-MM-DD"
+//	@Success		200		{object}	response{data=dto.SalesSummaryResponse}
+//	@Router			/reports/sales/range [get]
+func (h *ReportsHandler) SalesRange(ctx *gin.Context) {
+	from, to, ok := parseDateRange(ctx)
+	if !ok {
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	summary, err := h.svc.SalesRange(ctx, user.ClinicID, from, to)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.SalesSummaryRes(summary)
+	headers, rows := res.TableRows()
+	respondTable(ctx, "sales-range", "Sales Report - "+res.Period, headers, rows, res)
+}
+
+// PatientDues godoc
+//
+//	@Summary		Outstanding patient balances
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.PatientDueResponse}
