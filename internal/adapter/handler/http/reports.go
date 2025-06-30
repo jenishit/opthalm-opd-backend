@@ -251,3 +251,35 @@ func (h *ReportsHandler) VisitsSummary(ctx *gin.Context) {
 		res := dto.DoctorVisitsSummaryResList(summary)
 		headers, rows := dto.DoctorVisitsSummaryTableRows(res)
 		respondTable(ctx, "visits-by-doctor", "Visits by Doctor", headers, rows, res)
+		return
+	}
+
+	summary, err := h.svc.VisitsSummaryByDay(ctx, user.ClinicID, from, to)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	res := dto.VisitsSummaryResList(summary)
+	headers, rows := dto.VisitsSummaryTableRows(res)
+	respondTable(ctx, "visits-by-day", "Visits Summary", headers, rows, res)
+}
+
+// parseDateRange reads ?from=&to= (YYYY-MM-DD, both required), writing the
+// validation error response itself on failure.
+func parseDateRange(ctx *gin.Context) (from, to time.Time, ok bool) {
+	fromStr := ctx.Query("from")
+	toStr := ctx.Query("to")
+
+	from, err := time.Parse("2006-01-02", fromStr)
+	if err != nil {
+		validationError(ctx, domain.ErrBadRequest)
+		return
+	}
+	to, err = time.Parse("2006-01-02", toStr)
+	if err != nil {
+		validationError(ctx, domain.ErrBadRequest)
+		return
+	}
+
+	return from, to, true
+}
