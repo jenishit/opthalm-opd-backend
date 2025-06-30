@@ -125,3 +125,34 @@ func (h *ReportsHandler) SalesRange(ctx *gin.Context) {
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Success		200	{object}	response{data=[]dto.PatientDueResponse}
+//	@Router			/reports/dues [get]
+func (h *ReportsHandler) PatientDues(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	dues, err := h.svc.PatientDues(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.PatientDueResList(dues)
+	headers, rows := dto.PatientDueTableRows(res)
+	respondTable(ctx, "patient-dues", "Pending Balances (Udhaar)", headers, rows, res)
+}
+
+// VendorDues godoc
+//
+//	@Summary		Outstanding vendor balances
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.VendorDueResponse}
+//	@Router			/reports/vendor-dues [get]
+func (h *ReportsHandler) VendorDues(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
