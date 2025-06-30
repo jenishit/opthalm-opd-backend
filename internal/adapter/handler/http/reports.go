@@ -188,3 +188,35 @@ func (h *ReportsHandler) InventoryLowStock(ctx *gin.Context) {
 	if err != nil {
 		handleError(ctx, err)
 		return
+	}
+
+	handleSuccess(ctx, dto.InventoryItemResList(items))
+}
+
+// InventoryValuation godoc
+//
+//	@Summary		Inventory valuation report
+//	@Description	Admin-only.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=dto.InventoryValuationResponse}
+//	@Router			/reports/inventory/valuation [get]
+func (h *ReportsHandler) InventoryValuation(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	valuation, err := h.svc.InventoryValuation(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.InventoryValuationRes(valuation))
+}
+
+// VisitsSummary godoc
+//
+//	@Summary		Visits summary report
