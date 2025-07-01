@@ -57,3 +57,32 @@ func TestReports_PatientDuesOmitsFullyPaidInvoice(t *testing.T) {
 	}
 	resp := ts.DoData(t, http.MethodGet, "/api/reports/dues", token, nil, &dues)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.Len(t, dues, 1, "an unpaid invoice should show up in the dues report")
+
+	ts.Do(t, http.MethodPost, "/api/billing/invoice/"+invoice.ID.String()+"/payments", token, map[string]any{
+		"amount": 800, "method": "cash",
+	}, nil)
+
+	resp = ts.DoData(t, http.MethodGet, "/api/reports/dues", token, nil, &dues)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Len(t, dues, 0, "a fully paid invoice should not show up in the dues report")
+}
+
+func TestReports_InventoryValuation(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	createInventoryItem(t, ts, token, "RPT-1", 10) // cost 1000, sell 2000, qty 10
+
+	var valuation struct {
+		TotalItems     int     `json:"total_items"`
+		TotalUnits     int     `json:"total_units"`
+		TotalCostValue float64 `json:"total_cost_value"`
+		TotalSellValue float64 `json:"total_sell_value"`
+	}
+	resp := ts.DoData(t, http.MethodGet, "/api/reports/inventory/valuation", token, nil, &valuation)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 1, valuation.TotalItems)
+	assert.Equal(t, 10, valuation.TotalUnits)
+	assert.Equal(t, float64(10000), valuation.TotalCostValue)
+	assert.Equal(t, float64(20000), valuation.TotalSellValue)
+}
