@@ -86,3 +86,33 @@ func TestReports_InventoryValuation(t *testing.T) {
 	assert.Equal(t, float64(10000), valuation.TotalCostValue)
 	assert.Equal(t, float64(20000), valuation.TotalSellValue)
 }
+
+func TestReports_CSVAndPDFFormats(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+	patientID := ts.CreatePatient(t, token, "Report Patient 3", "9800000042")
+	ts.Do(t, http.MethodPost, "/api/billing/invoice", token, map[string]any{
+		"patient_id": patientID,
+		"items": []map[string]any{
+			{"item_type": "service", "description": "Consultation", "quantity": 1, "unit_price": 100},
+		},
+	}, nil)
+
+	today := time.Now().Format("2006-01-02")
+
+	resp := ts.Do(t, http.MethodGet, "/api/reports/sales/daily?date="+today+"&format=csv", token, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "text/csv", resp.Header.Get("Content-Type"))
+
+	resp = ts.Do(t, http.MethodGet, "/api/reports/sales/daily?date="+today+"&format=pdf", token, nil, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "application/pdf", resp.Header.Get("Content-Type"))
+}
+
+func TestReports_NonAdminRejected(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	doctorToken, _ := ts.Login(t, "reportsuser@test.local", "ROLE_DOCTOR")
+
+	resp := ts.Do(t, http.MethodGet, "/api/reports/dues", doctorToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}
