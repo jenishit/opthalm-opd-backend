@@ -26,3 +26,32 @@ var errorStatusMap = map[error]int{
 	domain.ErrInsufficientStock:          http.StatusConflict,
 	domain.ErrSubscriptionInactive:       http.StatusPaymentRequired,
 	domain.ErrInsufficientPayment:        http.StatusBadRequest,
+	domain.ErrPaymentExceedsDueAmount:    http.StatusBadRequest,
+	domain.ErrInvoiceAlreadyPaid:         http.StatusConflict,
+	domain.ErrTooManyRequests:            http.StatusTooManyRequests,
+	domain.ErrBadRequest:                 http.StatusBadRequest,
+}
+
+// validationError sends an error response for some specific request validation error
+func validationError(ctx *gin.Context, err error) {
+	errMsgs := parseError(err)
+	errRsp := newErrorResponse(errMsgs)
+	ctx.JSON(http.StatusBadRequest, errRsp)
+}
+
+// handleError determines the status code of an error and returns a JSON response with the error message and status code
+func handleError(ctx *gin.Context, err error) {
+	statusCode, ok := errorStatusMap[err]
+	if !ok {
+		statusCode = http.StatusInternalServerError
+	}
+
+	errMsg := parseError(err)
+	errRsp := newErrorResponse(errMsg)
+	ctx.JSON(statusCode, errRsp)
+}
+
+// handleAbort sends an error response and aborts the request with the specified status code and error message
+func handleAbort(ctx *gin.Context, err error) {
+	statusCode, ok := errorStatusMap[err]
+	if !ok {
