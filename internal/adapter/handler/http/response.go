@@ -55,3 +55,32 @@ func handleError(ctx *gin.Context, err error) {
 func handleAbort(ctx *gin.Context, err error) {
 	statusCode, ok := errorStatusMap[err]
 	if !ok {
+		statusCode = http.StatusInternalServerError
+	}
+
+	errMsg := parseError(err)
+	errRsp := newErrorResponse(errMsg)
+	ctx.AbortWithStatusJSON(statusCode, errRsp)
+}
+
+// parseError parses error messages from the error object and returns a slice of error messages
+func parseError(err error) []string {
+	var errMsgs []string
+
+	if errors.As(err, &validator.ValidationErrors{}) {
+		for _, err := range err.(validator.ValidationErrors) {
+			errMsgs = append(errMsgs, err.Error())
+		}
+	} else {
+		errMsgs = append(errMsgs, err.Error())
+	}
+
+	return errMsgs
+}
+
+// errorResponse represents an error response body format
+type errorResponse struct {
+	Success  bool     `json:"success" example:"false"`
+	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
+}
+
