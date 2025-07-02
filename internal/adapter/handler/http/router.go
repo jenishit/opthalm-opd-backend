@@ -30,3 +30,34 @@ func NewRouter(
 	config *config.Container,
 	token port.TokenService,
 	roleHandler RoleHandler,
+	userHandler UserHandler,
+	profileHandler ProfileHandler,
+	authHandler AuthHandler,
+	clinicHandler ClinicHandler,
+	patientHandler PatientHandler,
+	visitHandler VisitHandler,
+	catalogHandler CatalogHandler,
+	invoiceHandler InvoiceHandler,
+	inventoryHandler InventoryHandler,
+	vendorHandler VendorHandler,
+	stockPurchaseHandler StockPurchaseHandler,
+	labJobHandler LabJobHandler,
+	reportsHandler ReportsHandler,
+	calculatorHandler CalculatorHandler,
+	subscriptionHandler SubscriptionHandler,
+	subSvc port.SubscriptionService,
+	redisClient *redis.Client,
+) (*Router, error) {
+
+	if config.App.Env == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	router := gin.New()
+	router.Use(requestIDMiddleware())
+	router.Use(requestLoggerMiddleware())
+	router.Use(recoveryMiddleware())
+	router.Use(CORSMiddleware(config.HTTP.AllowedOrigins))
+
+	// Swagger UI + spec, for exploring/testing the API and for frontend
+	// codegen. Left off in production — it documents the full request/
