@@ -24,3 +24,28 @@ func NewRoleHandler(rsvc port.RoleService) *RoleHandler {
 //	@Tags			roles
 //	@Accept			json
 //	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateRole	true	"Role name"
+//	@Success		200		{object}	response{data=domain.Role}
+//	@Failure		409		{object}	errorResponse	"role already exists"
+//	@Router			/role/create [post]
+func (rh *RoleHandler) CreateRole(ctx *gin.Context) {
+	var req dto.CreateRole
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	role := &domain.Role{
+		RoleName: req.RoleName,
+	}
+
+	role, err := rh.rsvc.CreateRole(ctx, role)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, role)
+}
