@@ -156,3 +156,35 @@ func NewRouter(
 		}
 
 		diagnoses := catalog.Group("/diagnoses")
+		{
+			diagnoses.GET("", catalogHandler.ListDiagnoses)
+			diagnoses.GET("/search", catalogHandler.SearchDiagnoses)
+			diagnoses.GET("/:id", catalogHandler.GetDiagnosisByID)
+			diagnoses.PATCH("/:id", catalogHandler.UpdateDiagnosis)
+			diagnoses.PATCH("/:id/delete", catalogHandler.DeleteDiagnosis)
+		}
+
+		conditions := catalog.Group("/conditions")
+		{
+			conditions.GET("", catalogHandler.ListConditions)
+			conditions.GET("/search", catalogHandler.SearchConditions)
+			conditions.GET("/:id", catalogHandler.GetConditionByID)
+			conditions.PATCH("/:id", catalogHandler.UpdateCondition)
+			conditions.PATCH("/:id/delete", catalogHandler.DeleteCondition)
+		}
+	}
+
+	billing := api.Group("/billing")
+	billing.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_BILLING"), subscriptionMiddleware(subSvc))
+	{
+		invoice := billing.Group("/invoice")
+		{
+			invoice.POST("", invoiceHandler.CreateInvoice)
+			invoice.GET("", invoiceHandler.ListInvoices)
+			invoice.GET("/search", invoiceHandler.SearchInvoices)
+			invoice.GET("/:id", invoiceHandler.GetInvoiceByID)
+			invoice.PATCH("/:id/status", invoiceHandler.UpdateInvoiceStatus)
+			invoice.POST("/:id/payments", invoiceHandler.RecordPayment)
+			invoice.GET("/:id/pdf", invoiceHandler.GetInvoicePDF)
+			invoice.GET("/:id/qr", invoiceHandler.GetInvoiceQR)
+			invoice.GET("/:id/whatsapp-link", invoiceHandler.GetInvoiceWhatsAppLink)
