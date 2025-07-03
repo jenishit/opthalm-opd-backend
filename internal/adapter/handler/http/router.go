@@ -93,3 +93,34 @@ func NewRouter(
 	}
 
 	admin := api.Group("/admin")
+	admin.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
+
+	role := api.Group("/role")
+	role.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
+	{
+		role.POST("/create", roleHandler.CreateRole)
+	}
+
+	user := api.Group("/user")
+	user.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
+	{
+		user.POST("/create", userHandler.CreateUser)
+	}
+
+	profile := api.Group("/profile")
+	profile.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
+	{
+		profile.GET("/search", profileHandler.SearchProfiles)
+		profile.GET("/getme", profileHandler.GetProfileByID)
+		profile.GET("/profile-details", profileHandler.GetProfiles)
+		profile.PATCH("/update-profile/:id", profileHandler.UpdateProfileByUserID)
+	}
+
+	clinics := admin.Group("/clinic")
+	{
+		clinics.POST("", clinicHandler.InsertClinic)
+		clinics.GET("", clinicHandler.GetAllClinics)
+		clinics.GET("/:id", clinicHandler.GetClinicByID)
+		clinics.PATCH("/:id", clinicHandler.UpdateClinic)
+	}
+
