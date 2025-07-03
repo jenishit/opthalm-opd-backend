@@ -188,3 +188,34 @@ func NewRouter(
 			invoice.GET("/:id/pdf", invoiceHandler.GetInvoicePDF)
 			invoice.GET("/:id/qr", invoiceHandler.GetInvoiceQR)
 			invoice.GET("/:id/whatsapp-link", invoiceHandler.GetInvoiceWhatsAppLink)
+		}
+	}
+
+	inventory := api.Group("/inventory")
+	inventory.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_INVENTORY"), subscriptionMiddleware(subSvc))
+	{
+		items := inventory.Group("/items")
+		{
+			items.POST("", inventoryHandler.CreateItem)
+			items.GET("", inventoryHandler.ListItems)
+			items.GET("/search", inventoryHandler.SearchItems)
+			items.GET("/barcode/:sku", inventoryHandler.GetItemByBarcode)
+			items.GET("/:id", inventoryHandler.GetItemByID)
+			items.PATCH("/:id", inventoryHandler.UpdateItem)
+			items.PATCH("/:id/delete", inventoryHandler.DeleteItem)
+			items.POST("/:id/stock", inventoryHandler.AddStock)
+			items.GET("/:id/movements", inventoryHandler.ListMovements)
+			items.GET("/:id/barcode-image", inventoryHandler.GetBarcodeImage)
+		}
+
+		inventory.GET("/low-stock", inventoryHandler.LowStock)
+
+		vendors := inventory.Group("/vendors")
+		{
+			vendors.POST("", vendorHandler.CreateVendor)
+			vendors.GET("", vendorHandler.ListVendors)
+			vendors.GET("/search", vendorHandler.SearchVendors)
+			vendors.GET("/:id", vendorHandler.GetVendorByID)
+			vendors.PATCH("/:id", vendorHandler.UpdateVendor)
+			vendors.PATCH("/:id/delete", vendorHandler.DeleteVendor)
+		}
