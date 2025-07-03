@@ -124,3 +124,35 @@ func NewRouter(
 		clinics.PATCH("/:id", clinicHandler.UpdateClinic)
 	}
 
+	patient := api.Group("/patient")
+	patient.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
+	{
+		patient.POST("", patientHandler.CreatePatient)
+		patient.GET("", patientHandler.GetPatients)
+		patient.GET("/search", patientHandler.SearchPatients)
+		patient.GET("/:id", patientHandler.GetPatientByID)
+		patient.PATCH("/:id", patientHandler.UpdatePatientByID)
+		patient.PATCH("/:id/delete", patientHandler.DeletePatientByID)
+	}
+
+	visit := api.Group("/visit")
+	visit.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
+	{
+		visit.POST("", visitHandler.CreateVisit)
+		visit.GET("/:id", visitHandler.GetVisitByVisitID)
+		visit.GET("/patient/:patientId", visitHandler.GetVisitsByPatientID)
+		visit.PATCH("/:id", visitHandler.UpdateVisitByVisitID)
+	}
+
+	catalog := admin.Group("/catalog")
+	{
+		medicines := catalog.Group("/medicines")
+		{
+			medicines.GET("", catalogHandler.ListMedicines)
+			medicines.GET("/search", catalogHandler.SearchMedicines)
+			medicines.GET("/:id", catalogHandler.GetMedicineByID)
+			medicines.PATCH("/:id", catalogHandler.UpdateMedicine)
+			medicines.PATCH("/:id/delete", catalogHandler.DeleteMedicine)
+		}
+
+		diagnoses := catalog.Group("/diagnoses")
