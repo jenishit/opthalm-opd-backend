@@ -62,3 +62,35 @@ func (h *SubscriptionHandler) GetByClinicID(ctx *gin.Context) {
 //	@Router			/platform/subscriptions/{clinicId} [put]
 func (h *SubscriptionHandler) Upsert(ctx *gin.Context) {
 	clinicID, err := uuid.Parse(ctx.Param("clinicId"))
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.UpsertSubscriptionReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	periodEnd, err := time.Parse("2006-01-02", req.CurrentPeriodEnd)
+	if err != nil {
+		validationError(ctx, domain.ErrBadRequest)
+		return
+	}
+
+	sub := &domain.Subscription{
+		ClinicID:         clinicID,
+		PlanName:         req.PlanName,
+		Status:           domain.SubscriptionStatus(req.Status),
+		CurrentPeriodEnd: periodEnd,
+	}
+
+	updated, err := h.svc.Upsert(ctx, sub)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.SubscriptionRes(updated))
+}
