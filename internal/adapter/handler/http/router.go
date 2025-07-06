@@ -219,3 +219,35 @@ func NewRouter(
 			vendors.PATCH("/:id", vendorHandler.UpdateVendor)
 			vendors.PATCH("/:id/delete", vendorHandler.DeleteVendor)
 		}
+
+		purchases := inventory.Group("/purchases")
+		{
+			purchases.POST("", stockPurchaseHandler.CreatePurchase)
+			purchases.GET("", stockPurchaseHandler.ListPurchases)
+			purchases.GET("/:id", stockPurchaseHandler.GetPurchaseByID)
+		}
+	}
+
+	labJob := api.Group("/lab-jobs")
+	labJob.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_LAB", "ROLE_BILLING"), subscriptionMiddleware(subSvc))
+	{
+		labJob.POST("", labJobHandler.CreateLabJob)
+		labJob.GET("", labJobHandler.ListLabJobs)
+		labJob.GET("/:id", labJobHandler.GetLabJobByID)
+		labJob.PATCH("/:id/status", labJobHandler.UpdateLabJobStatus)
+		labJob.GET("/patient/:patientId", labJobHandler.GetLabJobsByPatientID)
+	}
+
+	reports := api.Group("/reports")
+	reports.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN"), subscriptionMiddleware(subSvc))
+	{
+		sales := reports.Group("/sales")
+		{
+			sales.GET("/daily", reportsHandler.SalesDaily)
+			sales.GET("/monthly", reportsHandler.SalesMonthly)
+			sales.GET("/range", reportsHandler.SalesRange)
+		}
+		reports.GET("/dues", reportsHandler.PatientDues)
+		reports.GET("/vendor-dues", reportsHandler.VendorDues)
+
+		inventoryReports := reports.Group("/inventory")
