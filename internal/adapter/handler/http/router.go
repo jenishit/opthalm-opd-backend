@@ -251,3 +251,34 @@ func NewRouter(
 		reports.GET("/vendor-dues", reportsHandler.VendorDues)
 
 		inventoryReports := reports.Group("/inventory")
+		{
+			inventoryReports.GET("/low-stock", reportsHandler.InventoryLowStock)
+			inventoryReports.GET("/valuation", reportsHandler.InventoryValuation)
+		}
+
+		reports.GET("/visits/summary", reportsHandler.VisitsSummary)
+	}
+
+	calculators := api.Group("/calculators")
+	calculators.Use(authMiddleware(token))
+	{
+		calculators.POST("/transposition", calculatorHandler.Transposition)
+		calculators.POST("/spherical-equivalent", calculatorHandler.SphericalEquivalent)
+		calculators.POST("/near-add", calculatorHandler.NearAdd)
+		calculators.POST("/vertex-distance", calculatorHandler.VertexDistance)
+		calculators.POST("/telescope-fov", calculatorHandler.TelescopeFOV)
+	}
+
+	return &Router{
+		router,
+	}, nil
+}
+
+// Serve starts the HTTP server and blocks until it's asked to shut down via
+// SIGINT/SIGTERM (the signals a `docker stop` or orchestrator sends), at
+// which point it stops accepting new connections and gives in-flight
+// requests up to shutdownGracePeriod to finish before returning.
+func (r *Router) Serve(listenAddr string) error {
+	srv := &http.Server{
+		Addr:    listenAddr,
+		Handler: r.Engine,
