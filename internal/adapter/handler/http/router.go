@@ -282,3 +282,35 @@ func (r *Router) Serve(listenAddr string) error {
 	srv := &http.Server{
 		Addr:    listenAddr,
 		Handler: r.Engine,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	serveErr := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serveErr <- err
+		}
+		close(serveErr)
+	}()
+
+	select {
+	case err := <-serveErr:
+		return err
+	case <-ctx.Done():
+	}
+
+	slog.Info("shutdown signal received, draining in-flight requests", "grace_period", shutdownGracePeriod)
+	stop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGracePeriod)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		return err
+	}
+
+	slog.Info("server shut down cleanly")
+	return nil
+}
