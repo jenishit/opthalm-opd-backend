@@ -59,3 +59,34 @@ func TestSubscription_CalculatorsWorkRegardlessOfSubscriptionStatus(t *testing.T
 
 	ts.SetSubscriptionStatus(t, ts.ClinicID, "cancelled", time.Now().Add(24*time.Hour))
 
+	resp := ts.Do(t, http.MethodPost, "/api/calculators/spherical-equivalent", token, map[string]any{
+		"sphere": 1.0, "cylinder": 1.0,
+	}, nil)
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "free tools should work even for a cancelled subscription")
+}
+
+func TestSubscription_PlatformOperatorCanReactivate(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	clinicToken, _ := ts.AdminToken(t)
+	superToken, _ := ts.SuperadminToken(t)
+
+	ts.SetSubscriptionStatus(t, ts.ClinicID, "cancelled", time.Now().Add(24*time.Hour))
+
+	resp := ts.Do(t, http.MethodGet, "/api/patient", clinicToken, nil, nil)
+	require.Equal(t, http.StatusPaymentRequired, resp.StatusCode)
+
+	// A clinic's own admin cannot reactivate itself.
+	resp = ts.Do(t, http.MethodPut, "/api/platform/subscriptions/"+ts.ClinicID.String(), clinicToken, map[string]any{
+		"plan_name": "pro", "status": "active", "current_period_end": time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
+	}, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "a clinic admin must not be able to reactivate its own subscription")
+
+	// Only the platform superadmin can.
+	resp = ts.Do(t, http.MethodPut, "/api/platform/subscriptions/"+ts.ClinicID.String(), superToken, map[string]any{
+		"plan_name": "pro", "status": "active", "current_period_end": time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.Do(t, http.MethodGet, "/api/patient", clinicToken, nil, nil)
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "clinic should regain access after the platform operator reactivates it")
+}
