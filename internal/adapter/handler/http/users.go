@@ -24,3 +24,28 @@ func NewUsersHandler(usvc port.UserService) *UserHandler {
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
+//	@Param			request	body		dto.CreateUser	true	"New user details"
+//	@Success		200		{object}	response{data=domain.User}
+//	@Failure		409		{object}	errorResponse	"email already exists"
+//	@Router			/user/create [post]
+func (uh *UserHandler) CreateUser(ctx *gin.Context) {
+	var req dto.CreateUser
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	caller, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	user, err := uh.usvc.CreateUser(ctx, &req, caller.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, user)
+}
