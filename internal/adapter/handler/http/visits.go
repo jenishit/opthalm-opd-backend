@@ -103,3 +103,38 @@ func (vh *VisitHandler) GetVisitByVisitID(ctx *gin.Context) {
 //	@Success		200			{object}	response{data=dto.PatientVisitsResponse}
 //	@Router			/visit/patient/{patientId} [get]
 func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
+	patientID := ctx.Param("patientId")
+	patientUUID, err := uuid.Parse(patientID)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visits, err := vh.svc.GetVisitsByPatientID(ctx, user.ClinicID, patientUUID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.PatientVisitsResponseFromDetails(visits)
+	handleSuccess(ctx, rsp)
+}
+
+// UpdateVisitByVisitID godoc
+//
+//	@Summary		Update a visit
+//	@Tags			visits
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Visit ID"
+//	@Param			request	body		dto.CreateVisitReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/visit/{id} [patch]
+func (vh *VisitHandler) UpdateVisitByVisitID(ctx *gin.Context) {
+	visitID := ctx.Param("id")
