@@ -68,3 +68,38 @@ func (vh *VisitHandler) CreateVisit(ctx *gin.Context) {
 //	@Security		BearerAuth
 //	@Param			id	path		string	true	"Visit ID"
 //	@Success		200	{object}	response{data=dto.VisitResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/visit/{id} [get]
+func (vh *VisitHandler) GetVisitByVisitID(ctx *gin.Context) {
+	visitID := ctx.Param("id")
+	visitUUID, err := uuid.Parse(visitID)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visit, err := vh.svc.GetVisitByVisitID(ctx, user.ClinicID, visitUUID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.VisitResponseFromDetails(visit)
+	handleSuccess(ctx, rsp)
+}
+
+// GetVisitsByPatientID godoc
+//
+//	@Summary		List a patient's visits
+//	@Tags			visits
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			patientId	path		string	true	"Patient ID"
+//	@Success		200			{object}	response{data=dto.PatientVisitsResponse}
+//	@Router			/visit/patient/{patientId} [get]
+func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
