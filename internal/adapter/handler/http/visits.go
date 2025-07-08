@@ -33,3 +33,38 @@ func (vh *VisitHandler) CreateVisit(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visit := &domain.Visit{
+		PatientID:      req.PatientID,
+		ExamineBy:      req.ExamineBy,
+		Status:         req.Status,
+		VisitDate:      req.VisitDate,
+		CheifComplaint: req.CheifComplaint,
+		CreatedBy:      user.UserId,
+		UpdatedBy:      user.UserId,
+	}
+
+	v, err := vh.svc.CreateVisit(ctx, user.ClinicID, visit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.VisitCreateRes(v))
+}
+
+// GetVisitByVisitID godoc
+//
+//	@Summary		Get a visit
+//	@Tags			visits
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Visit ID"
+//	@Success		200	{object}	response{data=dto.VisitResponse}
