@@ -138,3 +138,38 @@ func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
 //	@Router			/visit/{id} [patch]
 func (vh *VisitHandler) UpdateVisitByVisitID(ctx *gin.Context) {
 	visitID := ctx.Param("id")
+	visitUUID, err := uuid.Parse(visitID)
+	if err != nil {
+		handleError(ctx, domain.ErrInvalidUUID)
+		return
+	}
+
+	var req dto.CreateVisitReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visit := &domain.Visit{
+		ID:             visitUUID,
+		PatientID:      req.PatientID,
+		ExamineBy:      req.ExamineBy,
+		Status:         req.Status,
+		VisitDate:      req.VisitDate,
+		CheifComplaint: req.CheifComplaint,
+		UpdatedBy:      user.UserId,
+	}
+
+	err = vh.svc.UpdateVisitByVisitID(ctx, user.ClinicID, visit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, gin.H{"message": "Visit updated successfully"})
+}
