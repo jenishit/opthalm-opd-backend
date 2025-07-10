@@ -90,3 +90,33 @@ func TestVisit_UpdateStatusDoesNotBlankOtherFields(t *testing.T) {
 	}
 	resp = ts.DoData(t, http.MethodGet, "/api/visit/"+created.ID.String(), token, nil, &after)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "completed", after.Status)
+	assert.Equal(t, "resolved", after.CheifComplaint)
+	assert.Equal(t, before.VisitDate, after.VisitDate, "visit_date must not be blanked out by an update that omits it")
+}
+
+func TestVisit_ListByPatient(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, userID := ts.AdminToken(t)
+	patientID := ts.CreatePatient(t, token, "Visit Patient 4", "9800000013")
+
+	ts.Do(t, http.MethodPost, "/api/visit", token, map[string]any{
+		"patient_id":      patientID,
+		"examine_by":      userID,
+		"chief_complaint": "first visit",
+	}, nil)
+	ts.Do(t, http.MethodPost, "/api/visit", token, map[string]any{
+		"patient_id":      patientID,
+		"examine_by":      userID,
+		"chief_complaint": "second visit",
+	}, nil)
+
+	var out struct {
+		Visits []struct {
+			ID uuid.UUID `json:"id"`
+		} `json:"visits"`
+	}
+	resp := ts.DoData(t, http.MethodGet, "/api/visit/patient/"+patientID.String(), token, nil, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Len(t, out.Visits, 2)
+}
