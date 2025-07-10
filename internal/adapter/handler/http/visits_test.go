@@ -59,3 +59,34 @@ func TestVisit_UpdateStatusDoesNotBlankOtherFields(t *testing.T) {
 	ts := testutil.NewTestServer(t)
 	token, userID := ts.AdminToken(t)
 	patientID := ts.CreatePatient(t, token, "Visit Patient 3", "9800000012")
+
+	var created struct {
+		ID uuid.UUID `json:"id"`
+	}
+	ts.DoData(t, http.MethodPost, "/api/visit", token, map[string]any{
+		"patient_id":      patientID,
+		"examine_by":      userID,
+		"chief_complaint": "original complaint",
+	}, &created)
+
+	var before struct {
+		VisitDate string `json:"visit_date"`
+	}
+	ts.DoData(t, http.MethodGet, "/api/visit/"+created.ID.String(), token, nil, &before)
+
+	// Update status only, still resending required fields per the DTO contract.
+	resp := ts.Do(t, http.MethodPatch, "/api/visit/"+created.ID.String(), token, map[string]any{
+		"patient_id":      patientID,
+		"examine_by":      userID,
+		"status":          "completed",
+		"chief_complaint": "resolved",
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var after struct {
+		Status         string `json:"status"`
+		VisitDate      string `json:"visit_date"`
+		CheifComplaint string `json:"chief_complaint"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/visit/"+created.ID.String(), token, nil, &after)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
