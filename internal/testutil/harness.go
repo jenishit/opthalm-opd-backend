@@ -33,3 +33,37 @@ import (
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres/repository"
 	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+)
+
+// appTables lists every table this test suite may write to, in an order
+// safe for TRUNCATE ... CASCADE (CASCADE makes strict ordering unnecessary,
+// but listing children-of before parents-of keeps intent readable).
+var appTables = []string{
+	"lab_job_status_history", "lab_jobs",
+	"stock_purchase_items", "stock_purchases",
+	"inventory_stock_movements", "inventory_items", "vendors",
+	"payments", "invoice_items", "invoices",
+	"follow_ups", "refraction_readings", "investigations", "examination_findings", "visit_symptoms",
+	"visits",
+	"medicines", "diagnosis_catalog", "history_conditions",
+	"patients",
+	"subscriptions",
+	"clinic_settings",
+	"verification_tokens",
+	"sessions",
+	"profile", "users", "role",
+}
+
+// TestServer bundles a running httptest server (the full app) with direct
+// DB access for setup/teardown and assertions the API doesn't expose.
+type TestServer struct {
+	*httptest.Server
+	DB *postgres.DB
+	// ClinicID is the primary test clinic, created once per TestServer.
+	// Most tests only ever need this one tenant; cross-tenant tests use
+	// NewClinic to spin up an additional, isolated one.
+	ClinicID uuid.UUID
+	// Emails captures every email AuthService would have sent (password
+	// reset / email verification codes), in place of real delivery, so
+	// tests can pull the plaintext token straight out of the body.
+	Emails *emailCapture
