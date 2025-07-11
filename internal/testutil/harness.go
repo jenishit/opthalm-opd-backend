@@ -102,3 +102,38 @@ func (e *emailCapture) Last(t *testing.T) SentEmail {
 // serves it via httptest, against the docker-compose Postgres. It skips the
 // test (rather than failing it) if that database isn't reachable, so
 // `go test ./...` stays safe to run without Postgres up.
+func NewTestServer(t *testing.T) *TestServer {
+	t.Helper()
+
+	setTestEnvDefaults()
+
+	cfg, err := config.New()
+	require.NoError(t, err, "load config")
+
+	ctx := context.Background()
+	db, err := postgres.New(ctx, cfg.DB)
+	if err != nil {
+		t.Skipf("test database not reachable (%s:%s): %v — start it with `docker compose up -d`", cfg.DB.Host, cfg.DB.Port, err)
+	}
+
+	redisClient, err := redisadapter.New(ctx, cfg.Redis)
+	if err != nil {
+		t.Skipf("test redis not reachable (%s, db %d): %v — start it with `docker compose up -d`", cfg.Redis.Addr, cfg.Redis.DB, err)
+	}
+	// Unlike Postgres (truncated fresh per TestServer via Reset), Redis
+	// persists across every NewTestServer call in the same `go test` run.
+	// Without this, rate-limit counters (and any stale subscription cache
+	// entries) accumulate across unrelated tests — e.g. dozens of tests
+	// calling /api/auth/login would eventually trip the login rate limit
+	// even though each test only logs in once or twice.
+	require.NoError(t, redisClient.FlushDB(ctx).Err(), "flush test redis")
+
+	tokenService, err := auth.New(cfg.Token)
+	require.NoError(t, err, "init token service")
+
+	roleRepo := repository.NewRoleRepository(db)
+	roleService := services.NewRoleService(roleRepo)
+	roleHandler := httpadapter.NewRoleHandler(roleService)
+
+	profileRepo := repository.NewProfileRepository(db)
+	profileService := services.NewProfileService(profileRepo)
