@@ -67,3 +67,38 @@ type TestServer struct {
 	// reset / email verification codes), in place of real delivery, so
 	// tests can pull the plaintext token straight out of the body.
 	Emails *emailCapture
+}
+
+// SentEmail is one email captured by emailCapture during a test.
+type SentEmail struct {
+	To, Subject, Body string
+}
+
+// emailCapture is a port.EmailSender that records instead of delivering,
+// used as AuthService's email sender for every TestServer.
+type emailCapture struct {
+	mu     sync.Mutex
+	emails []SentEmail
+}
+
+func (e *emailCapture) Send(_ context.Context, to, subject, body string) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.emails = append(e.emails, SentEmail{To: to, Subject: subject, Body: body})
+	return nil
+}
+
+// Last returns the most recently captured email, failing the test if none
+// has been sent yet.
+func (e *emailCapture) Last(t *testing.T) SentEmail {
+	t.Helper()
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	require.NotEmpty(t, e.emails, "expected an email to have been sent")
+	return e.emails[len(e.emails)-1]
+}
+
+// NewTestServer builds the full DI graph identically to cmd/main.go and
+// serves it via httptest, against the docker-compose Postgres. It skips the
+// test (rather than failing it) if that database isn't reachable, so
+// `go test ./...` stays safe to run without Postgres up.
