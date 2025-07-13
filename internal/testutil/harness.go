@@ -172,3 +172,37 @@ func NewTestServer(t *testing.T) *TestServer {
 	conditionRepo := repository.NewHistoryConditionRepository(db)
 	conditionService := services.NewHistoryConditionService(conditionRepo)
 
+	catalogHandler := httpadapter.NewCatalogHandler(medicineService, diagnosisService, conditionService)
+
+	inventoryRepo := repository.NewInventoryRepository(db)
+	inventoryService := services.NewInventoryService(inventoryRepo)
+	inventoryHandler := httpadapter.NewInventoryHandler(inventoryService)
+
+	vendorRepo := repository.NewVendorRepository(db)
+	vendorService := services.NewVendorService(vendorRepo)
+	vendorHandler := httpadapter.NewVendorHandler(vendorService)
+
+	stockPurchaseRepo := repository.NewStockPurchaseRepository(db, inventoryRepo)
+	stockPurchaseService := services.NewStockPurchaseService(stockPurchaseRepo)
+	stockPurchaseHandler := httpadapter.NewStockPurchaseHandler(stockPurchaseService)
+
+	invoiceRepo := repository.NewInvoiceRepository(db, inventoryRepo)
+	invoiceService := services.NewInvoiceService(invoiceRepo)
+	invoiceHandler := httpadapter.NewInvoiceHandler(invoiceService, clinicService)
+
+	labJobRepo := repository.NewLabJobRepository(db)
+	labJobService := services.NewLabJobService(labJobRepo)
+	labJobHandler := httpadapter.NewLabJobHandler(labJobService)
+
+	reportsRepo := repository.NewReportsRepository(db)
+	reportsService := services.NewReportsService(reportsRepo, inventoryService)
+	reportsHandler := httpadapter.NewReportsHandler(reportsService)
+
+	calculatorService := services.NewCalculatorService()
+	calculatorHandler := httpadapter.NewCalculatorHandler(calculatorService)
+
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
+	subscriptionHandler := httpadapter.NewSubscriptionHandler(subscriptionService)
+
+	router, err := httpadapter.NewRouter(
