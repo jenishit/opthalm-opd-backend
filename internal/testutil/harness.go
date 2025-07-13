@@ -380,3 +380,38 @@ func hashedTestPassword(t *testing.T) string {
 	testPasswordHashOnce.Do(func() {
 		h, err := bcrypt.GenerateFromPassword([]byte(TestPassword), bcrypt.DefaultCost)
 		require.NoError(t, err, "hash test password")
+		testPasswordHash = string(h)
+	})
+	return testPasswordHash
+}
+
+// CreateUser creates a user (with the given role, creating the role first if
+// needed) in the primary test clinic and returns the user's ID. This goes
+// straight to the DB rather than through the now admin-gated /api/user/create
+// endpoint — creating fixture users is arrange-phase setup, not the thing
+// under test, and routing it through HTTP would need an admin token that
+// itself needs a user to exist first.
+func (ts *TestServer) CreateUser(t *testing.T, email, roleName string) uuid.UUID {
+	t.Helper()
+	return ts.CreateUserInClinic(t, ts.ClinicID, email, roleName)
+}
+
+// CreateUserInClinic is CreateUser scoped to an arbitrary clinic, for
+// cross-tenant tests.
+func (ts *TestServer) CreateUserInClinic(t *testing.T, clinicID uuid.UUID, email, roleName string) uuid.UUID {
+	t.Helper()
+	roleID := ts.EnsureRole(t, roleName)
+	ctx := context.Background()
+
+	var userID uuid.UUID
+	err := ts.DB.QueryRow(ctx,
+		`INSERT INTO users (role_id, clinic_id, email, password) VALUES ($1, $2, $3, $4) RETURNING id`,
+		roleID, clinicID, email, hashedTestPassword(t),
+	).Scan(&userID)
+	require.NoError(t, err, "create user")
+
+	_, err = ts.DB.Exec(ctx,
+		`INSERT INTO profile (user_id, first_name, last_name, phone) VALUES ($1, 'Test', 'User', '')`,
+		userID,
+	)
+	require.NoError(t, err, "create profile")
