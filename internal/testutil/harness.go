@@ -345,3 +345,38 @@ func (ts *TestServer) NewClinic(t *testing.T, name string) uuid.UUID {
 
 	return clinicID
 }
+
+// SetSubscriptionStatus overwrites a clinic's subscription status/expiry
+// directly via SQL, for tests that need to simulate a cancelled or expired
+// subscription without going through the platform-operator API.
+func (ts *TestServer) SetSubscriptionStatus(t *testing.T, clinicID uuid.UUID, status string, periodEnd time.Time) {
+	t.Helper()
+	_, err := ts.DB.Exec(context.Background(),
+		`UPDATE subscriptions SET status = $1, current_period_end = $2, updated_at = NOW() WHERE clinic_id = $3`,
+		status, periodEnd, clinicID,
+	)
+	require.NoError(t, err, "set subscription status")
+}
+
+// SuperadminToken creates a ROLE_SUPERADMIN user directly (there is no
+// self-serve way to become one — it's the platform operator's own account)
+// scoped to the primary test clinic (superadmin routes don't use ClinicID,
+// but a user row still needs one to satisfy the NOT NULL constraint).
+func (ts *TestServer) SuperadminToken(t *testing.T) (token string, userID uuid.UUID) {
+	t.Helper()
+	return ts.Login(t, "superadmin@platform.local", "ROLE_SUPERADMIN")
+}
+
+var (
+	testPasswordHashOnce sync.Once
+	testPasswordHash     string
+)
+
+// hashedTestPassword bcrypt-hashes TestPassword once and reuses it — bcrypt
+// is deliberately slow, and re-hashing it per CreateUser call across dozens
+// of tests adds up.
+func hashedTestPassword(t *testing.T) string {
+	t.Helper()
+	testPasswordHashOnce.Do(func() {
+		h, err := bcrypt.GenerateFromPassword([]byte(TestPassword), bcrypt.DefaultCost)
+		require.NoError(t, err, "hash test password")
