@@ -137,3 +137,38 @@ func NewTestServer(t *testing.T) *TestServer {
 
 	profileRepo := repository.NewProfileRepository(db)
 	profileService := services.NewProfileService(profileRepo)
+	profileHandler := httpadapter.NewProfileHandler(profileService)
+
+	userRepo := repository.NewUserRepository(db)
+	sessionRepo := repository.NewSessionRepository(db)
+	signupRepo := repository.NewSignupRepository(db)
+	verificationRepo := repository.NewVerificationTokenRepository(db)
+	emails := &emailCapture{}
+	refreshDuration, err := time.ParseDuration(cfg.Refresh.Duration)
+	require.NoError(t, err, "parse refresh duration")
+	authService := services.NewAuthService(userRepo, sessionRepo, signupRepo, verificationRepo, emails, tokenService, refreshDuration)
+	authHandler := httpadapter.NewAuthHandler(authService)
+	userService := services.NewUserService(userRepo, roleService, profileService)
+	userHandler := httpadapter.NewUsersHandler(userService)
+
+	clinicRepo := repository.NewClinicRepository(db)
+	clinicService := services.NewClinicService(clinicRepo)
+	clinicHandler := httpadapter.NewClinicHandler(clinicService)
+
+	patientRepo := repository.NewPatientRepository(db)
+	patientService := services.NewPatientService(patientRepo)
+	patientHandler := httpadapter.NewPatientHandler(patientService)
+
+	visitRepo := repository.NewVisitsRepository(db)
+	visitService := services.NewVisitsService(visitRepo)
+	visitHandler := httpadapter.NewVisitHandler(visitService)
+
+	medicineRepo := repository.NewMedicineRepository(db)
+	medicineService := services.NewMedicineService(medicineRepo)
+
+	diagnosisRepo := repository.NewDiagnosisCatalogRepository(db)
+	diagnosisService := services.NewDiagnosisCatalogService(diagnosisRepo)
+
+	conditionRepo := repository.NewHistoryConditionRepository(db)
+	conditionService := services.NewHistoryConditionService(conditionRepo)
+
