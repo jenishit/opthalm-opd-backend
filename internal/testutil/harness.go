@@ -241,3 +241,38 @@ func (ts *TestServer) Reset(t *testing.T) {
 	_, err := ts.DB.Exec(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", strings.Join(appTables, ", ")))
 	require.NoError(t, err, "truncate app tables")
 
+	_, err = ts.DB.Exec(ctx, "ALTER SEQUENCE IF EXISTS invoice_no_seq RESTART WITH 1")
+	require.NoError(t, err, "reset invoice_no_seq")
+}
+
+// --- Request helpers -------------------------------------------------
+
+// Do performs a request against the test server, optionally authenticated,
+// and JSON-decodes the response body into out (skipped if out is nil).
+func (ts *TestServer) Do(t *testing.T, method, path, token string, body any, out any) *http.Response {
+	t.Helper()
+
+	var reader io.Reader
+	if body != nil {
+		b, err := json.Marshal(body)
+		require.NoError(t, err)
+		reader = bytes.NewReader(b)
+	}
+
+	req, err := http.NewRequest(method, ts.Server.URL+path, reader)
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	t.Cleanup(func() { resp.Body.Close() })
+
+	if out != nil {
+		defer resp.Body.Close()
+		b, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		if len(b) > 0 {
+			require.NoError(t, json.Unmarshal(b, out), "decode response body: %s", string(b))
