@@ -276,3 +276,38 @@ func (ts *TestServer) Do(t *testing.T, method, path, token string, body any, out
 		require.NoError(t, err)
 		if len(b) > 0 {
 			require.NoError(t, json.Unmarshal(b, out), "decode response body: %s", string(b))
+		}
+	}
+
+	return resp
+}
+
+type envelope struct {
+	Success bool            `json:"success"`
+	Data    json.RawMessage `json:"data"`
+}
+
+// DoData is like Do but unwraps the {success, message, data} envelope and
+// decodes just the `data` field into out.
+func (ts *TestServer) DoData(t *testing.T, method, path, token string, body any, out any) *http.Response {
+	t.Helper()
+
+	var env envelope
+	resp := ts.Do(t, method, path, token, body, &env)
+	if out != nil && len(env.Data) > 0 {
+		require.NoError(t, json.Unmarshal(env.Data, out), "decode data field")
+	}
+	return resp
+}
+
+// --- Fixture helpers ---------------------------------------------------
+
+const TestPassword = "Password123!"
+
+// EnsureRole creates the role if it doesn't already exist and returns its
+// ID. It goes straight to the DB (rather than the public /role/create
+// endpoint, which has no upsert semantics and would error on a second call
+// with the same name) so it's safe to call repeatedly for the same role
+// within one test.
+func (ts *TestServer) EnsureRole(t *testing.T, roleName string) uuid.UUID {
+	t.Helper()
