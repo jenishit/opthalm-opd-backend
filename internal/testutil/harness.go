@@ -206,3 +206,38 @@ func NewTestServer(t *testing.T) *TestServer {
 	subscriptionHandler := httpadapter.NewSubscriptionHandler(subscriptionService)
 
 	router, err := httpadapter.NewRouter(
+		cfg, tokenService,
+		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler,
+		*patientHandler, *visitHandler, *catalogHandler, *invoiceHandler,
+		*inventoryHandler, *vendorHandler, *stockPurchaseHandler, *labJobHandler,
+		*reportsHandler, *calculatorHandler,
+		*subscriptionHandler, subscriptionService,
+		redisClient,
+	)
+	require.NoError(t, err, "build router")
+
+	srv := httptest.NewServer(router)
+	ts := &TestServer{Server: srv, DB: db, Emails: emails}
+
+	ts.Reset(t)
+	ts.ClinicID = ts.NewClinic(t, "Primary Test Clinic")
+	t.Cleanup(func() {
+		ts.Reset(t)
+		srv.Close()
+		db.Close()
+		redisClient.Close()
+	})
+
+	return ts
+}
+
+// Reset truncates every app table so each top-level test starts from a
+// clean slate, and restarts the invoice-number sequence so INV-000001 is
+// predictable across test runs.
+func (ts *TestServer) Reset(t *testing.T) {
+	t.Helper()
+	ctx := context.Background()
+
+	_, err := ts.DB.Exec(ctx, fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", strings.Join(appTables, ", ")))
+	require.NoError(t, err, "truncate app tables")
+
