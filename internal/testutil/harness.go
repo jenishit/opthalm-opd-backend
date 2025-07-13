@@ -311,3 +311,37 @@ const TestPassword = "Password123!"
 // within one test.
 func (ts *TestServer) EnsureRole(t *testing.T, roleName string) uuid.UUID {
 	t.Helper()
+	var id uuid.UUID
+	err := ts.DB.QueryRow(context.Background(),
+		`INSERT INTO role (role_name) VALUES ($1)
+		 ON CONFLICT (role_name) DO UPDATE SET role_name = EXCLUDED.role_name
+		 RETURNING id`,
+		roleName,
+	).Scan(&id)
+	require.NoError(t, err, "ensure role %q", roleName)
+	return id
+}
+
+// NewClinic creates an additional, isolated tenant (clinic_settings row +
+// trialing subscription), for cross-tenant isolation tests. The primary
+// clinic (ts.ClinicID) is already created by NewTestServer; most tests never
+// need to call this directly.
+func (ts *TestServer) NewClinic(t *testing.T, name string) uuid.UUID {
+	t.Helper()
+	ctx := context.Background()
+
+	var clinicID uuid.UUID
+	err := ts.DB.QueryRow(ctx,
+		`INSERT INTO clinic_settings (clinic_name, registration_no) VALUES ($1, $2) RETURNING id`,
+		name, "REG-"+uuid.New().String()[:8],
+	).Scan(&clinicID)
+	require.NoError(t, err, "create clinic")
+
+	_, err = ts.DB.Exec(ctx,
+		`INSERT INTO subscriptions (clinic_id, status, current_period_end) VALUES ($1, 'trialing', now() + interval '14 days')`,
+		clinicID,
+	)
+	require.NoError(t, err, "create subscription")
+
+	return clinicID
+}
