@@ -484,3 +484,38 @@ func (ts *TestServer) CreatePatient(t *testing.T, token, fullName, phone string)
 		PatientID uuid.UUID `json:"patient_id"`
 	}
 	resp := ts.DoData(t, http.MethodPost, "/api/patient", token, map[string]any{
+		"full_name": fullName,
+		"dob":       "1990-01-01",
+		"gender":    "male",
+		"phone":     phone,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	return out.PatientID
+}
+
+func setTestEnvDefaults() {
+	setIfEmpty("DB_CONNECTION", "postgres")
+	setIfEmpty("DB_HOST", "localhost")
+	setIfEmpty("DB_PORT", "5434")
+	setIfEmpty("DB_USER", "postgres")
+	setIfEmpty("DB_PASSWORD", "admin")
+	setIfEmpty("DB_NAME", "opthalm_opd")
+	setIfEmpty("TOKEN_SECRET", "test-secret-do-not-use-in-prod")
+	setIfEmpty("TOKEN_DURATION", "1h")
+	setIfEmpty("REFRESH_TOKEN_DURATION", "168h")
+	setIfEmpty("APP_ENV", "test")
+	setIfEmpty("HTTP_ALLOWED_ORIGINS", "http://localhost:3000")
+	// Same reasoning as DB_HOST/DB_PORT above: .env's REDIS_ADDR="redis:6379"
+	// is the docker-compose *internal* network address, not reachable from a
+	// host-side `go test` run. This must match docker-compose.yml's redis
+	// service host-port mapping.
+	setIfEmpty("REDIS_ADDR", "localhost:6380")
+	setIfEmpty("REDIS_PASSWORD", "change-me-too")
+	setIfEmpty("REDIS_DB", "0")
+}
+
+func setIfEmpty(key, value string) {
+	if os.Getenv(key) == "" {
+		os.Setenv(key, value)
+	}
+}
