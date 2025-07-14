@@ -450,3 +450,37 @@ func (ts *TestServer) AdminToken(t *testing.T) (token string, userID uuid.UUID) 
 }
 
 // SecondClinicAdminToken spins up a second, isolated clinic with its own
+// admin user, for cross-tenant isolation tests.
+func (ts *TestServer) SecondClinicAdminToken(t *testing.T) (token string, clinicID uuid.UUID) {
+	t.Helper()
+	clinicID = ts.NewClinic(t, "Second Test Clinic")
+	token, _ = ts.LoginInClinic(t, clinicID, "admin2@test.local", "ROLE_ADMIN")
+	return token, clinicID
+}
+
+// LoginWithRefresh is like Login but also returns the refresh token, for
+// tests exercising /auth/refresh and /auth/logout.
+func (ts *TestServer) LoginWithRefresh(t *testing.T, email, roleName string) (access, refresh string, userID uuid.UUID) {
+	t.Helper()
+	ts.CreateUser(t, email, roleName)
+
+	var out struct {
+		AccessToken  string    `json:"access_token"`
+		RefreshToken string    `json:"refresh_token"`
+		UserID       uuid.UUID `json:"user_id"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/auth/login", "", map[string]string{
+		"email":    email,
+		"password": TestPassword,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	return out.AccessToken, out.RefreshToken, out.UserID
+}
+
+// CreatePatient creates a patient as the given token's user and returns its ID.
+func (ts *TestServer) CreatePatient(t *testing.T, token, fullName, phone string) uuid.UUID {
+	t.Helper()
+	var out struct {
+		PatientID uuid.UUID `json:"patient_id"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/patient", token, map[string]any{
