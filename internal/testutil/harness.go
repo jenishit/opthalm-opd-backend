@@ -415,3 +415,38 @@ func (ts *TestServer) CreateUserInClinic(t *testing.T, clinicID uuid.UUID, email
 		userID,
 	)
 	require.NoError(t, err, "create profile")
+
+	return userID
+}
+
+// Login creates a user (with the given role) in the primary test clinic,
+// logs in, and returns the access token plus user ID.
+func (ts *TestServer) Login(t *testing.T, email, roleName string) (token string, userID uuid.UUID) {
+	t.Helper()
+	return ts.LoginInClinic(t, ts.ClinicID, email, roleName)
+}
+
+// LoginInClinic is Login scoped to an arbitrary clinic, for cross-tenant tests.
+func (ts *TestServer) LoginInClinic(t *testing.T, clinicID uuid.UUID, email, roleName string) (token string, userID uuid.UUID) {
+	t.Helper()
+	ts.CreateUserInClinic(t, clinicID, email, roleName)
+
+	var out struct {
+		AccessToken string    `json:"access_token"`
+		UserID      uuid.UUID `json:"user_id"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/auth/login", "", map[string]string{
+		"email":    email,
+		"password": TestPassword,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	return out.AccessToken, out.UserID
+}
+
+// AdminToken is the common case: an admin user in the primary test clinic, logged in.
+func (ts *TestServer) AdminToken(t *testing.T) (token string, userID uuid.UUID) {
+	t.Helper()
+	return ts.Login(t, "admin@test.local", "ROLE_ADMIN")
+}
+
+// SecondClinicAdminToken spins up a second, isolated clinic with its own
