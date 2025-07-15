@@ -66,3 +66,37 @@ func main() {
 	defer db.Close()
 
 	redisClient, err := redisadapter.New(ctx, config.Redis)
+	if err != nil {
+		slog.Error("Error initializing redis connection", "error", err)
+		os.Exit(1)
+	}
+	defer redisClient.Close()
+
+	slog.Info("Database has been initializerd and connected successfully", "db", config.DB.Connection)
+
+	tokenService, err := auth.New(config.Token)
+	if err != nil {
+		slog.Error("Error initializing token service", "error", err)
+		os.Exit(1)
+	}
+
+	refreshDuration, err := time.ParseDuration(config.Refresh.Duration)
+	if err != nil {
+		slog.Error("Error parsing refresh token duration", "error", err)
+		os.Exit(1)
+	}
+
+	roleRepo := repository.NewRoleRepository(db)
+	roleService := services.NewRoleService(roleRepo)
+	roleHandler := http.NewRoleHandler(roleService)
+
+	profileRepo := repository.NewProfileRepository(db)
+	profileService := services.NewProfileService(profileRepo)
+	profileHandler := http.NewProfileHandler(profileService)
+
+	userRepo := repository.NewUserRepository(db)
+	sessionRepo := repository.NewSessionRepository(db)
+	signupRepo := repository.NewSignupRepository(db)
+	verificationRepo := repository.NewVerificationTokenRepository(db)
+
+	var emailSender port.EmailSender
