@@ -100,3 +100,38 @@ func main() {
 	verificationRepo := repository.NewVerificationTokenRepository(db)
 
 	var emailSender port.EmailSender
+	if config.SMTP.Host != "" {
+		emailSender = smtpsender.New(smtpsender.Config{
+			Host:     config.SMTP.Host,
+			Port:     config.SMTP.Port,
+			Username: config.SMTP.Username,
+			Password: config.SMTP.Password,
+			From:     config.SMTP.From,
+		})
+		slog.Info("email sender configured", "driver", "smtp", "host", config.SMTP.Host)
+	} else {
+		emailSender = logsender.New()
+		slog.Info("email sender configured", "driver", "log", "note", "set SMTP_HOST to enable real delivery")
+	}
+
+	authService := services.NewAuthService(userRepo, sessionRepo, signupRepo, verificationRepo, emailSender, tokenService, refreshDuration)
+	authHandler := http.NewAuthHandler(authService)
+	userService := services.NewUserService(userRepo, roleService, profileService)
+	userHandler := http.NewUsersHandler(userService)
+
+	clinicRepo := repository.NewClinicRepository(db)
+	clinicService := services.NewClinicService(clinicRepo)
+	clinicHandler := http.NewClinicHandler(clinicService)
+
+	patientRepo := repository.NewPatientRepository(db)
+	patientService := services.NewPatientService(patientRepo)
+	patientHandler := http.NewPatientHandler(patientService)
+
+	visitRepo := repository.NewVisitsRepository(db)
+	visitService := services.NewVisitsService(visitRepo)
+	visitHandler := http.NewVisitHandler(visitService)
+
+	medicineRepo := repository.NewMedicineRepository(db)
+	medicineService := services.NewMedicineService(medicineRepo)
+
+	diagnosisRepo := repository.NewDiagnosisCatalogRepository(db)
