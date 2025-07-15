@@ -32,3 +32,37 @@ import (
 	"time"
 
 	"os"
+
+	auth "github.com/jenish-brainztechs/go-backend/internal/adapter/auth/jwt"
+	redisadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/cache/redis"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/email/logsender"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/email/smtpsender"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres/repository"
+	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+)
+
+func main() {
+	config, err := config.New() //Creating a new configuration for the application
+	if err != nil {             //if there is some error then print and log the error and exit from the application
+		slog.Error("Error loading environment variables", "error", err)
+		os.Exit(1)
+	}
+
+	initLogger(config.App.Env)
+
+	slog.Info("Starting the application", "app", config.App.Name, "env", config.App.Env)
+
+	// Init database
+	ctx := context.Background()
+	db, err := postgres.New(ctx, config.DB)
+	if err != nil {
+		slog.Error("Error initializing database connection", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	redisClient, err := redisadapter.New(ctx, config.Redis)
