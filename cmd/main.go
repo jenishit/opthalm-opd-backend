@@ -169,3 +169,37 @@ func main() {
 	calculatorService := services.NewCalculatorService()
 	calculatorHandler := http.NewCalculatorHandler(calculatorService)
 
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
+	subscriptionHandler := http.NewSubscriptionHandler(subscriptionService)
+
+	router, err := http.NewRouter(
+		config,
+		tokenService,
+		*roleHandler,
+		*userHandler,
+		*profileHandler,
+		*authHandler,
+		*clinicHandler,
+		*patientHandler,
+		*visitHandler,
+		*catalogHandler,
+		*invoiceHandler,
+		*inventoryHandler,
+		*vendorHandler,
+		*stockPurchaseHandler,
+		*labJobHandler,
+		*reportsHandler,
+		*calculatorHandler,
+		*subscriptionHandler,
+		subscriptionService,
+		redisClient,
+	)
+
+	if err != nil {
+		slog.Error("Error initializing router", "error", err)
+		os.Exit(1)
+	}
+
+	listenAddr := fmt.Sprintf("%s:%s", config.HTTP.URL, config.HTTP.Port)
+
