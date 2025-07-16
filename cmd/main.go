@@ -135,3 +135,37 @@ func main() {
 	medicineService := services.NewMedicineService(medicineRepo)
 
 	diagnosisRepo := repository.NewDiagnosisCatalogRepository(db)
+	diagnosisService := services.NewDiagnosisCatalogService(diagnosisRepo)
+
+	conditionRepo := repository.NewHistoryConditionRepository(db)
+	conditionService := services.NewHistoryConditionService(conditionRepo)
+
+	catalogHandler := http.NewCatalogHandler(medicineService, diagnosisService, conditionService)
+
+	inventoryRepo := repository.NewInventoryRepository(db)
+	inventoryService := services.NewInventoryService(inventoryRepo)
+	inventoryHandler := http.NewInventoryHandler(inventoryService)
+
+	vendorRepo := repository.NewVendorRepository(db)
+	vendorService := services.NewVendorService(vendorRepo)
+	vendorHandler := http.NewVendorHandler(vendorService)
+
+	stockPurchaseRepo := repository.NewStockPurchaseRepository(db, inventoryRepo)
+	stockPurchaseService := services.NewStockPurchaseService(stockPurchaseRepo)
+	stockPurchaseHandler := http.NewStockPurchaseHandler(stockPurchaseService)
+
+	invoiceRepo := repository.NewInvoiceRepository(db, inventoryRepo)
+	invoiceService := services.NewInvoiceService(invoiceRepo)
+	invoiceHandler := http.NewInvoiceHandler(invoiceService, clinicService)
+
+	labJobRepo := repository.NewLabJobRepository(db)
+	labJobService := services.NewLabJobService(labJobRepo)
+	labJobHandler := http.NewLabJobHandler(labJobService)
+
+	reportsRepo := repository.NewReportsRepository(db)
+	reportsService := services.NewReportsService(reportsRepo, inventoryService)
+	reportsHandler := http.NewReportsHandler(reportsService)
+
+	calculatorService := services.NewCalculatorService()
+	calculatorHandler := http.NewCalculatorHandler(calculatorService)
+
