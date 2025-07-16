@@ -203,3 +203,37 @@ func main() {
 
 	listenAddr := fmt.Sprintf("%s:%s", config.HTTP.URL, config.HTTP.Port)
 
+	slog.Info("Starting the HTTP server", "listen_address", listenAddr)
+	err = router.Serve(listenAddr)
+	if err != nil {
+		slog.Error("Error starting the HTTP server", "error", err)
+		os.Exit(1)
+	}
+}
+
+// initLogger replaces the default slog handler with one that emits JSON in
+// production (machine-parseable for log aggregation) and human-readable
+// text everywhere else. Level defaults to info; set LOG_LEVEL=debug/warn/
+// error to override.
+func initLogger(env string) {
+	level := slog.LevelInfo
+	switch strings.ToLower(os.Getenv("LOG_LEVEL")) {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	}
+
+	opts := &slog.HandlerOptions{Level: level}
+
+	var handler slog.Handler
+	if env == "production" {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+
+	slog.SetDefault(slog.New(handler))
+}
