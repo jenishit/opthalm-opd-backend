@@ -383,3 +383,35 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Get a diagnosis",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnosis ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DiagnosisCatalogResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
