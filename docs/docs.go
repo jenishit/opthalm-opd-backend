@@ -479,3 +479,35 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Soft-delete a diagnosis",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnosis ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/catalog/medicines": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only. Medicines are a global catalog, not clinic-scoped.",
+                "produces": [
