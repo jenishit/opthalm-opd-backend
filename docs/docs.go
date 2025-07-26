@@ -735,3 +735,35 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/clinic": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clinic"
+                ],
+                "summary": "List clinics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
