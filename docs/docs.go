@@ -927,3 +927,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/auth/email/verify/confirm": {
+            "post": {
+                "description": "Marks the token's owning user's email as verified.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Confirm email verification",
+                "parameters": [
+                    {
+                        "description": "Verification code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ConfirmEmailVerificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    },
