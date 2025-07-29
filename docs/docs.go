@@ -1280,3 +1280,35 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Requires ROLE_ADMIN or ROLE_BILLING.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "billing"
+                ],
+                "summary": "Create an invoice",
+                "parameters": [
+                    {
+                        "description": "Invoice details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateInvoiceReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
