@@ -1504,3 +1504,35 @@ const docTemplate = `{
         "/billing/invoice/{id}/pdf": {
             "get": {
                 "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "billing"
+                ],
+                "summary": "Download an invoice as PDF",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/billing/invoice/{id}/qr": {
+            "get": {
