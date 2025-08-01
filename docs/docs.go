@@ -1664,3 +1664,35 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    }
+                }
+            }
+        },
+        "/calculators/near-add": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calculators"
+                ],
+                "summary": "Compute near-add power",
+                "parameters": [
+                    {
+                        "description": "Distance sphere + add power",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NearAddReq"
+                        }
+                    }
+                ],
