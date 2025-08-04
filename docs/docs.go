@@ -1761,3 +1761,35 @@ const docTemplate = `{
                                             "$ref": "#/definitions/dto.ScalarResultRes"
                                         }
                                     }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/calculators/telescope-fov": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calculators"
+                ],
+                "summary": "Compute apparent field of view for a telescope/loupe",
+                "parameters": [
+                    {
+                        "description": "True FOV (degrees) + magnification",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TelescopeFOVReq"
