@@ -1953,3 +1953,35 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.InventoryItemResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Requires ROLE_ADMIN or ROLE_INVENTORY.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
