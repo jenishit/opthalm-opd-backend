@@ -1857,3 +1857,35 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TranspositionRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/calculators/vertex-distance": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calculators"
+                ],
+                "summary": "Adjust power for a change in vertex distance",
+                "parameters": [
+                    {
+                        "description": "Power + from/to vertex distance (mm)",
+                        "name": "request",
