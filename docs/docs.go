@@ -2209,3 +2209,35 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.UpdateInventoryItemReq"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/items/{id}/barcode-image": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Get an item's barcode as a PNG image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
