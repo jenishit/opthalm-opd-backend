@@ -2273,3 +2273,35 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Item ID",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/items/{id}/movements": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "List an item's stock movements",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
