@@ -2337,3 +2337,35 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.StockMovementResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/items/{id}/stock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Records a stock movement and increments quantity on hand.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Add stock to an item",
+                "parameters": [
+                    {
