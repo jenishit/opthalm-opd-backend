@@ -2498,3 +2498,35 @@ const docTemplate = `{
                             ]
                         }
                     }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates the purchase and its line items, and increments quantity on hand for each item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Record a stock purchase from a vendor",
+                "parameters": [
+                    {
+                        "description": "Purchase details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateStockPurchaseReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
