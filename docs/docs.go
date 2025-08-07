@@ -2562,3 +2562,35 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "inventory"
+                ],
+                "summary": "Get a stock purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.StockPurchaseResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
