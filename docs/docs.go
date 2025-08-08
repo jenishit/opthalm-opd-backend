@@ -2850,3 +2850,35 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/inventory/vendors/{id}/delete": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Soft-delete a vendor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vendor ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
