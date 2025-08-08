@@ -2690,3 +2690,35 @@ const docTemplate = `{
                                 {
                                     "$ref": "#/definitions/http.response"
                                 },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.VendorResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/vendors/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Search vendors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search text",
