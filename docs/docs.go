@@ -2978,3 +2978,35 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.LabJobResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/lab-jobs/patient/{patientId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "List a patient's lab jobs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientId",
+                        "in": "path",
+                        "required": true
