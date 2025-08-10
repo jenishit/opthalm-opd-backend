@@ -2882,3 +2882,35 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.response"
                         }
                     }
+                }
+            }
+        },
+        "/lab-jobs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "List lab jobs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Max results",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
