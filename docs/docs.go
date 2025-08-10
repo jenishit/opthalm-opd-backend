@@ -2946,3 +2946,35 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Requires ROLE_ADMIN, ROLE_LAB, or ROLE_BILLING.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "Create a lab job",
+                "parameters": [
+                    {
+                        "description": "Lab job details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateLabJobReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
