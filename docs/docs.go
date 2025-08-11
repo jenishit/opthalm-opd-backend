@@ -3042,3 +3042,36 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "Get a lab job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lab job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.LabJobResponse"
+                                        }
+                                    }
