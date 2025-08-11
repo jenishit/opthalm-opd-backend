@@ -3075,3 +3075,35 @@ const docTemplate = `{
                                             "$ref": "#/definitions/dto.LabJobResponse"
                                         }
                                     }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/lab-jobs/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "Update a lab job's status",
+                "parameters": [
+                    {
