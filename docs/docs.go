@@ -3107,3 +3107,35 @@ const docTemplate = `{
                 "summary": "Update a lab job's status",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Lab job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New status + notes",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateLabJobStatusReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/patient": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
