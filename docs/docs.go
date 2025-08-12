@@ -3203,3 +3203,35 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PatientResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/patient/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "patients"
+                ],
+                "summary": "Search patients",
+                "parameters": [
