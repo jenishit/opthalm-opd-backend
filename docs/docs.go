@@ -3235,3 +3235,35 @@ const docTemplate = `{
                 ],
                 "summary": "Search patients",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search text",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Max results",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.PatientResponse"
+                                            }
+                                        }
+                                    }
