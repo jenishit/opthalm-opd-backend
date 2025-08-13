@@ -3395,3 +3395,35 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        },
+        "/platform/subscriptions/{clinicId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Platform-operator-only (ROLE_SUPERADMIN).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Get a clinic's subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clinic ID",
+                        "name": "clinicId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
