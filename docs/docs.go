@@ -3459,3 +3459,35 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Platform-operator-only (ROLE_SUPERADMIN). A clinic's own admin can never reach this route, so it can never reactivate or extend its own subscription.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "platform"
+                ],
+                "summary": "Create or update a clinic's subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clinic ID",
+                        "name": "clinicId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Plan, status, period end",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpsertSubscriptionReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
