@@ -3812,3 +3812,35 @@ const docTemplate = `{
                 "security": [
                     {
                         "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only. Add ?format=csv to download instead of receiving JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Daily sales report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD, defaults to today",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SalesSummaryResponse"
+                                        }
