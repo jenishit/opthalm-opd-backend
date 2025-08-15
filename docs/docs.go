@@ -3780,3 +3780,35 @@ const docTemplate = `{
                 "description": "Admin-only.",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Inventory valuation report",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.InventoryValuationResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/sales/daily": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
