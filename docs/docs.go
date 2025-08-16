@@ -3876,3 +3876,35 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "description": "Defaults to current month",
+                        "name": "month",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SalesSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/sales/range": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
