@@ -3844,3 +3844,35 @@ const docTemplate = `{
                                         "data": {
                                             "$ref": "#/definitions/dto.SalesSummaryResponse"
                                         }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/sales/monthly": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only. Add ?format=csv to download instead of receiving JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Monthly sales report",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Defaults to current year",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
