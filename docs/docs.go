@@ -4100,3 +4100,35 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/domain.Role"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "409": {
+                        "description": "role already exists",
+                        "schema": {
+                            "$ref": "#/definitions/http.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/signup": {
+            "post": {
+                "description": "Creates a new clinic (tenant), its first ROLE_ADMIN user, and a 14-day trial subscription, atomically. Returns a normal login response so the new admin is immediately authenticated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Sign up a new clinic",
+                "parameters": [
+                    {
+                        "description": "New clinic + admin details",
+                        "name": "request",
