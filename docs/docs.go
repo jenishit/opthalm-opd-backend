@@ -4324,3 +4324,35 @@ const docTemplate = `{
                                             "$ref": "#/definitions/dto.PatientVisitsResponse"
                                         }
                                     }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/visit/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "visits"
+                ],
+                "summary": "Get a visit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Visit ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
