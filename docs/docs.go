@@ -4388,3 +4388,36 @@ const docTemplate = `{
                     }
                 ],
                 "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "visits"
+                ],
+                "summary": "Update a visit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Visit ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateVisitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
