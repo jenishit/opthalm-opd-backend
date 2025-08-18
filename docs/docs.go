@@ -4292,3 +4292,35 @@ const docTemplate = `{
                     {
                         "BearerAuth": []
                     }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "visits"
+                ],
+                "summary": "List a patient's visits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PatientVisitsResponse"
+                                        }
+                                    }
