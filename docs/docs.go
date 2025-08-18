@@ -4228,3 +4228,35 @@ const docTemplate = `{
                         }
                     },
                     "409": {
+                        "description": "email already exists",
+                        "schema": {
+                            "$ref": "#/definitions/http.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/visit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "visits"
+                ],
+                "summary": "Create a visit",
+                "parameters": [
+                    {
+                        "description": "Visit details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
