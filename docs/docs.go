@@ -4421,3 +4421,35 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/http.response"
                         }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.ConfirmEmailVerificationRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ConfirmPasswordResetRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
