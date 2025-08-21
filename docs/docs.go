@@ -4581,3 +4581,35 @@ const docTemplate = `{
         "domain.VisitStatus": {
             "type": "string",
             "enum": [
+                "scheduled",
+                "waiting",
+                "examining",
+                "completed",
+                "cancelled"
+            ],
+            "x-enum-varnames": [
+                "Scheduled",
+                "Waiting",
+                "Examining",
+                "Completed",
+                "Cancelled"
+            ]
+        },
+        "dto.AddStockReq": {
+            "type": "object",
+            "required": [
+                "quantity"
+            ],
+            "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "dto.ClinicRequest": {
+            "type": "object",
+            "required": [
