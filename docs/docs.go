@@ -4549,3 +4549,35 @@ const docTemplate = `{
                 },
                 "registration_no": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.User": {
+            "type": "object",
+            "properties": {
+                "clinicID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "$ref": "#/definitions/valueobjects.Password"
+                },
+                "roleID": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.VisitStatus": {
+            "type": "string",
+            "enum": [
