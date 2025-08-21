@@ -4517,3 +4517,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "roleName": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SignupRequest": {
+            "type": "object",
+            "required": [
+                "admin_email",
+                "admin_first_name",
+                "admin_last_name",
+                "admin_password",
+                "clinic_name",
+                "registration_no"
+            ],
+            "properties": {
+                "admin_email": {
+                    "type": "string"
+                },
+                "admin_first_name": {
+                    "type": "string"
+                },
+                "admin_last_name": {
+                    "type": "string"
+                },
+                "admin_password": {
+                    "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
