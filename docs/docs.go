@@ -4677,3 +4677,35 @@ const docTemplate = `{
             "required": [
                 "category",
                 "name",
+                "sku"
+            ],
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
+                        "contact_lens",
+                        "sunglasses",
+                        "coating",
+                        "accessory",
+                        "other"
+                    ]
+                },
+                "color": {
+                    "type": "string"
+                },
+                "cost_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quantity_on_hand": {
