@@ -4773,3 +4773,35 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateInvoiceReq": {
+            "type": "object",
+            "required": [
+                "items",
+                "patient_id"
+            ],
+            "properties": {
+                "discount_amount": {
+                    "type": "number"
+                },
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateInvoiceItemReq"
+                    }
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "tax_amount": {
+                    "type": "number"
+                },
+                "visit_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateLabJobReq": {
+            "type": "object",
+            "required": [
+                "job_type",
