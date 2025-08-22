@@ -4613,3 +4613,35 @@ const docTemplate = `{
         "dto.ClinicRequest": {
             "type": "object",
             "required": [
+                "clinic_name",
+                "registration_no"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
+                },
+                "report_footer": {
+                    "type": "string"
+                },
+                "tagline": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ClinicResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
