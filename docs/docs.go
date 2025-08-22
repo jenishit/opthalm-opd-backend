@@ -4645,3 +4645,35 @@ const docTemplate = `{
             "properties": {
                 "address": {
                     "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
+                },
+                "report_footer": {
+                    "type": "string"
+                },
+                "tagline": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateInventoryItemReq": {
+            "type": "object",
+            "required": [
+                "category",
+                "name",
