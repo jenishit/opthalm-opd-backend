@@ -4741,3 +4741,35 @@ const docTemplate = `{
             ],
             "properties": {
                 "bundle_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "discount_amount": {
+                    "type": "number"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "item_type": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
+                        "coating",
+                        "contact_lens",
+                        "service",
+                        "other"
+                    ]
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "unit_price": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
