@@ -4709,3 +4709,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "quantity_on_hand": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "reorder_threshold": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "selling_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "size": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateInvoiceItemReq": {
+            "type": "object",
+            "required": [
+                "description",
+                "item_type",
+                "quantity",
+                "unit_price"
+            ],
+            "properties": {
+                "bundle_id": {
