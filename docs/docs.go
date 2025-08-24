@@ -4869,3 +4869,35 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "role_name"
+            ],
+            "properties": {
+                "role_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateStockPurchaseItemReq": {
+            "type": "object",
+            "required": [
+                "inventory_item_id",
+                "quantity",
+                "unit_cost"
+            ],
+            "properties": {
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "unit_cost": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.CreateStockPurchaseReq": {
+            "type": "object",
+            "required": [
+                "items",
