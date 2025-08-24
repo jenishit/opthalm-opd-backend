@@ -4837,3 +4837,35 @@ const docTemplate = `{
         "dto.CreatePatientReq": {
             "type": "object",
             "required": [
+                "dob",
+                "full_name",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "occupation": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateRole": {
+            "type": "object",
+            "required": [
+                "role_name"
