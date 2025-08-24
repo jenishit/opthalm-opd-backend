@@ -4901,3 +4901,35 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "items",
+                "vendor_id"
+            ],
+            "properties": {
+                "invoice_ref_no": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateStockPurchaseItemReq"
+                    }
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "vendor_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateUser": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "role_name"
+            ],
+            "properties": {
+                "email": {
