@@ -4805,3 +4805,35 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "job_type",
+                "patient_id"
+            ],
+            "properties": {
+                "advance_payment": {
+                    "type": "number"
+                },
+                "expected_delivery_date": {
+                    "type": "string"
+                },
+                "invoice_id": {
+                    "type": "string"
+                },
+                "invoice_item_id": {
+                    "type": "string"
+                },
+                "job_type": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "vendor_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreatePatientReq": {
+            "type": "object",
+            "required": [
