@@ -4965,3 +4965,35 @@ const docTemplate = `{
                 "contact_person": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateVisitReq": {
+            "type": "object",
+            "required": [
+                "examine_by",
+                "patient_id"
+            ],
+            "properties": {
+                "chief_complaint": {
+                    "type": "string"
+                },
+                "examine_by": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.VisitStatus"
+                },
+                "visit_date": {
+                    "type": "string"
