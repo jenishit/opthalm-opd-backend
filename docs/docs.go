@@ -5061,3 +5061,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "cost_price": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quantity_on_hand": {
+                    "type": "integer"
+                },
+                "reorder_threshold": {
+                    "type": "integer"
+                },
+                "selling_price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
