@@ -5158,3 +5158,35 @@ const docTemplate = `{
             "properties": {
                 "created_at": {
                     "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "discount_amount": {
+                    "type": "number"
+                },
+                "due_amount": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_no": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.InvoiceItemResponse"
+                    }
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "patient_phone": {
