@@ -5093,3 +5093,36 @@ const docTemplate = `{
                 "sku": {
                     "type": "string"
                 },
+                "unit": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InventoryValuationResponse": {
+            "type": "object",
+            "properties": {
+                "total_cost_value": {
+                    "type": "number"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_sell_value": {
+                    "type": "number"
+                },
+                "total_units": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.InvoiceItemResponse": {
+            "type": "object",
+            "properties": {
+                "bundle_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
