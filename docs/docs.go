@@ -5222,3 +5222,35 @@ const docTemplate = `{
                 "visit_id": {
                     "type": "string"
                 }
+            }
+        },
+        "dto.LabJobResponse": {
+            "type": "object",
+            "properties": {
+                "advance_payment": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "expected_delivery_date": {
+                    "type": "string"
+                },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.LabJobStatusHistoryResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_id": {
+                    "type": "string"
+                },
+                "invoice_item_id": {
+                    "type": "string"
+                },
