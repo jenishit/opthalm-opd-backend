@@ -5318,3 +5318,35 @@ const docTemplate = `{
                 "medicine_name": {
                     "type": "string"
                 },
+                "strength": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NearAddReq": {
+            "type": "object",
+            "properties": {
+                "add_power": {
+                    "type": "number"
+                },
+                "distance_sphere": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.PatientDueResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "due_amount": {
+                    "type": "number"
+                },
+                "invoice_no": {
+                    "type": "string"
+                },
+                "paid_amount": {
