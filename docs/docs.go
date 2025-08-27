@@ -5286,3 +5286,35 @@ const docTemplate = `{
                 "changed_at": {
                     "type": "string"
                 },
+                "changed_by": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.MedicineResponse": {
+            "type": "object",
+            "properties": {
+                "brand_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "form": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medicine_name": {
+                    "type": "string"
+                },
