@@ -5382,3 +5382,35 @@ const docTemplate = `{
                 },
                 "createdBy": {
                     "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "occupation": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registered_on": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PatientVisitsResponse": {
+            "type": "object",
