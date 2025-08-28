@@ -5350,3 +5350,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "paid_amount": {
+                    "type": "number"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "patient_phone": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.PatientRef": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PatientResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
