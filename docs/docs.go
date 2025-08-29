@@ -5510,3 +5510,35 @@ const docTemplate = `{
                 },
                 "invoice_count": {
                     "type": "integer"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "subtotal": {
+                    "type": "number"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "total_due": {
+                    "type": "number"
+                },
+                "total_paid": {
+                    "type": "number"
+                },
+                "total_sales": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.ScalarResultRes": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.SphericalEquivalentReq": {
+            "type": "object",
+            "properties": {
