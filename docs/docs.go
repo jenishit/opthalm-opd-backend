@@ -5414,3 +5414,35 @@ const docTemplate = `{
         },
         "dto.PatientVisitsResponse": {
             "type": "object",
+            "properties": {
+                "patient": {
+                    "$ref": "#/definitions/dto.PatientRef"
+                },
+                "visits": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.VisitItemResponse"
+                    }
+                }
+            }
+        },
+        "dto.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "paid_at": {
+                    "type": "string"
