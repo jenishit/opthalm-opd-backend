@@ -5574,3 +5574,35 @@ const docTemplate = `{
                 "reference_id": {
                     "type": "string"
                 },
+                "reference_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StockPurchaseItemResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "line_total": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "unit_cost": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.StockPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "due_amount": {
