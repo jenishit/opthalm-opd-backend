@@ -5542,3 +5542,35 @@ const docTemplate = `{
         "dto.SphericalEquivalentReq": {
             "type": "object",
             "properties": {
+                "cylinder": {
+                    "type": "number"
+                },
+                "sphere": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.StockMovementResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "movement_type": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
