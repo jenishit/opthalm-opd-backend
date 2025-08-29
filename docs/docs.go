@@ -5478,3 +5478,35 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RecordPaymentReq": {
+            "type": "object",
+            "required": [
+                "amount",
+                "method"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "cash",
+                        "card",
+                        "online",
+                        "bank_transfer"
+                    ]
+                },
+                "reference_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SalesSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "discount": {
+                    "type": "number"
+                },
+                "invoice_count": {
+                    "type": "integer"
