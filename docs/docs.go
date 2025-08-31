@@ -5638,3 +5638,35 @@ const docTemplate = `{
             }
         },
         "dto.SubscriptionResponse": {
+            "type": "object",
+            "properties": {
+                "clinic_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "current_period_end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "plan_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TelescopeFOVReq": {
+            "type": "object",
+            "properties": {
+                "magnification": {
+                    "type": "number"
+                },
+                "true_fov_degrees": {
