@@ -5670,3 +5670,35 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "true_fov_degrees": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.TranspositionReq": {
+            "type": "object",
+            "properties": {
+                "axis": {
+                    "type": "integer",
+                    "maximum": 180,
+                    "minimum": 0
+                },
+                "cylinder": {
+                    "type": "number"
+                },
+                "sphere": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.TranspositionRes": {
+            "type": "object",
+            "properties": {
+                "axis": {
+                    "type": "integer"
+                },
+                "cylinder": {
+                    "type": "number"
+                },
+                "sphere": {
+                    "type": "number"
+                }
