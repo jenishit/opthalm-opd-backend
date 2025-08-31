@@ -5606,3 +5606,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "due_amount": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_ref_no": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StockPurchaseItemResponse"
+                    }
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "purchase_date": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "vendor_id": {
+                    "type": "string"
+                },
+                "vendor_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SubscriptionResponse": {
