@@ -5734,3 +5734,35 @@ const docTemplate = `{
                     "enum": [
                         "frame",
                         "lens",
+                        "contact_lens",
+                        "sunglasses",
+                        "coating",
+                        "accessory",
+                        "other"
+                    ]
+                },
+                "color": {
+                    "type": "string"
+                },
+                "cost_price": {
+                    "type": "number"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "reorder_threshold": {
+                    "type": "integer"
+                },
+                "selling_price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateInvoiceStatusReq": {
+            "type": "object",
