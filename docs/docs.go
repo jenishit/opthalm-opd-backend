@@ -5702,3 +5702,35 @@ const docTemplate = `{
                 "sphere": {
                     "type": "number"
                 }
+            }
+        },
+        "dto.UpdateDiagnosisCatalogReq": {
+            "type": "object",
+            "properties": {
+                "icd10_code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateHistoryConditionReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateInventoryItemReq": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
