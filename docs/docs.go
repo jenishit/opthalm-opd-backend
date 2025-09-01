@@ -5766,3 +5766,36 @@ const docTemplate = `{
         },
         "dto.UpdateInvoiceStatusReq": {
             "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "draft",
+                        "finalized",
+                        "cancelled"
+                    ]
+                }
+            }
+        },
+        "dto.UpdateLabJobStatusReq": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "in_fitting",
+                        "ready_to_deliver",
+                        "delivered",
+                        "cancelled"
+                    ]
+                }
+            }
