@@ -5863,3 +5863,35 @@ const docTemplate = `{
                 "current_period_end",
                 "status"
             ],
+            "properties": {
+                "current_period_end": {
+                    "description": "YYYY-MM-DD",
+                    "type": "string"
+                },
+                "plan_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "trialing",
+                        "active",
+                        "past_due",
+                        "cancelled"
+                    ]
+                }
+            }
+        },
+        "dto.VendorDueResponse": {
+            "type": "object",
+            "properties": {
+                "due_amount": {
+                    "type": "number"
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "purchase_date": {
+                    "type": "string"
+                },
+                "total_amount": {
