@@ -5831,3 +5831,35 @@ const docTemplate = `{
                 },
                 "phone": {
                     "type": "string"
+                },
+                "role_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateVendorReq": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contact_person": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpsertSubscriptionReq": {
+            "type": "object",
+            "required": [
+                "current_period_end",
+                "status"
+            ],
