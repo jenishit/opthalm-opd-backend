@@ -5927,3 +5927,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VertexDistanceReq": {
+            "type": "object",
+            "properties": {
+                "from_distance_mm": {
+                    "type": "number"
+                },
+                "power": {
+                    "type": "number"
+                },
+                "to_distance_mm": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.VisitCreateResponse": {
+            "type": "object",
+            "properties": {
+                "chief_complaint": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "examine_by": {
+                    "type": "string"
