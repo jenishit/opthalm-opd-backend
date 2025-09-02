@@ -5991,3 +5991,35 @@ const docTemplate = `{
                 },
                 "examine_by": {
                     "$ref": "#/definitions/dto.EntityRef"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.VisitStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
+                },
+                "visit_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VisitResponse": {
+            "type": "object",
+            "properties": {
+                "chief_complaint": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
+                },
+                "examine_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
