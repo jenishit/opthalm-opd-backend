@@ -5959,3 +5959,35 @@ const docTemplate = `{
                 },
                 "examine_by": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.VisitStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VisitItemResponse": {
+            "type": "object",
+            "properties": {
+                "chief_complaint": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
+                },
+                "examine_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
