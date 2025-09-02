@@ -5895,3 +5895,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total_amount": {
+                    "type": "number"
+                },
+                "vendor_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VendorResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contact_person": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "updated_at": {
