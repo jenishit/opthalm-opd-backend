@@ -6023,3 +6023,35 @@ const docTemplate = `{
                 },
                 "examine_by": {
                     "$ref": "#/definitions/dto.EntityRef"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "patient": {
+                    "$ref": "#/definitions/dto.PatientRef"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.VisitStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
+                },
+                "visit_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VisitsSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "period": {
+                    "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
+                }
+            }
+        },
