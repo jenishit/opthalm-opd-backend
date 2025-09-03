@@ -1,0 +1,32 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Backend API for a multi-tenant (SaaS) ophthalmology clinic\nmanagement system: patients, visits, billing/POS, inventory,\nlab jobs, reports, and optical calculators.\n\nEvery route under /api (other than /api/auth/*, /api/signup,\nand the /api/auth/password-reset|email endpoints) requires a\nBearer access token, and most additionally require the\ncaller's clinic to have an active subscription.",
+        "title": "Opthalmic Management System API",
+        "contact": {
+            "name": "API Support"
+        },
+        "license": {
+            "name": "Proprietary"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8082",
+    "basePath": "/api",
+    "paths": {
+        "/admin/catalog/conditions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin-only. History conditions are a global catalog, not clinic-scoped.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "List history conditions",
+                "parameters": [
