@@ -6087,3 +6087,35 @@ const docTemplate = `{
                     "example": true
                 }
             }
+        },
+        "valueobjects.Password": {
+            "type": "object"
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and the access token, e.g. \"Bearer eyJhbGci...\".",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}`
+
+// SwaggerInfo holds exported Swagger Info so clients can modify it
+var SwaggerInfo = &swag.Spec{
+	Version:          "1.0",
+	Host:             "localhost:8082",
+	BasePath:         "/api",
+	Schemes:          []string{},
+	Title:            "Opthalmic Management System API",
+	Description:      "Backend API for a multi-tenant (SaaS) ophthalmology clinic\nmanagement system: patients, visits, billing/POS, inventory,\nlab jobs, reports, and optical calculators.\n\nEvery route under /api (other than /api/auth/*, /api/signup,\nand the /api/auth/password-reset|email endpoints) requires a\nBearer access token, and most additionally require the\ncaller's clinic to have an active subscription.",
+	InfoInstanceName: "swagger",
+	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
+}
+
+func init() {
+	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+}
