@@ -1051,3 +1051,35 @@
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Revokes the session backing the given refresh token. The already-issued access token keeps working until it expires (at most TOKEN_DURATION) — access tokens are stateless and not checked against sessions on every request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
