@@ -1083,3 +1083,35 @@
                         }
                     }
                 }
+            }
+        },
+        "/auth/password-reset/confirm": {
+            "post": {
+                "description": "Applies a new password using the code from RequestPasswordReset, then revokes every existing session for that user (forcing re-login everywhere).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Confirm a password reset",
+                "parameters": [
+                    {
+                        "description": "Reset code + new password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.ConfirmPasswordResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
