@@ -2967,3 +2967,35 @@
                         "schema": {
                             "allOf": [
                                 {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.LabJobResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/lab-jobs/patient/{patientId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lab-jobs"
+                ],
+                "summary": "List a patient's lab jobs",
+                "parameters": [
+                    {
