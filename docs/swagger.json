@@ -4244,3 +4244,34 @@
                     "application/json"
                 ],
                 "tags": [
+                    "visits"
+                ],
+                "summary": "Create a visit",
+                "parameters": [
+                    {
+                        "description": "Visit details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateVisitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http.response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.VisitCreateResponse"
+                                        }
+                                    }
+                                }
+                            ]
