@@ -4403,3 +4403,35 @@
                         "description": "Fields to update",
                         "name": "request",
                         "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateVisitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.ConfirmEmailVerificationRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ConfirmPasswordResetRequest": {
+            "type": "object",
+            "required": [
