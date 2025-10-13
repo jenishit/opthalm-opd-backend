@@ -4531,3 +4531,35 @@
                 },
                 "admin_first_name": {
                     "type": "string"
+                },
+                "admin_last_name": {
+                    "type": "string"
+                },
+                "admin_password": {
+                    "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.User": {
+            "type": "object",
+            "properties": {
+                "clinicID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "$ref": "#/definitions/valueobjects.Password"
