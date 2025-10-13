@@ -4563,3 +4563,35 @@
                 },
                 "password": {
                     "$ref": "#/definitions/valueobjects.Password"
+                },
+                "roleID": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.VisitStatus": {
+            "type": "string",
+            "enum": [
+                "scheduled",
+                "waiting",
+                "examining",
+                "completed",
+                "cancelled"
+            ],
+            "x-enum-varnames": [
+                "Scheduled",
+                "Waiting",
+                "Examining",
+                "Completed",
+                "Cancelled"
+            ]
+        },
+        "dto.AddStockReq": {
+            "type": "object",
+            "required": [
+                "quantity"
+            ],
+            "properties": {
