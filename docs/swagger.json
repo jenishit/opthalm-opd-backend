@@ -4595,3 +4595,35 @@
                 "quantity"
             ],
             "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "dto.ClinicRequest": {
+            "type": "object",
+            "required": [
+                "clinic_name",
+                "registration_no"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
+                },
+                "report_footer": {
