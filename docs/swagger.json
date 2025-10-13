@@ -4499,3 +4499,35 @@
                 "email"
             ],
             "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Role": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "roleName": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SignupRequest": {
+            "type": "object",
+            "required": [
+                "admin_email",
+                "admin_first_name",
+                "admin_last_name",
+                "admin_password",
+                "clinic_name",
+                "registration_no"
+            ],
+            "properties": {
+                "admin_email": {
+                    "type": "string"
+                },
+                "admin_first_name": {
+                    "type": "string"
