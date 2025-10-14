@@ -4722,3 +4722,35 @@
                 },
                 "unit": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.CreateInvoiceItemReq": {
+            "type": "object",
+            "required": [
+                "description",
+                "item_type",
+                "quantity",
+                "unit_price"
+            ],
+            "properties": {
+                "bundle_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "discount_amount": {
+                    "type": "number"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "item_type": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
+                        "coating",
+                        "contact_lens",
+                        "service",
