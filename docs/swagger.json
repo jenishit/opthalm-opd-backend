@@ -4627,3 +4627,35 @@
                     "type": "string"
                 },
                 "report_footer": {
+                    "type": "string"
+                },
+                "tagline": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ClinicResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "clinic_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "registration_no": {
+                    "type": "string"
+                },
+                "report_footer": {
+                    "type": "string"
+                },
+                "tagline": {
