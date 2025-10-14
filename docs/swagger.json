@@ -4754,3 +4754,35 @@
                         "coating",
                         "contact_lens",
                         "service",
+                        "other"
+                    ]
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "unit_price": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.CreateInvoiceReq": {
+            "type": "object",
+            "required": [
+                "items",
+                "patient_id"
+            ],
+            "properties": {
+                "discount_amount": {
+                    "type": "number"
+                },
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateInvoiceItemReq"
+                    }
+                },
+                "patient_id": {
+                    "type": "string"
