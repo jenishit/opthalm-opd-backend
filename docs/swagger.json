@@ -4659,3 +4659,34 @@
                     "type": "string"
                 },
                 "tagline": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateInventoryItemReq": {
+            "type": "object",
+            "required": [
+                "category",
+                "name",
+                "sku"
+            ],
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
+                        "contact_lens",
+                        "sunglasses",
+                        "coating",
+                        "accessory",
+                        "other"
+                    ]
+                },
+                "color": {
