@@ -4690,3 +4690,35 @@
                     ]
                 },
                 "color": {
+                    "type": "string"
+                },
+                "cost_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quantity_on_hand": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "reorder_threshold": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "selling_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "size": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
