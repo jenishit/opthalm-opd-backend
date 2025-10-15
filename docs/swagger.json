@@ -4818,3 +4818,35 @@
                     "type": "string"
                 },
                 "notes": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "vendor_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreatePatientReq": {
+            "type": "object",
+            "required": [
+                "dob",
+                "full_name",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
