@@ -4850,3 +4850,35 @@
                 },
                 "gender": {
                     "type": "string"
+                },
+                "occupation": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateRole": {
+            "type": "object",
+            "required": [
+                "role_name"
+            ],
+            "properties": {
+                "role_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateStockPurchaseItemReq": {
+            "type": "object",
+            "required": [
+                "inventory_item_id",
+                "quantity",
+                "unit_cost"
+            ],
+            "properties": {
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "quantity": {
