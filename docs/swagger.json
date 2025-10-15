@@ -4946,3 +4946,35 @@
                     "type": "string"
                 }
             }
+        },
+        "dto.CreateVendorReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contact_person": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateVisitReq": {
+            "type": "object",
+            "required": [
+                "examine_by",
+                "patient_id"
+            ],
+            "properties": {
+                "chief_complaint": {
