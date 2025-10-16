@@ -5169,3 +5169,35 @@
                     "type": "string"
                 },
                 "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.InvoiceItemResponse"
+                    }
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "patient_phone": {
+                    "type": "string"
+                },
+                "payment_status": {
+                    "type": "string"
+                },
+                "payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PaymentResponse"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "subtotal": {
+                    "type": "number"
+                },
