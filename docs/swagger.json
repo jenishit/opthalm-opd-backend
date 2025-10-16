@@ -5074,3 +5074,34 @@
                 },
                 "quantity_on_hand": {
                     "type": "integer"
+                },
+                "reorder_threshold": {
+                    "type": "integer"
+                },
+                "selling_price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InventoryValuationResponse": {
+            "type": "object",
+            "properties": {
+                "total_cost_value": {
+                    "type": "number"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_sell_value": {
