@@ -5105,3 +5105,35 @@
                     "type": "integer"
                 },
                 "total_sell_value": {
+                    "type": "number"
+                },
+                "total_units": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.InvoiceItemResponse": {
+            "type": "object",
+            "properties": {
+                "bundle_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "discount_amount": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "item_type": {
+                    "type": "string"
+                },
+                "line_total": {
