@@ -5201,3 +5201,35 @@
                 "subtotal": {
                     "type": "number"
                 },
+                "tax_amount": {
+                    "type": "number"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                },
+                "visit_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LabJobResponse": {
+            "type": "object",
+            "properties": {
+                "advance_payment": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "expected_delivery_date": {
+                    "type": "string"
+                },
