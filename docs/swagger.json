@@ -5297,3 +5297,35 @@
         "dto.MedicineResponse": {
             "type": "object",
             "properties": {
+                "brand_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "form": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "medicine_name": {
+                    "type": "string"
+                },
+                "strength": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NearAddReq": {
+            "type": "object",
+            "properties": {
+                "add_power": {
+                    "type": "number"
+                },
+                "distance_sphere": {
+                    "type": "number"
+                }
