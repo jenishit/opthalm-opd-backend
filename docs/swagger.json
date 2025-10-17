@@ -5233,3 +5233,35 @@
                 "expected_delivery_date": {
                     "type": "string"
                 },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.LabJobStatusHistoryResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_id": {
+                    "type": "string"
+                },
+                "invoice_item_id": {
+                    "type": "string"
+                },
+                "job_type": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
