@@ -5329,3 +5329,35 @@
                 "distance_sphere": {
                     "type": "number"
                 }
+            }
+        },
+        "dto.PatientDueResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "due_amount": {
+                    "type": "number"
+                },
+                "invoice_no": {
+                    "type": "string"
+                },
+                "paid_amount": {
+                    "type": "number"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "patient_phone": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.PatientRef": {
+            "type": "object",
+            "properties": {
+                "id": {
