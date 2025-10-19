@@ -5457,3 +5457,34 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RecordPaymentReq": {
+            "type": "object",
+            "required": [
+                "amount",
+                "method"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "cash",
+                        "card",
+                        "online",
