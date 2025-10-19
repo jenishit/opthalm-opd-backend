@@ -5552,3 +5552,35 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "movement_type": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "reference_id": {
+                    "type": "string"
+                },
+                "reference_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StockPurchaseItemResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "inventory_item_id": {
+                    "type": "string"
+                },
+                "line_total": {
+                    "type": "number"
