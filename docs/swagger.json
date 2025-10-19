@@ -5488,3 +5488,35 @@
                         "cash",
                         "card",
                         "online",
+                        "bank_transfer"
+                    ]
+                },
+                "reference_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SalesSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "discount": {
+                    "type": "number"
+                },
+                "invoice_count": {
+                    "type": "integer"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "subtotal": {
+                    "type": "number"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "total_due": {
+                    "type": "number"
+                },
+                "total_paid": {
+                    "type": "number"
+                },
