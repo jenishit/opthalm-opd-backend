@@ -5744,3 +5744,35 @@
                 "model": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
+                "reorder_threshold": {
+                    "type": "integer"
+                },
+                "selling_price": {
+                    "type": "number"
+                },
+                "size": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateInvoiceStatusReq": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "draft",
+                        "finalized",
+                        "cancelled"
+                    ]
+                }
+            }
+        },
+        "dto.UpdateLabJobStatusReq": {
+            "type": "object",
