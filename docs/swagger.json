@@ -5680,3 +5680,35 @@
                     "type": "number"
                 },
                 "sphere": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.TranspositionRes": {
+            "type": "object",
+            "properties": {
+                "axis": {
+                    "type": "integer"
+                },
+                "cylinder": {
+                    "type": "number"
+                },
+                "sphere": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.UpdateDiagnosisCatalogReq": {
+            "type": "object",
+            "properties": {
+                "icd10_code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateHistoryConditionReq": {
+            "type": "object",
+            "properties": {
