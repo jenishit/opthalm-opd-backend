@@ -5808,3 +5808,35 @@
                 },
                 "strength": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateVendorReq": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "contact_person": {
+                    "type": "string"
+                },
