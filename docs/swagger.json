@@ -5712,3 +5712,35 @@
         "dto.UpdateHistoryConditionReq": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateInventoryItemReq": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": [
+                        "frame",
+                        "lens",
+                        "contact_lens",
+                        "sunglasses",
+                        "coating",
+                        "accessory",
+                        "other"
+                    ]
+                },
+                "color": {
+                    "type": "string"
+                },
+                "cost_price": {
+                    "type": "number"
+                },
+                "model": {
+                    "type": "string"
+                },
