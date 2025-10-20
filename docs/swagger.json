@@ -5584,3 +5584,35 @@
                 },
                 "line_total": {
                     "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "unit_cost": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.StockPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "due_amount": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invoice_ref_no": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StockPurchaseItemResponse"
+                    }
+                },
+                "paid_amount": {
+                    "type": "number"
