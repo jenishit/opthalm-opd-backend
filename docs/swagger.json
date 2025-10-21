@@ -5935,3 +5935,35 @@
                     "type": "number"
                 },
                 "to_distance_mm": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.VisitCreateResponse": {
+            "type": "object",
+            "properties": {
+                "chief_complaint": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "examine_by": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "patient_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.VisitStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
