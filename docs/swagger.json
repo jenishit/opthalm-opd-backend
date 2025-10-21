@@ -5903,3 +5903,35 @@
                     "type": "string"
                 },
                 "contact_person": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VertexDistanceReq": {
+            "type": "object",
+            "properties": {
+                "from_distance_mm": {
+                    "type": "number"
+                },
+                "power": {
+                    "type": "number"
+                },
+                "to_distance_mm": {
