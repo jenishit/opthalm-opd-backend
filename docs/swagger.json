@@ -6031,3 +6031,35 @@
                     "type": "string"
                 },
                 "updated_by": {
+                    "$ref": "#/definitions/dto.EntityRef"
+                },
+                "visit_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VisitsSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "period": {
+                    "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.errorResponse": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Error message 1",
+                        " Error message 2"
+                    ]
+                },
+                "success": {
