@@ -94,3 +94,35 @@ definitions:
       id:
         type: string
       password:
+        $ref: '#/definitions/valueobjects.Password'
+      roleID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  domain.VisitStatus:
+    enum:
+    - scheduled
+    - waiting
+    - examining
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - Scheduled
+    - Waiting
+    - Examining
+    - Completed
+    - Cancelled
+  dto.AddStockReq:
+    properties:
+      notes:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  dto.ClinicRequest:
+    properties:
