@@ -1,0 +1,32 @@
+basePath: /api
+definitions:
+  domain.ConfirmEmailVerificationRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  domain.ConfirmPasswordResetRequest:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  domain.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.LoginResponse:
+    properties:
+      access_token:
