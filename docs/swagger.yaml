@@ -30,3 +30,35 @@ definitions:
   domain.LoginResponse:
     properties:
       access_token:
+        type: string
+      refresh_token:
+        type: string
+      session_id:
+        type: string
+      user_id:
+        type: string
+      user_type:
+        type: string
+    type: object
+  domain.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  domain.RequestPasswordResetRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  domain.Role:
+    properties:
+      id:
+        type: string
+      roleName:
+        type: string
+    type: object
+  domain.SignupRequest:
