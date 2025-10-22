@@ -158,3 +158,34 @@ definitions:
         type: string
       registration_no:
         type: string
+      report_footer:
+        type: string
+      tagline:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  dto.CreateInventoryItemReq:
+    properties:
+      brand:
+        type: string
+      category:
+        enum:
+        - frame
+        - lens
+        - contact_lens
+        - sunglasses
+        - coating
+        - accessory
+        - other
+        type: string
+      color:
+        type: string
+      cost_price:
+        minimum: 0
+        type: number
+      model:
+        type: string
+      name:
+        type: string
+      quantity_on_hand:
