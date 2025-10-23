@@ -349,3 +349,35 @@ definitions:
         type: string
       last_name:
         type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_name:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role_name
+    type: object
+  dto.CreateVendorReq:
+    properties:
+      address:
+        type: string
+      contact_person:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateVisitReq:
+    properties:
+      chief_complaint:
+        type: string
