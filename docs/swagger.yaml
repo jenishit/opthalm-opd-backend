@@ -381,3 +381,35 @@ definitions:
     properties:
       chief_complaint:
         type: string
+      examine_by:
+        type: string
+      patient_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      visit_date:
+        type: string
+    required:
+    - examine_by
+    - patient_id
+    type: object
+  dto.DiagnosisCatalogResponse:
+    properties:
+      created_at:
+        type: string
+      icd10_code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.EntityRef:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
