@@ -285,3 +285,35 @@ definitions:
       address:
         type: string
       dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      occupation:
+        type: string
+      phone:
+        type: string
+    required:
+    - dob
+    - full_name
+    - phone
+    type: object
+  dto.CreateRole:
+    properties:
+      role_name:
+        type: string
+    required:
+    - role_name
+    type: object
+  dto.CreateStockPurchaseItemReq:
+    properties:
+      inventory_item_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      unit_cost:
+        minimum: 0
