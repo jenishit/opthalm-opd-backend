@@ -317,3 +317,35 @@ definitions:
         type: integer
       unit_cost:
         minimum: 0
+        type: number
+    required:
+    - inventory_item_id
+    - quantity
+    - unit_cost
+    type: object
+  dto.CreateStockPurchaseReq:
+    properties:
+      invoice_ref_no:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateStockPurchaseItemReq'
+        minItems: 1
+        type: array
+      paid_amount:
+        type: number
+      vendor_id:
+        type: string
+    required:
+    - items
+    - vendor_id
+    type: object
+  dto.CreateUser:
+    properties:
+      email:
+        description: the acceptable string type is of email type
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
