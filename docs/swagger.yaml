@@ -189,3 +189,35 @@ definitions:
       name:
         type: string
       quantity_on_hand:
+        minimum: 0
+        type: integer
+      reorder_threshold:
+        minimum: 0
+        type: integer
+      selling_price:
+        minimum: 0
+        type: number
+      size:
+        type: string
+      sku:
+        type: string
+      unit:
+        type: string
+    required:
+    - category
+    - name
+    - sku
+    type: object
+  dto.CreateInvoiceItemReq:
+    properties:
+      bundle_id:
+        type: string
+      description:
+        type: string
+      discount_amount:
+        type: number
+      inventory_item_id:
+        type: string
+      item_type:
+        enum:
+        - frame
