@@ -413,3 +413,35 @@ definitions:
       name:
         type: string
     type: object
+  dto.HistoryConditionResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.InventoryItemResponse:
+    properties:
+      brand:
+        type: string
+      category:
+        type: string
+      color:
+        type: string
+      cost_price:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      model:
+        type: string
+      name:
+        type: string
+      quantity_on_hand:
