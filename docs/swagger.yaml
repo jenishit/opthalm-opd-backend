@@ -221,3 +221,35 @@ definitions:
       item_type:
         enum:
         - frame
+        - lens
+        - coating
+        - contact_lens
+        - service
+        - other
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      unit_price:
+        minimum: 0
+        type: number
+    required:
+    - description
+    - item_type
+    - quantity
+    - unit_price
+    type: object
+  dto.CreateInvoiceReq:
+    properties:
+      discount_amount:
+        type: number
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateInvoiceItemReq'
+        minItems: 1
+        type: array
+      patient_id:
+        type: string
+      tax_amount:
+        type: number
+      visit_id:
