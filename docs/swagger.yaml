@@ -477,3 +477,35 @@ definitions:
       created_at:
         type: string
       description:
+        type: string
+      discount_amount:
+        type: number
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      item_type:
+        type: string
+      line_total:
+        type: number
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+    type: object
+  dto.InvoiceResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      discount_amount:
+        type: number
+      due_amount:
+        type: number
+      id:
+        type: string
+      invoice_no:
+        type: string
+      items:
+        items:
