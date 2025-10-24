@@ -445,3 +445,35 @@ definitions:
       name:
         type: string
       quantity_on_hand:
+        type: integer
+      reorder_threshold:
+        type: integer
+      selling_price:
+        type: number
+      size:
+        type: string
+      sku:
+        type: string
+      unit:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.InventoryValuationResponse:
+    properties:
+      total_cost_value:
+        type: number
+      total_items:
+        type: integer
+      total_sell_value:
+        type: number
+      total_units:
+        type: integer
+    type: object
+  dto.InvoiceItemResponse:
+    properties:
+      bundle_id:
+        type: string
+      created_at:
+        type: string
+      description:
