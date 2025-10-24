@@ -604,3 +604,35 @@ definitions:
         type: string
       strength:
         type: string
+      updated_at:
+        type: string
+    type: object
+  dto.NearAddReq:
+    properties:
+      add_power:
+        type: number
+      distance_sphere:
+        type: number
+    type: object
+  dto.PatientDueResponse:
+    properties:
+      created_at:
+        type: string
+      due_amount:
+        type: number
+      invoice_no:
+        type: string
+      paid_amount:
+        type: number
+      patient_name:
+        type: string
+      patient_phone:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  dto.PatientRef:
+    properties:
+      id:
+        type: string
+      name:
