@@ -572,3 +572,35 @@ definitions:
         type: string
       updated_at:
         type: string
+      vendor_id:
+        type: string
+      vendor_name:
+        type: string
+    type: object
+  dto.LabJobStatusHistoryResponse:
+    properties:
+      changed_at:
+        type: string
+      changed_by:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.MedicineResponse:
+    properties:
+      brand_name:
+        type: string
+      created_at:
+        type: string
+      form:
+        type: string
+      id:
+        type: string
+      medicine_name:
+        type: string
+      strength:
+        type: string
