@@ -700,3 +700,35 @@ definitions:
       last_name:
         type: string
       phone:
+        type: string
+      role_name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.RecordPaymentReq:
+    properties:
+      amount:
+        type: number
+      method:
+        enum:
+        - cash
+        - card
+        - online
+        - bank_transfer
+        type: string
+      reference_no:
+        type: string
+    required:
+    - amount
+    - method
+    type: object
+  dto.SalesSummaryResponse:
+    properties:
+      discount:
+        type: number
+      invoice_count:
+        type: integer
+      period:
+        type: string
+      subtotal:
