@@ -636,3 +636,35 @@ definitions:
       id:
         type: string
       name:
+        type: string
+    type: object
+  dto.PatientResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      createdBy:
+        type: string
+      dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      occupation:
+        type: string
+      patient_id:
+        type: string
+      phone:
+        type: string
+      registered_on:
+        type: string
+    type: object
+  dto.PatientVisitsResponse:
+    properties:
+      patient:
+        $ref: '#/definitions/dto.PatientRef'
+      visits:
