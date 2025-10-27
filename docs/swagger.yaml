@@ -668,3 +668,35 @@ definitions:
       patient:
         $ref: '#/definitions/dto.PatientRef'
       visits:
+        items:
+          $ref: '#/definitions/dto.VisitItemResponse'
+        type: array
+    type: object
+  dto.PaymentResponse:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      invoice_id:
+        type: string
+      method:
+        type: string
+      paid_at:
+        type: string
+      reference_no:
+        type: string
+    type: object
+  dto.ProfileResponse:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
