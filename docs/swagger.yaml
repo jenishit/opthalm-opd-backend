@@ -732,3 +732,35 @@ definitions:
       period:
         type: string
       subtotal:
+        type: number
+      tax:
+        type: number
+      total_due:
+        type: number
+      total_paid:
+        type: number
+      total_sales:
+        type: number
+    type: object
+  dto.ScalarResultRes:
+    properties:
+      result:
+        type: number
+    type: object
+  dto.SphericalEquivalentReq:
+    properties:
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.StockMovementResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      movement_type:
+        type: string
