@@ -892,3 +892,35 @@ definitions:
       reorder_threshold:
         type: integer
       selling_price:
+        type: number
+      size:
+        type: string
+    type: object
+  dto.UpdateInvoiceStatusReq:
+    properties:
+      status:
+        enum:
+        - draft
+        - finalized
+        - cancelled
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateLabJobStatusReq:
+    properties:
+      notes:
+        type: string
+      status:
+        enum:
+        - in_fitting
+        - ready_to_deliver
+        - delivered
+        - cancelled
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateMedicineReq:
+    properties:
+      brand_name:
