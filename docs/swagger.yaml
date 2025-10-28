@@ -764,3 +764,35 @@ definitions:
         type: string
       movement_type:
         type: string
+      notes:
+        type: string
+      quantity:
+        type: integer
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+    type: object
+  dto.StockPurchaseItemResponse:
+    properties:
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      line_total:
+        type: number
+      quantity:
+        type: integer
+      unit_cost:
+        type: number
+    type: object
+  dto.StockPurchaseResponse:
+    properties:
+      created_at:
+        type: string
+      due_amount:
+        type: number
+      id:
+        type: string
+      invoice_ref_no:
+        type: string
