@@ -860,3 +860,35 @@ definitions:
       icd10_code:
         type: string
       name:
+        type: string
+    type: object
+  dto.UpdateHistoryConditionReq:
+    properties:
+      name:
+        type: string
+    type: object
+  dto.UpdateInventoryItemReq:
+    properties:
+      brand:
+        type: string
+      category:
+        enum:
+        - frame
+        - lens
+        - contact_lens
+        - sunglasses
+        - coating
+        - accessory
+        - other
+        type: string
+      color:
+        type: string
+      cost_price:
+        type: number
+      model:
+        type: string
+      name:
+        type: string
+      reorder_threshold:
+        type: integer
+      selling_price:
