@@ -828,3 +828,35 @@ definitions:
       updated_at:
         type: string
     type: object
+  dto.TelescopeFOVReq:
+    properties:
+      magnification:
+        type: number
+      true_fov_degrees:
+        type: number
+    type: object
+  dto.TranspositionReq:
+    properties:
+      axis:
+        maximum: 180
+        minimum: 0
+        type: integer
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.TranspositionRes:
+    properties:
+      axis:
+        type: integer
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.UpdateDiagnosisCatalogReq:
+    properties:
+      icd10_code:
+        type: string
+      name:
