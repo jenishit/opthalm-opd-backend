@@ -796,3 +796,35 @@ definitions:
         type: string
       invoice_ref_no:
         type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.StockPurchaseItemResponse'
+        type: array
+      paid_amount:
+        type: number
+      purchase_date:
+        type: string
+      total_amount:
+        type: number
+      vendor_id:
+        type: string
+      vendor_name:
+        type: string
+    type: object
+  dto.SubscriptionResponse:
+    properties:
+      clinic_id:
+        type: string
+      created_at:
+        type: string
+      current_period_end:
+        type: string
+      id:
+        type: string
+      plan_name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
