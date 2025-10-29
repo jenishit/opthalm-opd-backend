@@ -955,3 +955,35 @@ definitions:
         type: string
       name:
         type: string
+      phone:
+        type: string
+    type: object
+  dto.UpsertSubscriptionReq:
+    properties:
+      current_period_end:
+        description: YYYY-MM-DD
+        type: string
+      plan_name:
+        type: string
+      status:
+        enum:
+        - trialing
+        - active
+        - past_due
+        - cancelled
+        type: string
+    required:
+    - current_period_end
+    - status
+    type: object
+  dto.VendorDueResponse:
+    properties:
+      due_amount:
+        type: number
+      paid_amount:
+        type: number
+      purchase_date:
+        type: string
+      total_amount:
+        type: number
+      vendor_name:
