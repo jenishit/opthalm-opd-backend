@@ -987,3 +987,35 @@ definitions:
       total_amount:
         type: number
       vendor_name:
+        type: string
+    type: object
+  dto.VendorResponse:
+    properties:
+      address:
+        type: string
+      contact_person:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.VertexDistanceReq:
+    properties:
+      from_distance_mm:
+        type: number
+      power:
+        type: number
+      to_distance_mm:
+        type: number
+    type: object
+  dto.VisitCreateResponse:
+    properties:
