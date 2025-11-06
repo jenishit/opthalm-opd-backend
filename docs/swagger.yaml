@@ -1083,3 +1083,35 @@ definitions:
         type: string
     type: object
   dto.VisitsSummaryResponse:
+    properties:
+      period:
+        type: string
+      visit_count:
+        type: integer
+    type: object
+  http.errorResponse:
+    properties:
+      messages:
+        example:
+        - Error message 1
+        - ' Error message 2'
+        items:
+          type: string
+        type: array
+      success:
+        example: false
+        type: boolean
+    type: object
+  http.response:
+    properties:
+      data: {}
+      message:
+        example: Success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  valueobjects.Password:
+    type: object
+host: localhost:8082
