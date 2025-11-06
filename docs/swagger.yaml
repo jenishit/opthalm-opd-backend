@@ -1051,3 +1051,35 @@ definitions:
       id:
         type: string
       status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        $ref: '#/definitions/dto.EntityRef'
+      visit_date:
+        type: string
+    type: object
+  dto.VisitResponse:
+    properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        $ref: '#/definitions/dto.EntityRef'
+      examine_by:
+        $ref: '#/definitions/dto.EntityRef'
+      id:
+        type: string
+      patient:
+        $ref: '#/definitions/dto.PatientRef'
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        $ref: '#/definitions/dto.EntityRef'
+      visit_date:
+        type: string
+    type: object
+  dto.VisitsSummaryResponse:
