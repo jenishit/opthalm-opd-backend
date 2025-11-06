@@ -1019,3 +1019,35 @@ definitions:
     type: object
   dto.VisitCreateResponse:
     properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      examine_by:
+        type: string
+      id:
+        type: string
+      patient_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  dto.VisitItemResponse:
+    properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        $ref: '#/definitions/dto.EntityRef'
+      examine_by:
+        $ref: '#/definitions/dto.EntityRef'
+      id:
+        type: string
+      status:
