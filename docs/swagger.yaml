@@ -1147,3 +1147,35 @@ paths:
         name: offset
         type: integer
       produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.HistoryConditionResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List history conditions
+      tags:
+      - catalog
+  /admin/catalog/conditions/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Condition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
