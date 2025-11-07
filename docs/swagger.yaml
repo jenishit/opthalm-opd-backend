@@ -1179,3 +1179,35 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.HistoryConditionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a history condition
+      tags:
+      - catalog
+    patch:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Condition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateHistoryConditionReq'
