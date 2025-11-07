@@ -1115,3 +1115,35 @@ definitions:
   valueobjects.Password:
     type: object
 host: localhost:8082
+info:
+  contact:
+    name: API Support
+  description: |-
+    Backend API for a multi-tenant (SaaS) ophthalmology clinic
+    management system: patients, visits, billing/POS, inventory,
+    lab jobs, reports, and optical calculators.
+
+    Every route under /api (other than /api/auth/*, /api/signup,
+    and the /api/auth/password-reset|email endpoints) requires a
+    Bearer access token, and most additionally require the
+    caller's clinic to have an active subscription.
+  license:
+    name: Proprietary
+  title: Opthalmic Management System API
+  version: "1.0"
+paths:
+  /admin/catalog/conditions:
+    get:
+      description: Admin-only. History conditions are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
