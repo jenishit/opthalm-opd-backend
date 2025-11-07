@@ -1243,3 +1243,35 @@ paths:
       - BearerAuth: []
       summary: Soft-delete a history condition
       tags:
+      - catalog
+  /admin/catalog/conditions/search:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.HistoryConditionResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search history conditions
+      tags:
