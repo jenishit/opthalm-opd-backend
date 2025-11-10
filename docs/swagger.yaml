@@ -1402,3 +1402,35 @@ paths:
         name: limit
         type: integer
       produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.DiagnosisCatalogResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search diagnoses
+      tags:
+      - catalog
+  /admin/catalog/medicines:
+    get:
+      description: Admin-only. Medicines are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
