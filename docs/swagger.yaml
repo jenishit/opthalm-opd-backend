@@ -1275,3 +1275,34 @@ paths:
       - BearerAuth: []
       summary: Search history conditions
       tags:
+      - catalog
+  /admin/catalog/diagnoses:
+    get:
+      description: Admin-only. Diagnoses are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.DiagnosisCatalogResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
