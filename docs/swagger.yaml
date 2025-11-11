@@ -1658,3 +1658,34 @@ paths:
         in: body
         name: request
         required: true
+        schema:
+          $ref: '#/definitions/dto.ClinicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update clinic settings
+      tags:
+      - clinic
+  /auth/email/verify/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Marks the token's owning user's email as verified.
+      parameters:
+      - description: Verification code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ConfirmEmailVerificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
