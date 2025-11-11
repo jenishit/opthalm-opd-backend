@@ -1530,3 +1530,35 @@ paths:
       security:
       - BearerAuth: []
       summary: Soft-delete a medicine
+      tags:
+      - catalog
+  /admin/catalog/medicines/search:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.MedicineResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search medicines
