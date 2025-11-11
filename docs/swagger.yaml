@@ -1562,3 +1562,35 @@ paths:
       security:
       - BearerAuth: []
       summary: Search medicines
+      tags:
+      - catalog
+  /admin/clinic:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ClinicResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List clinics
+      tags:
+      - clinic
+    post:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Clinic details
+        in: body
+        name: request
