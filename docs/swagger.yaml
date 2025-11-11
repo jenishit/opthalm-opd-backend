@@ -1498,3 +1498,35 @@ paths:
         name: request
         required: true
         schema:
+          $ref: '#/definitions/dto.UpdateMedicineReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a medicine
+      tags:
+      - catalog
+  /admin/catalog/medicines/{id}/delete:
+    patch:
+      description: Admin-only.
+      parameters:
+      - description: Medicine ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a medicine
