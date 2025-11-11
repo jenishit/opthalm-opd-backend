@@ -1594,3 +1594,35 @@ paths:
       - description: Clinic details
         in: body
         name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ClinicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ClinicResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create clinic settings
+      tags:
+      - clinic
+  /admin/clinic/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
