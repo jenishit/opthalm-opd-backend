@@ -1785,3 +1785,35 @@ paths:
       description: Applies a new password using the code from RequestPasswordReset,
         then revokes every existing session for that user (forcing re-login everywhere).
       parameters:
+      - description: Reset code + new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ConfirmPasswordResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: invalid, expired, or already-used code
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Confirm a password reset
+      tags:
+      - auth
+  /auth/password-reset/request:
+    post:
+      consumes:
+      - application/json
+      description: Always returns the same success response regardless of whether
+        the email belongs to an account, so this endpoint can't be used to enumerate
+        registered emails. If it does, a single-use code valid for 1 hour is emailed.
+      parameters:
+      - description: Account email
+        in: body
+        name: request
+        required: true
