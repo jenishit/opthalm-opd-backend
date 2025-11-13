@@ -1753,3 +1753,35 @@ paths:
             $ref: '#/definitions/http.errorResponse'
       summary: Log in
       tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revokes the session backing the given refresh token. The already-issued
+        access token keeps working until it expires (at most TOKEN_DURATION) — access
+        tokens are stateless and not checked against sessions on every request.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      summary: Log out
+      tags:
+      - auth
+  /auth/password-reset/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Applies a new password using the code from RequestPasswordReset,
+        then revokes every existing session for that user (forcing re-login everywhere).
+      parameters:
