@@ -1689,3 +1689,35 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: invalid, expired, or already-used code
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Confirm email verification
+      tags:
+      - auth
+  /auth/email/verify/resend:
+    post:
+      description: Sends a fresh verification code (valid 24h) to the authenticated
+        caller's own email address, invalidating any previously issued one.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Resend the email verification code
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
