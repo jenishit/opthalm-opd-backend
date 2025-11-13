@@ -1721,3 +1721,35 @@ paths:
   /auth/login:
     post:
       consumes:
+      - application/json
+      description: Exchanges email + password for an access token (short-lived JWT)
+        and a refresh token (long-lived, rotating).
+      parameters:
+      - description: Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "401":
+          description: invalid credentials
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Log in
+      tags:
