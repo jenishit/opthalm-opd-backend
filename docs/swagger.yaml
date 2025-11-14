@@ -1817,3 +1817,35 @@ paths:
         in: body
         name: request
         required: true
+        schema:
+          $ref: '#/definitions/domain.RequestPasswordResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Request a password reset code
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges a valid, not-yet-used refresh token for a new access+refresh
+        pair, rotating the old one. Presenting an already-rotated-out refresh token
+        is treated as theft and revokes every session for that user.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RefreshRequest'
+      produces:
+      - application/json
