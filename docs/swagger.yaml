@@ -2009,3 +2009,35 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Download an invoice as PDF
+      tags:
+      - billing
+  /billing/invoice/{id}/qr:
+    get:
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Get an invoice summary as a QR code
+      tags:
+      - billing
+  /billing/invoice/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
