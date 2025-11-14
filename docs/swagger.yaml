@@ -1881,3 +1881,35 @@ paths:
         type: integer
       produces:
       - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InvoiceResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List invoices
+      tags:
+      - billing
+    post:
+      consumes:
+      - application/json
+      description: Requires ROLE_ADMIN or ROLE_BILLING.
+      parameters:
+      - description: Invoice details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInvoiceReq'
+      produces:
+      - application/json
+      responses:
+        "200":
