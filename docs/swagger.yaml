@@ -1849,3 +1849,35 @@ paths:
           $ref: '#/definitions/domain.RefreshRequest'
       produces:
       - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "401":
+          description: invalid, expired, or reused refresh token
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Refresh an access token
+      tags:
+      - auth
+  /billing/invoice:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
