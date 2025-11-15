@@ -2104,3 +2104,35 @@ paths:
         name: query
         type: string
       - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InvoiceResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search invoices
+      tags:
+      - billing
+  /calculators/near-add:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Distance sphere + add power
+        in: body
+        name: request
+        required: true
