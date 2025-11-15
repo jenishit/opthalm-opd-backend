@@ -2072,3 +2072,35 @@ paths:
     get:
       parameters:
       - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  properties:
+                    link:
+                      type: string
+                  type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get a wa.me link to share an invoice summary
+      tags:
+      - billing
+  /billing/invoice/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
