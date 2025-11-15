@@ -2041,3 +2041,34 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateInvoiceStatusReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "409":
+          description: invoice already paid
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update invoice status
+      tags:
+      - billing
+  /billing/invoice/{id}/whatsapp-link:
+    get:
+      parameters:
+      - description: Invoice ID
