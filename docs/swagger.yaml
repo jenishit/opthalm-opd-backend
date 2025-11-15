@@ -2136,3 +2136,35 @@ paths:
         in: body
         name: request
         required: true
+        schema:
+          $ref: '#/definitions/dto.NearAddReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute near-add power
+      tags:
+      - calculators
+  /calculators/spherical-equivalent:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Sphere/cylinder
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SphericalEquivalentReq'
+      produces:
+      - application/json
