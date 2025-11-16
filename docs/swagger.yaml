@@ -2200,3 +2200,35 @@ paths:
         "200":
           description: OK
           schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute apparent field of view for a telescope/loupe
+      tags:
+      - calculators
+  /calculators/transposition:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Sphere/cylinder/axis
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TranspositionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
