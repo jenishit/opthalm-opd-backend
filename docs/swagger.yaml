@@ -2168,3 +2168,35 @@ paths:
           $ref: '#/definitions/dto.SphericalEquivalentReq'
       produces:
       - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute spherical equivalent
+      tags:
+      - calculators
+  /calculators/telescope-fov:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: True FOV (degrees) + magnification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TelescopeFOVReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
