@@ -2232,3 +2232,35 @@ paths:
             - $ref: '#/definitions/http.response'
             - properties:
                 data:
+                  $ref: '#/definitions/dto.TranspositionRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Transpose a cylinder between plus/minus cylinder notation
+      tags:
+      - calculators
+  /calculators/vertex-distance:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Power + from/to vertex distance (mm)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VertexDistanceReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
