@@ -2296,3 +2296,35 @@ paths:
               type: object
       security:
       - BearerAuth: []
+      summary: List inventory items
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Requires ROLE_ADMIN or ROLE_INVENTORY.
+      parameters:
+      - description: Item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInventoryItemReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryItemResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create an inventory item
+      tags:
+      - inventory
+  /inventory/items/{id}:
