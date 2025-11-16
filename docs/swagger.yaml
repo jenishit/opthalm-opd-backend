@@ -2264,3 +2264,35 @@ paths:
               type: object
       security:
       - BearerAuth: []
+      summary: Adjust power for a change in vertex distance
+      tags:
+      - calculators
+  /inventory/items:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
