@@ -2487,3 +2487,35 @@ paths:
             - $ref: '#/definitions/http.response'
             - properties:
                 data:
+                  $ref: '#/definitions/dto.StockMovementResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add stock to an item
+      tags:
+      - inventory
+  /inventory/items/barcode/{sku}:
+    get:
+      parameters:
+      - description: SKU
+        in: path
+        name: sku
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryItemResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
