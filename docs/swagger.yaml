@@ -2551,3 +2551,35 @@ paths:
               type: object
       security:
       - BearerAuth: []
+      summary: Search inventory items
+      tags:
+      - inventory
+  /inventory/low-stock:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List items at or below their reorder threshold
+      tags:
+      - inventory
+  /inventory/purchases:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
