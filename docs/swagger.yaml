@@ -2583,3 +2583,35 @@ paths:
         in: query
         name: limit
         type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.StockPurchaseResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List stock purchases
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Creates the purchase and its line items, and increments quantity
+        on hand for each item.
+      parameters:
+      - description: Purchase details
+        in: body
