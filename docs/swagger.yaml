@@ -2679,3 +2679,35 @@ paths:
         name: offset
         type: integer
       produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List vendors
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vendor details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVendorReq'
+      produces:
+      - application/json
+      responses:
+        "200":
