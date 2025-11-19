@@ -2615,3 +2615,35 @@ paths:
       parameters:
       - description: Purchase details
         in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStockPurchaseReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.StockPurchaseResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Record a stock purchase from a vendor
+      tags:
+      - inventory
+  /inventory/purchases/{id}:
+    get:
+      parameters:
+      - description: Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
