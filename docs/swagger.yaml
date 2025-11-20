@@ -2711,3 +2711,35 @@ paths:
       - application/json
       responses:
         "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VendorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a vendor
+      tags:
+      - inventory
+  /inventory/vendors/{id}:
+    get:
+      parameters:
+      - description: Vendor ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VendorResponse'
