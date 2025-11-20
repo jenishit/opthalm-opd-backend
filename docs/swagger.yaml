@@ -2902,3 +2902,35 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LabJobResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a lab job
+      tags:
+      - lab-jobs
+  /lab-jobs/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Lab job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New status + notes
+        in: body
+        name: request
+        required: true
