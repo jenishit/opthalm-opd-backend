@@ -2870,3 +2870,35 @@ paths:
       parameters:
       - description: Lab job details
         in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLabJobReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LabJobResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a lab job
+      tags:
+      - lab-jobs
+  /lab-jobs/{id}:
+    get:
+      parameters:
+      - description: Lab job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
