@@ -2806,3 +2806,35 @@ paths:
       - description: Search text
         in: query
         name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search vendors
+      tags:
+      - inventory
+  /lab-jobs:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
