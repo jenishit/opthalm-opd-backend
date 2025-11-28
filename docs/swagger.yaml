@@ -2966,3 +2966,35 @@ paths:
             - $ref: '#/definitions/http.response'
             - properties:
                 data:
+                  items:
+                    $ref: '#/definitions/dto.LabJobResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List a patient's lab jobs
+      tags:
+      - lab-jobs
+  /patient:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PatientResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List patients
+      tags:
+      - patients
+    post:
+      consumes:
