@@ -2934,3 +2934,35 @@ paths:
         in: body
         name: request
         required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLabJobStatusReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a lab job's status
+      tags:
+      - lab-jobs
+  /lab-jobs/patient/{patientId}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
