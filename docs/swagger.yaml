@@ -2998,3 +2998,35 @@ paths:
       - patients
     post:
       consumes:
+      - application/json
+      parameters:
+      - description: Patient details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePatientReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PatientResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a patient
+      tags:
+      - patients
+  /patient/{id}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
