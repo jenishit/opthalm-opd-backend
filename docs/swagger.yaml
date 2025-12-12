@@ -3158,3 +3158,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a clinic's subscription
+      tags:
+      - platform
+    put:
+      consumes:
+      - application/json
+      description: Platform-operator-only (ROLE_SUPERADMIN). A clinic's own admin
+        can never reach this route, so it can never reactivate or extend its own subscription.
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: clinicId
+        required: true
+        type: string
+      - description: Plan, status, period end
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpsertSubscriptionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SubscriptionResponse'
+              type: object
