@@ -3126,3 +3126,35 @@ paths:
                   type: array
               type: object
       security:
+      - BearerAuth: []
+      summary: Search patients
+      tags:
+      - patients
+  /platform/subscriptions/{clinicId}:
+    get:
+      description: Platform-operator-only (ROLE_SUPERADMIN).
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: clinicId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SubscriptionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a clinic's subscription
