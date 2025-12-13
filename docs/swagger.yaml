@@ -3317,3 +3317,35 @@ paths:
               type: object
       security:
       - BearerAuth: []
+      summary: Outstanding patient balances
+      tags:
+      - reports
+  /reports/inventory/low-stock:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Inventory low-stock report
+      tags:
+      - reports
+  /reports/inventory/valuation:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
