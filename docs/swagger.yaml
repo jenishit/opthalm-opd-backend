@@ -3285,3 +3285,35 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: invalid UUID
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a profile
+      tags:
+      - profile
+  /reports/dues:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PatientDueResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
