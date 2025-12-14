@@ -3381,3 +3381,35 @@ paths:
             - properties:
                 data:
                   $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Daily sales report
+      tags:
+      - reports
+  /reports/sales/monthly:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: Defaults to current year
+        in: query
+        name: year
+        type: integer
+      - description: Defaults to current month
+        in: query
+        name: month
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
