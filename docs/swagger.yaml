@@ -3413,3 +3413,35 @@ paths:
               type: object
       security:
       - BearerAuth: []
+      summary: Monthly sales report
+      tags:
+      - reports
+  /reports/sales/range:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Sales report over a date range
