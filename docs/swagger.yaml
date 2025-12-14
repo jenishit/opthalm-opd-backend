@@ -3445,3 +3445,35 @@ paths:
       security:
       - BearerAuth: []
       summary: Sales report over a date range
+      tags:
+      - reports
+  /reports/vendor-dues:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorDueResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Outstanding vendor balances
+      tags:
+      - reports
+  /reports/visits/summary:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD
+        in: query
+        name: from
+        required: true
