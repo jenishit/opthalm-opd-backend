@@ -3477,3 +3477,35 @@ paths:
         in: query
         name: from
         required: true
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: '''day'' (default) or ''doctor'''
+        in: query
+        name: group_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VisitsSummaryResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Visits summary report
+      tags:
+      - reports
+  /role/create:
+    post:
+      consumes:
