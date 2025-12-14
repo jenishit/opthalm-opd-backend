@@ -3509,3 +3509,35 @@ paths:
   /role/create:
     post:
       consumes:
+      - application/json
+      description: Admin-only. Role names are global (not clinic-scoped) reusable
+        labels.
+      parameters:
+      - description: Role name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Role'
+              type: object
+        "409":
+          description: role already exists
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a role
+      tags:
+      - roles
+  /signup:
