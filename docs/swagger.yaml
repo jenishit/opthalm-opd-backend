@@ -3349,3 +3349,35 @@ paths:
       - application/json
       responses:
         "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryValuationResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Inventory valuation report
+      tags:
+      - reports
+  /reports/sales/daily:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD, defaults to today
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
