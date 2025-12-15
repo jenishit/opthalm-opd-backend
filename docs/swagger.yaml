@@ -3541,3 +3541,34 @@ paths:
       tags:
       - roles
   /signup:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new clinic (tenant), its first ROLE_ADMIN user, and a
+        14-day trial subscription, atomically. Returns a normal login response so
+        the new admin is immediately authenticated.
+      parameters:
+      - description: New clinic + admin details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "409":
+          description: email already registered
