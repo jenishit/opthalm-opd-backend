@@ -3572,3 +3572,35 @@ paths:
             $ref: '#/definitions/http.errorResponse'
         "409":
           description: email already registered
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Sign up a new clinic
+      tags:
+      - auth
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Admin-only. Creates a new user (and profile) in the caller's own
+        clinic.
+      parameters:
+      - description: New user details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
