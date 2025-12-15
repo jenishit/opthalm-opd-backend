@@ -3668,3 +3668,35 @@ paths:
           schema:
             $ref: '#/definitions/http.errorResponse'
       security:
+      - BearerAuth: []
+      summary: Get a visit
+      tags:
+      - visits
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Visit ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVisitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a visit
+      tags:
+      - visits
+  /visit/patient/{patientId}:
