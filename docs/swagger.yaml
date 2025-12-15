@@ -3700,3 +3700,35 @@ paths:
       tags:
       - visits
   /visit/patient/{patientId}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PatientVisitsResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List a patient's visits
+      tags:
+      - visits
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the access token, e.g. "Bearer
+      eyJhbGci...".
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
