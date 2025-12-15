@@ -3604,3 +3604,35 @@ paths:
             - $ref: '#/definitions/http.response'
             - properties:
                 data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "409":
+          description: email already exists
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a staff user
+      tags:
+      - users
+  /visit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Visit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVisitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
