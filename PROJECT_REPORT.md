@@ -38,3 +38,44 @@ Shared database, `clinic_id` column on every tenant-scoped table (patients, visi
 | Inventory | `/api/inventory/{items,vendors,purchases}` — CRUD, stock movements, barcode image, low-stock |
 | Lab jobs | `/api/lab-jobs` — create, list, status updates |
 | Reports | `/api/reports/*` — sales (daily/monthly/range), dues, inventory valuation/low-stock, visits summary; CSV export via `?format=csv` |
+| Calculators | `/api/calculators/*` — transposition, spherical equivalent, near-add, vertex distance, telescope FOV (stateless optical math) |
+| Clinic settings | `/api/admin/clinic` — per-tenant branding/contact info used on invoices |
+
+### 4. Cross-cutting concerns
+- **CORS** — configurable allowed origins.
+- **Structured JSON responses** — `{success, message, data}` / `{success, messages}`, with a sentinel-error → HTTP-status map covering every domain error.
+- **Structured logging** — one `log/slog` line per request (request ID, latency, authenticated user/clinic), JSON in production.
+- **Rate limiting** — Redis-backed, on signup/login/password-reset.
+- **Graceful shutdown** — drains in-flight requests on `SIGINT`/`SIGTERM`.
+- **Swagger/OpenAPI** — generated from handler annotations, served at `/swagger/index.html` outside production.
+- **Panic recovery** — `gin.CustomRecovery` returns the standard JSON error envelope instead of crashing the process.
+
+### 5. Testing
+Real-database integration suite (no mocked repositories) in `internal/adapter/handler/http/*_test.go`, built on a shared harness (`internal/testutil/harness.go`) that wires the exact same DI graph as `cmd/main.go`. Covers every module above plus auth/session lifecycle, tenant isolation, subscription gating, and rate limiting.
+
+### 6. Infrastructure
+- Multi-stage `Dockerfile` (`golang:1.26-alpine` → `alpine:3.20`), `docker-compose.yml` with healthchecked Postgres + Redis and `depends_on: condition: service_healthy` ordering.
+- 14 goose-style SQL migrations (`internal/adapter/storage/postgres/migrations/`), applied via the `goose` CLI (not run automatically by the app).
+
+---
+
+## What Is Missing / Deferred
+
+| Item | Status |
+|---|---|
+| AI/OCR for prescription scanning | Deliberately deferred (explicit early scoping decision) |
+| Desktop/hardware integrations (barcode scanners, card readers) | Out of scope — backend-only by design |
+| Frontend | Not part of this codebase |
+| CI pipeline | Not set up — tests are run manually against docker-compose |
+| Payment gateway integration | Subscription billing is an internal/manual flag (`subscriptions` table), not wired to a real payment processor |
+| Audit log | No append-only record of who changed what; sentinel errors + structured logs are the only trail today |
+
+---
+
+## Known Rough Edges
+
+| Item | Details |
+|---|---|
+| Dead config structs | `config.Session`, `config.Cache`, and the legacy `config.Redis` struct are loaded but unused — superseded by `config.RedisConfig`. Left in place rather than risk breaking something that reads them; safe to remove in a follow-up pass. |
+| Lambda leftovers | `config.go` still carries `IsLambdaRuntime()` and AWS secret-ARN resolution logic from an earlier serverless-adapted template. Unused in the current docker-compose deployment model. |
+| `DB.Migrate()` unused | A golang-migrate-based `Migrate()` method exists on `postgres.DB` but nothing calls it — migrations are applied via the `goose` CLI instead, which is what all 14 existing migration files are formatted for (`-- +goose Up/Down` markers, not golang-migrate's `.up.sql`/`.down.sql` pairs). Worth removing the dead method or wiring it up properly, not leaving both half-present. |
