@@ -37,3 +37,9 @@ func (rh *RoleHandler) CreateRole(ctx *gin.Context) {
 
 	handleSuccess(ctx, role)
 }
+
+func (rh *RoleHandler) GetRoleIDByRoleName(ctx *gin.Context) {
+
+}
+
+func (rh *RoleHandler) GetRoleNameByRoleID(ctx *gin.Context) 

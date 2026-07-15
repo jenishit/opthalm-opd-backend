@@ -110,9 +110,9 @@ func New() (*Container, error) {
 		Connection: os.Getenv("DB_CONNECTION"),
 		Host:       os.Getenv("DB_HOST"),
 		Port:       os.Getenv("DB_PORT"),
-		User:       os.Getenv("DB_USER"),
-		Password:   os.Getenv("DB_PASSWORD"),
-		Name:       os.Getenv("DB_NAME"),
+		User:       os.Getenv("POSTGRES_USER"),
+		Password:   os.Getenv("POSTGRES_PASSWORD"),
+		Name:       os.Getenv("POSTGRES_DB"),
 	}
 
 	http := &HTTP{
@@ -217,7 +217,7 @@ func resolveDatabasePort(secret *DB) string {
 func resolveDatabaseUser(secret *DB) string {
 	return resolveDatabaseField(
 		secretValue(secret, func(s *DB) string { return s.User }),
-		envOrDefault(os.Getenv("DB_USER"), os.Getenv("DATABASE_USER")),
+		envOrDefault(os.Getenv("POSTGRES_USER"), os.Getenv("DATABASE_USER")),
 		"",
 	)
 }
@@ -225,7 +225,7 @@ func resolveDatabaseUser(secret *DB) string {
 func resolveDatabaseName(secret *DB) string {
 	return resolveDatabaseField(
 		secretValue(secret, func(s *DB) string { return s.Name }),
-		envOrDefault(os.Getenv("DB_NAME"), os.Getenv("DATABASE_NAME")),
+		envOrDefault(os.Getenv("POSTGRES_DB"), os.Getenv("DATABASE_NAME")),
 		"",
 	)
 }
