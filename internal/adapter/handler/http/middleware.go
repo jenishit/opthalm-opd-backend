@@ -69,3 +69,27 @@ func authMiddleware(token port.TokenService) gin.HandlerFunc {
 
 	}
 }
+
+func adminMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		payload, exists := ctx.Get(authorizationPayloadKey)
+		if !exists {
+			validationError(ctx, domain.ErrEmptyAuthorizationHeader)
+			return
+		}
+
+		userPayload, ok := payload.(*domain.TokenPayload)
+		if !ok {
+			validationError(ctx, domain.ErrInvalidAuthorizationHeader)
+			return
+		}
+
+		if userPayload.RoleName != "ROLE_ADMIN" {
+			handleAbort(ctx, domain.ErrUnauthorized)
+			return
+
+		}
+		ctx.Next()
+
+	}
+}

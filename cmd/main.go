@@ -54,6 +54,10 @@ func main() {
 	authHandler := http.NewAuthHandler(authService)
 	userService := services.NewUserService(userRepo, roleService, profileService)
 	userHandler := http.NewUsersHandler(userService)
+ 
+	clinicRepo := repository.NewClinicRepository(db)
+	clinicService := services.NewClinicService(clinicRepo)
+	clinicHandler := http.NewClinicHandler(clinicService)
 
 	router, err := http.NewRouter(
 		config,
@@ -62,6 +66,7 @@ func main() {
 		*userHandler,
 		*profileHandler,
 		*authHandler,
+		*clinicHandler,
 	)
 
 	if err != nil {
