@@ -3,7 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 	"github.com/jenish-brainztechs/go-backend/internal/core/port"
 )
 
@@ -17,8 +18,18 @@ func NewPatientService(pr port.PatientRepository) *PatientService {
 	}
 }
 
-func (ps *PatientService) CreatePatient(ctx *gin.Context)
-func (ps *PatientService) GetPatientByID(ctx context.Context)
-func (ps *PatientService) GetPatients(ctx *gin.Context)
-func (ps *PatientService) UpdatePatientByID(ctx *gin.Context)
-func (ps *PatientService) DeletePatientByID(ctx *gin.Context)
+func (ps *PatientService) CreatePatient(ctx context.Context, pt *domain.Patient) (*domain.Patient, error) {
+	return ps.repo.CreatePatient(ctx, pt)
+}
+func (ps *PatientService) GetPatientByID(ctx context.Context, id uuid.UUID) (*domain.Patient, error) {
+	return ps.repo.GetPatientByID(ctx, id)
+}
+func (ps *PatientService) GetPatients(ctx context.Context) ([]*domain.Patient, error) {
+	return ps.repo.GetPatients(ctx)
+}
+func (ps *PatientService) UpdatePatientByID(ctx context.Context, pt *domain.Patient) error {
+	return ps.repo.UpdatePatientByID(ctx, pt)
+}
+func (ps *PatientService) DeletePatientByID(ctx context.Context, id uuid.UUID) error {
+	return ps.repo.DeletePatientByID(ctx, id)
+}

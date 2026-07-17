@@ -59,6 +59,10 @@ func main() {
 	clinicService := services.NewClinicService(clinicRepo)
 	clinicHandler := http.NewClinicHandler(clinicService)
 
+	patientRepo := repository.NewPatientRepository(db)
+	patientService := services.NewPatientService(patientRepo)
+	patientHandler := http.NewPatientHandler(patientService)
+
 	router, err := http.NewRouter(
 		config,
 		tokenService,
@@ -67,6 +71,7 @@ func main() {
 		*profileHandler,
 		*authHandler,
 		*clinicHandler,
+		*patientHandler,
 	)
 
 	if err != nil {

@@ -12,7 +12,7 @@ type PatientRepository interface {
 	GetPatientByID(ctx context.Context, id uuid.UUID) (*domain.Patient, error)
 	GetPatients(ctx context.Context) ([]*domain.Patient, error)
 	UpdatePatientByID(ctx context.Context, pt *domain.Patient) error
-	DeletePatientByID(ctx context.Context, pt *domain.Patient) error
+	DeletePatientByID(ctx context.Context, id uuid.UUID) error
 }
 
 type PatientService interface {
@@ -20,5 +20,5 @@ type PatientService interface {
 	GetPatientByID(ctx context.Context, id uuid.UUID) (*domain.Patient, error)
 	GetPatients(ctx context.Context) ([]*domain.Patient, error)
 	UpdatePatientByID(ctx context.Context, pt *domain.Patient) error
-	DeletePatientByID(ctx context.Context, pt *domain.Patient) error
+	DeletePatientByID(ctx context.Context, id uuid.UUID) error
 }

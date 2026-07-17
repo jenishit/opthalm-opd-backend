@@ -219,11 +219,11 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, pt *domain.P
 	return nil
 }
 
-func (pr *PatientRepository) DeletePatientByID(ctx context.Context, pt *domain.Patient) error {
+func (pr *PatientRepository) DeletePatientByID(ctx context.Context, id uuid.UUID) error {
 	query, args, err := sq.
 		Update("patients").
 		Set("deleted_at", sq.Expr("NOW()")).
-		Where(sq.Eq{"id": pt.ID}).
+		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {
