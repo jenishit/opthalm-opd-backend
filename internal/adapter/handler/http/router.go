@@ -19,6 +19,7 @@ func NewRouter(
 	authHandler AuthHandler,
 	clinicHandler ClinicHandler,
 	patientHandler PatientHandler,
+	visitHandler VisitHandler,
 ) (*Router, error) {
 
 	if config.App.Env == "production" {
@@ -69,6 +70,14 @@ func NewRouter(
 		patient.GET("/:id", patientHandler.GetPatientByID)
 		patient.PATCH("/:id", patientHandler.UpdatePatientByID)
 		patient.PATCH("/:id/delete", patientHandler.DeletePatientByID)
+	}
+
+	visit := api.Group("/visit").Use(authMiddleware(token))
+	{
+		visit.POST("", visitHandler.CreateVisit)
+		visit.GET("/:id", visitHandler.GetVisitByVisitID)
+		visit.GET("/patient/:patientId", visitHandler.GetVisitsByPatientID)
+		visit.PATCH("/:id", visitHandler.UpdateVisitByVisitID)
 	}
 
 	return &Router{

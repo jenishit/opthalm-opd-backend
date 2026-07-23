@@ -63,6 +63,10 @@ func main() {
 	patientService := services.NewPatientService(patientRepo)
 	patientHandler := http.NewPatientHandler(patientService)
 
+	visitRepo := repository.NewVisitsRepository(db)
+	visitService := services.NewVisitsService(visitRepo)
+	visitHandler := http.NewVisitHandler(visitService)
+
 	router, err := http.NewRouter(
 		config,
 		tokenService,
@@ -72,6 +76,7 @@ func main() {
 		*authHandler,
 		*clinicHandler,
 		*patientHandler,
+		*visitHandler,
 	)
 
 	if err != nil {
