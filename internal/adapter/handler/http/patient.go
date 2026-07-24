@@ -1,6 +1,8 @@
 package http
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
@@ -88,6 +90,20 @@ func (ph *PatientHandler) GetPatients(ctx *gin.Context) {
 
 	rsp := dto.PatientResponses(res)
 
+	handleSuccess(ctx, rsp)
+}
+
+func (ph *PatientHandler) SearchPatients(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	patients, err := ph.svc.SearchPatients(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.PatientResponses(patients)
 	handleSuccess(ctx, rsp)
 }
 

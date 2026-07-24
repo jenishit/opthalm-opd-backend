@@ -27,3 +27,13 @@ func nullUUID(value uuid.UUID) uuid.NullUUID {
 	}
 }
 
+func nullStringPtr(value *string) sql.NullString {
+	if value == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: *value,
+		Valid:  true,
+	}
+}
+

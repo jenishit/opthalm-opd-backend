@@ -67,6 +67,17 @@ func main() {
 	visitService := services.NewVisitsService(visitRepo)
 	visitHandler := http.NewVisitHandler(visitService)
 
+	medicineRepo := repository.NewMedicineRepository(db)
+	medicineService := services.NewMedicineService(medicineRepo)
+
+	diagnosisRepo := repository.NewDiagnosisCatalogRepository(db)
+	diagnosisService := services.NewDiagnosisCatalogService(diagnosisRepo)
+
+	conditionRepo := repository.NewHistoryConditionRepository(db)
+	conditionService := services.NewHistoryConditionService(conditionRepo)
+
+	catalogHandler := http.NewCatalogHandler(medicineService, diagnosisService, conditionService)
+
 	router, err := http.NewRouter(
 		config,
 		tokenService,
@@ -77,6 +88,7 @@ func main() {
 		*clinicHandler,
 		*patientHandler,
 		*visitHandler,
+		*catalogHandler,
 	)
 
 	if err != nil {

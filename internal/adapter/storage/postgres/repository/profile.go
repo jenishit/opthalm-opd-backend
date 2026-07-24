@@ -165,6 +165,72 @@ func (pr *ProfileRepository) GetProfiles(ctx context.Context) ([]*domain.GetProf
 	return profiles, nil
 }
 
+func (pr *ProfileRepository) SearchProfiles(ctx context.Context, query string, limit int) ([]*domain.GetProfileDetails, error) {
+	var phone, email sql.NullString
+
+	querySql, args, err := sq.
+		Select(
+			"P.ID",
+			"P.FIRST_NAME",
+			"P.LAST_NAME",
+			"R.ROLE_NAME",
+			"P.USER_ID",
+			"U.EMAIL",
+			"P.PHONE",
+		).From("PROFILE P").
+		LeftJoin("USERS U ON U.ID = P.USER_ID").
+		LeftJoin("ROLE R ON R.ID = U.ROLE_ID").
+		Where(sq.Or{
+			sq.Expr("P.FIRST_NAME ILIKE '%' || ? || '%'", query),
+			sq.Expr("P.LAST_NAME ILIKE '%' || ? || '%'", query),
+			sq.Expr("U.EMAIL ILIKE '%' || ? || '%'", query),
+		}).
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := pr.DB.Query(ctx, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var profiles []*domain.GetProfileDetails
+
+	for rows.Next() {
+		var c domain.GetProfileDetails
+
+		err := rows.Scan(
+			&c.ID,
+			&c.FirstName,
+			&c.LastName,
+			&c.RoleName,
+			&c.UserID,
+			&email,
+			&phone,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		if email.Valid {
+			c.Email = email.String
+		}
+		if phone.Valid {
+			c.Phone = &phone.String
+		}
+
+		profiles = append(profiles, &c)
+	}
+
+	return profiles, nil
+}
+
 func (pr *ProfileRepository) UpdateProfileByUserID(ctx context.Context, prof *domain.GetProfileDetails) error {
 	builder := sq.Update("profile").
 		PlaceholderFormat(sq.Dollar).

@@ -27,6 +27,10 @@ func (ps *PatientService) GetPatientByID(ctx context.Context, id uuid.UUID) (*do
 func (ps *PatientService) GetPatients(ctx context.Context) ([]*domain.Patient, error) {
 	return ps.repo.GetPatients(ctx)
 }
+
+func (ps *PatientService) SearchPatients(ctx context.Context, query string, limit int) ([]*domain.Patient, error) {
+	return ps.repo.SearchPatients(ctx, query, limit)
+}
 func (ps *PatientService) UpdatePatientByID(ctx context.Context, pt *domain.Patient) error {
 	return ps.repo.UpdatePatientByID(ctx, pt)
 }

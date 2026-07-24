@@ -1,6 +1,8 @@
 package http
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
@@ -49,6 +51,20 @@ func (ph *ProfileHandler) GetProfiles(ctx *gin.Context) {
 	}
 	rsp := dto.NewProfileResponses(res)
 
+	handleSuccess(ctx, rsp)
+}
+
+func (ph *ProfileHandler) SearchProfiles(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	profiles, err := ph.psvc.SearchProfiles(ctx, query, limit)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := dto.NewProfileResponses(profiles)
 	handleSuccess(ctx, rsp)
 }
 

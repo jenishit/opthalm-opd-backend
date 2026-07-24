@@ -41,6 +41,10 @@ func (p *ProfileService) GetProfiles(ctx context.Context) ([]*domain.GetProfileD
 	return profiles, err
 }
 
+func (p *ProfileService) SearchProfiles(ctx context.Context, query string, limit int) ([]*domain.GetProfileDetails, error) {
+	return p.repo.SearchProfiles(ctx, query, limit)
+}
+
 func (p *ProfileService) UpdateProfileByUserID(ctx context.Context, prof *domain.GetProfileDetails) error {
 	if prof.UserID == uuid.Nil {
 		return errors.New("user id is required")

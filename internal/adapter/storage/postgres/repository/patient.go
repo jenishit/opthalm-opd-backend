@@ -185,6 +185,77 @@ func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient
 	return patients, nil
 }
 
+func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, limit int) ([]*domain.Patient, error) {
+	var address, occupation sql.NullString
+
+	querySql, args, err := sq.
+		Select(
+			"id",
+			"full_name",
+			"phone",
+			"address",
+			"dob",
+			"gender",
+			"occupation",
+			"registered_on",
+			"created_by",
+			"created_at",
+		).From("patients").
+		Where("deleted_at IS NULL").
+		Where(sq.Or{
+			sq.Expr("full_name ILIKE '%' || ? || '%'", query),
+			sq.Expr("phone ILIKE '%' || ? || '%'", query),
+		}).
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := pr.DB.Query(ctx, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var patients []*domain.Patient
+
+	for rows.Next() {
+		var p domain.Patient
+
+		err := rows.Scan(
+			&p.ID,
+			&p.FullName,
+			&p.Phone,
+			&address,
+			&p.DOB,
+			&p.Gender,
+			&occupation,
+			&p.RegisteredOn,
+			&p.CreatedBy,
+			&p.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		if address.Valid {
+			p.Address = &address.String
+		}
+		if occupation.Valid {
+			p.Occupation = &occupation.String
+		}
+
+		patients = append(patients, &p)
+	}
+
+	return patients, nil
+}
+
 func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, pt *domain.Patient) error {
 	name := nullString(pt.FullName)
 	phone := nullString(pt.Phone)
