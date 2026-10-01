@@ -11,9 +11,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 )
 
 // refreshTokenBytes is the entropy of a generated refresh token (32 bytes =

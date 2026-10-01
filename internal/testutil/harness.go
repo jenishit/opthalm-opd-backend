@@ -26,13 +26,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 
-	auth "github.com/jenish-brainztechs/go-backend/internal/adapter/auth/jwt"
-	redisadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/cache/redis"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	httpadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres/repository"
-	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+	auth "github.com/jenishit/opthalm-opd-backend/internal/adapter/auth/jwt"
+	redisadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/cache/redis"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	httpadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres/repository"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/services"
 )
 
 // appTables lists every table this test suite may write to, in an order

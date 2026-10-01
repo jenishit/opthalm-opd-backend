@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
 	"github.com/redis/go-redis/v9"
 )
 

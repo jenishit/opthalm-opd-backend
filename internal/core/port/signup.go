@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 )
 
 // SignupRepository creates a brand-new tenant (clinic + its first admin user

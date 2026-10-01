@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/jenish-brainztechs/go-backend/docs" // registers the generated swagger spec
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	_ "github.com/jenishit/opthalm-opd-backend/docs" // registers the generated swagger spec
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 )
 
 var errorStatusMap = map[error]int{

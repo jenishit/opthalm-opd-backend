@@ -6,8 +6,8 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 )
 
 type VisitSymptomRepository struct {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/jenish-brainztechs/go-backend/internal/testutil"
+	"github.com/jenishit/opthalm-opd-backend/internal/testutil"
 	"github.com/stretchr/testify/require"
 )
 

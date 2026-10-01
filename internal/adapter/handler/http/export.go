@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 	"github.com/jung-kurt/gofpdf"
 )
 

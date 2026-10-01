@@ -8,7 +8,7 @@
 
 A Go backend for a multi-tenant ophthalmology clinic management system, following **Clean Architecture / Hexagonal** pattern with 3 layers: `core` (domain/port/services), `adapter` (handler/repository/config/auth/cache/email), and `cmd` (entrypoint).
 
-**Module:** `github.com/jenish-brainztechs/go-backend`
+**Module:** `github.com/jenishit/opthalm-opd-backend`
 **Go Version:** 1.26.4
 **Framework:** Gin (v1.12.0)
 **Database:** PostgreSQL 16 (pgx/v5) · **Cache:** Redis 7

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain/valueobjects"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain/valueobjects"
 )
 
 type Role struct {

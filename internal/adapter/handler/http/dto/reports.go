@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 )
 
 type SalesSummaryResponse struct {

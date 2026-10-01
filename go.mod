@@ -1,4 +1,4 @@
-module github.com/jenish-brainztechs/go-backend
+module github.com/jenishit/opthalm-opd-backend
 
 go 1.26.4
 

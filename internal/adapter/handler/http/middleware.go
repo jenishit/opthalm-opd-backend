@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 	"github.com/redis/go-redis/v9"
 )
 

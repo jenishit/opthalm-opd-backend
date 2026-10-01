@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain/valueobjects"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http/dto"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain/valueobjects"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 )
 
 type UserService struct {
