@@ -35,3 +35,8 @@ go.work.sum
 
 package-lock.json
 tmp/
+graphify-out/
+.opencode/
+.claude/
+AGENTS.md
+FEATURE_IMPLEMENTATION_GUIDE.md
