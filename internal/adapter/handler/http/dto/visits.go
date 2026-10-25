@@ -50,6 +50,32 @@ type CreateVisitReq struct {
 	CheifComplaint string             `json:"chief_complaint"`
 }
 
+type VisitCreateResponse struct {
+	ID             uuid.UUID          `json:"id"`
+	PatientID      uuid.UUID          `json:"patient_id"`
+	ExamineBy      uuid.UUID          `json:"examine_by"`
+	Status         domain.VisitStatus `json:"status"`
+	CheifComplaint string             `json:"chief_complaint"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
+	UpdatedBy      uuid.UUID          `json:"updated_by"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
+}
+
+func VisitCreateRes(v *domain.Visit) *VisitCreateResponse {
+	return &VisitCreateResponse{
+		ID:             v.ID,
+		PatientID:      v.PatientID,
+		ExamineBy:      v.ExamineBy,
+		Status:         v.Status,
+		CheifComplaint: v.CheifComplaint,
+		CreatedBy:      v.CreatedBy,
+		UpdatedBy:      v.UpdatedBy,
+		CreatedAt:      v.CreatedAt,
+		UpdatedAt:      v.UpdatedAt,
+	}
+}
+
 type PatientVisitsResponse struct {
 	Patient PatientRef           `json:"patient"`
 	Visits  []*VisitItemResponse `json:"visits"`

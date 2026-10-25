@@ -2,10 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 )
@@ -20,24 +23,36 @@ func NewVisitsRepository(db *postgres.DB) *VisitsRepository {
 	}
 }
 
-func (vr *VisitsRepository) CreateVisit(ctx context.Context, v *domain.Visit) (*domain.Visit, error) {
+func (vr *VisitsRepository) CreateVisit(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) (*domain.Visit, error) {
+	status := v.Status
+	if status == "" {
+		status = domain.Scheduled
+	}
+
 	query, args, err := sq.
 		Insert("visits").
 		Columns(
+			"clinic_id",
 			"patient_id",
 			"examined_by",
 			"status",
 			"chief_complaint",
+			"created_by",
+			"updated_by",
 		).
 		Values(
+			clinicID,
 			v.PatientID,
 			v.ExamineBy,
-			v.Status,
+			status,
 			v.CheifComplaint,
+			v.CreatedBy,
+			v.UpdatedBy,
 		).
-		Suffix(` 
+		Suffix(`
 			RETURNING
 				id,
+				status,
 				created_at,
 				updated_at
 	`).
@@ -50,17 +65,20 @@ func (vr *VisitsRepository) CreateVisit(ctx context.Context, v *domain.Visit) (*
 
 	err = vr.DB.QueryRow(ctx, query, args...).Scan(
 		&v.ID,
+		&v.Status,
 		&v.CreatedAt,
 		&v.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("ProfileRepo.CreateProfile scan: %w", err)
+		return nil, fmt.Errorf("VisitRepo.CreateVisit scan: %w", err)
 	}
+
+	v.ClinicID = clinicID
 
 	return v, nil
 }
 
-func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitDetails, error) {
+func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitDetails, error) {
 	query, args, err := sq.
 		Select(
 			"v.id",
@@ -86,7 +104,7 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, id uuid.UUID)
 		LeftJoin("profile cp ON cp.user_id = cu.id").
 		LeftJoin("users uu ON uu.id = v.updated_by").
 		LeftJoin("profile up ON up.user_id = uu.id").
-		Where(sq.Eq{"v.id": id}).
+		Where(sq.Eq{"v.id": id, "v.clinic_id": clinicID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -95,6 +113,7 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, id uuid.UUID)
 	}
 
 	var v domain.VisitDetails
+	var visitDate time.Time
 
 	err = vr.DB.QueryRow(ctx, query, args...).Scan(
 		&v.ID,
@@ -103,7 +122,7 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, id uuid.UUID)
 		&v.ExamineBy,
 		&v.ExamineByName,
 		&v.Status,
-		&v.VisitDate,
+		&visitDate,
 		&v.CheifComplaint,
 		&v.CreatedBy,
 		&v.CreatedByName,
@@ -114,22 +133,27 @@ func (vr *VisitsRepository) GetVisitByVisitID(ctx context.Context, id uuid.UUID)
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("failed to scan row: %w", err)
 	}
+
+	v.VisitDate = visitDate.Format(time.RFC3339)
 
 	return &v, nil
 }
 
-func (vr *VisitsRepository) UpdateVisitByVisitID(ctx context.Context, v *domain.Visit) error {
+func (vr *VisitsRepository) UpdateVisitByVisitID(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) error {
 	query, args, err := sq.
 		Update("visits").
-		Set("examined_by", sq.Expr("COALESCE(?, examined_by)", v.ExamineBy)).
-		Set("status", sq.Expr("COALESCE(?, status)", v.Status)).
-		Set("visit_date", sq.Expr("COALESCE(?, visit_date)", v.VisitDate)).
-		Set("chief_complaint", sq.Expr("COALESCE(?, chief_complaint)", v.CheifComplaint)).
+		Set("examined_by", sq.Expr("COALESCE(?, examined_by)", nullUUID(v.ExamineBy))).
+		Set("status", sq.Expr("COALESCE(?, status)", nullString(string(v.Status)))).
+		Set("visit_date", sq.Expr("COALESCE(?, visit_date)", nullString(v.VisitDate))).
+		Set("chief_complaint", sq.Expr("COALESCE(?, chief_complaint)", nullString(v.CheifComplaint))).
 		Set("updated_at", sq.Expr("NOW()")).
 		Set("updated_by", v.UpdatedBy).
-		Where(sq.Eq{"id": v.ID}).
+		Where(sq.Eq{"id": v.ID, "clinic_id": clinicID}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {
@@ -144,7 +168,7 @@ func (vr *VisitsRepository) UpdateVisitByVisitID(ctx context.Context, v *domain.
 	return nil
 }
 
-func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, id uuid.UUID) ([]*domain.VisitDetails, error) {
+func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, clinicID, id uuid.UUID) ([]*domain.VisitDetails, error) {
 	query, args, err := sq.
 		Select(
 			"v.id",
@@ -170,7 +194,7 @@ func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, id uuid.UU
 		LeftJoin("profile cp ON cp.user_id = cu.id").
 		LeftJoin("users uu ON uu.id = v.updated_by").
 		LeftJoin("profile up ON up.user_id = uu.id").
-		Where(sq.Eq{"v.patient_id": id}).
+		Where(sq.Eq{"v.patient_id": id, "v.clinic_id": clinicID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -189,6 +213,7 @@ func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, id uuid.UU
 
 	for rows.Next() {
 		var v domain.VisitDetails
+		var visitDate time.Time
 
 		err := rows.Scan(
 			&v.ID,
@@ -197,7 +222,7 @@ func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, id uuid.UU
 			&v.ExamineBy,
 			&v.ExamineByName,
 			&v.Status,
-			&v.VisitDate,
+			&visitDate,
 			&v.CheifComplaint,
 			&v.CreatedBy,
 			&v.CreatedByName,
@@ -209,6 +234,8 @@ func (vr *VisitsRepository) GetVisitsByPatientID(ctx context.Context, id uuid.UU
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+
+		v.VisitDate = visitDate.Format(time.RFC3339)
 
 		visits = append(visits, &v)
 	}

@@ -3,10 +3,13 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 )
@@ -21,32 +24,41 @@ func NewPatientRepository(db *postgres.DB) *PatientRepository {
 	}
 }
 
-func (pr *PatientRepository) CreatePatient(ctx context.Context, pt *domain.Patient) (*domain.Patient, error) {
+func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UUID, pt *domain.Patient) (*domain.Patient, error) {
 	query, args, err := sq.
 		Insert("patients").
 		Columns(
+			"clinic_id",
 			"full_name",
 			"phone",
 			"address",
 			"dob",
 			"gender",
 			"occupation",
+			"registered_on",
 			"created_by",
+			"updated_by",
 		).
 		Values(
+			clinicID,
 			pt.FullName,
 			pt.Phone,
 			pt.Address,
 			pt.DOB,
 			pt.Gender,
 			pt.Occupation,
+			sq.Expr("CURRENT_DATE"),
+			pt.CreatedBy,
 			pt.CreatedBy,
 		).
 		Suffix(`
 	RETURNING
 		id,
 		full_name,
-		created_at
+		registered_on,
+		updated_by,
+		created_at,
+		updated_at
 	`).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -59,17 +71,22 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, pt *domain.Patie
 	err = pr.DB.QueryRow(ctx, query, args...).Scan(
 		&pt.ID,
 		&pt.FullName,
+		&pt.RegisteredOn,
+		&pt.UpdatedBy,
 		&pt.CreatedAt,
+		&pt.UpdatedAt,
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("PatientRepo.CreatePatient scan: %w", err)
 	}
 
+	pt.ClinicID = clinicID
+
 	return pt, nil
 }
 
-func (pr *PatientRepository) GetPatientByID(ctx context.Context, id uuid.UUID) (*domain.Patient, error) {
+func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Patient, error) {
 	var address, occupation sql.NullString
 
 	query, args, err := sq.
@@ -85,7 +102,7 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, id uuid.UUID) (
 			"created_by",
 			"created_at",
 		).From("patients").
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
 		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -95,13 +112,14 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, id uuid.UUID) (
 	}
 
 	var patient domain.Patient
+	var dob time.Time
 
 	err = pr.DB.QueryRow(ctx, query, args...).Scan(
 		&patient.ID,
 		&patient.FullName,
 		&patient.Phone,
 		&address,
-		&patient.DOB,
+		&dob,
 		&patient.Gender,
 		&occupation,
 		&patient.RegisteredOn,
@@ -110,8 +128,14 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, id uuid.UUID) (
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("failed to scan row: %w", err)
 	}
+
+	patient.ClinicID = clinicID
+	patient.DOB = dob.Format("2006-01-02")
 
 	if address.Valid {
 		patient.Address = &address.String
@@ -123,7 +147,7 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, id uuid.UUID) (
 	return &patient, nil
 }
 
-func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient, error) {
+func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID) ([]*domain.Patient, error) {
 	var address, occupation sql.NullString
 
 	query, args, err := sq.
@@ -139,9 +163,14 @@ func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient
 			"created_by",
 			"created_at",
 		).From("patients").
+		Where(sq.Eq{"clinic_id": clinicID}).
 		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
 
 	rows, err := pr.DB.Query(ctx, query, args...)
 	if err != nil {
@@ -154,13 +183,14 @@ func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient
 
 	for rows.Next() {
 		var p domain.Patient
+		var dob time.Time
 
 		err := rows.Scan(
 			&p.ID,
 			&p.FullName,
 			&p.Phone,
 			&address,
-			&p.DOB,
+			&dob,
 			&p.Gender,
 			&occupation,
 			&p.RegisteredOn,
@@ -171,6 +201,9 @@ func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+
+		p.ClinicID = clinicID
+		p.DOB = dob.Format("2006-01-02")
 
 		if address.Valid {
 			p.Address = &address.String
@@ -185,7 +218,7 @@ func (pr *PatientRepository) GetPatients(ctx context.Context) ([]*domain.Patient
 	return patients, nil
 }
 
-func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, limit int) ([]*domain.Patient, error) {
+func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Patient, error) {
 	var address, occupation sql.NullString
 
 	querySql, args, err := sq.
@@ -201,6 +234,7 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, l
 			"created_by",
 			"created_at",
 		).From("patients").
+		Where(sq.Eq{"clinic_id": clinicID}).
 		Where("deleted_at IS NULL").
 		Where(sq.Or{
 			sq.Expr("full_name ILIKE '%' || ? || '%'", query),
@@ -225,13 +259,14 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, l
 
 	for rows.Next() {
 		var p domain.Patient
+		var dob time.Time
 
 		err := rows.Scan(
 			&p.ID,
 			&p.FullName,
 			&p.Phone,
 			&address,
-			&p.DOB,
+			&dob,
 			&p.Gender,
 			&occupation,
 			&p.RegisteredOn,
@@ -242,6 +277,9 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, l
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+
+		p.ClinicID = clinicID
+		p.DOB = dob.Format("2006-01-02")
 
 		if address.Valid {
 			p.Address = &address.String
@@ -256,13 +294,13 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, query string, l
 	return patients, nil
 }
 
-func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, pt *domain.Patient) error {
+func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, clinicID uuid.UUID, pt *domain.Patient) error {
 	name := nullString(pt.FullName)
 	phone := nullString(pt.Phone)
-	address := nullString(*pt.Address)
+	address := nullStringPtr(pt.Address)
 	dob := nullString(pt.DOB)
 	gender := nullString(pt.Gender)
-	occupation := nullString(*pt.Occupation)
+	occupation := nullStringPtr(pt.Occupation)
 
 	query, args, err := sq.
 		Update("patients").
@@ -273,8 +311,9 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, pt *domain.P
 		Set("gender", sq.Expr("COALESCE(?, gender)", gender)).
 		Set("occupation", sq.Expr("COALESCE(?, occupation)", occupation)).
 		Set("updated_at", sq.Expr("NOW()")).
-		Set("updated_by", sq.Expr("updated_by", pt.UpdatedBy)).
-		Where(sq.Eq{"id": pt.ID}).
+		Set("updated_by", pt.UpdatedBy).
+		Where(sq.Eq{"id": pt.ID, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {
@@ -290,11 +329,12 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, pt *domain.P
 	return nil
 }
 
-func (pr *PatientRepository) DeletePatientByID(ctx context.Context, id uuid.UUID) error {
+func (pr *PatientRepository) DeletePatientByID(ctx context.Context, clinicID, id uuid.UUID) error {
 	query, args, err := sq.
 		Update("patients").
 		Set("deleted_at", sq.Expr("NOW()")).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		Where("deleted_at IS NULL").
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {

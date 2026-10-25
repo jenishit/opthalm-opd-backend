@@ -41,6 +41,12 @@ var (
 	ErrEmptyAuthorizationHeader = errors.New("authorization header is not provided")
 	ErrPaymentExceedsDueAmount  = errors.New("payment exceeds due amount")
 	ErrInvoiceAlreadyPaid       = errors.New("invoice is already paid")
+	// ErrInsufficientStock is an error for when there isn't enough stock on hand to fulfil a request
+	ErrInsufficientStock = errors.New("insufficient stock on hand")
+	// ErrSubscriptionInactive is an error for when a clinic's subscription is missing, expired, or cancelled
+	ErrSubscriptionInactive = errors.New("subscription is inactive or expired")
+	// ErrTooManyRequests is an error for when a caller has exceeded a rate limit
+	ErrTooManyRequests = errors.New("too many requests, please try again later")
 
 	ErrEmptyToken = errors.New("token is missing in the url ")
 

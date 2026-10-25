@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 )
@@ -60,6 +62,9 @@ func (r *RoleRepository) GetRoleIDByRoleName(ctx context.Context, role string) (
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("RoleRepo.GetRoleIDByRoleName scan: %w", err)
 	}
 
@@ -83,6 +88,9 @@ func (r *RoleRepository) GetRoleNameByRoleID(ctx context.Context, id uuid.UUID) 
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("RoleRepo.GetRoleNameByRoleID scan: %w", err)
 	}
 

@@ -16,6 +16,18 @@ func NewUsersHandler(usvc port.UserService) *UserHandler {
 	}
 }
 
+// CreateUser godoc
+//
+//	@Summary		Create a staff user
+//	@Description	Admin-only. Creates a new user (and profile) in the caller's own clinic.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateUser	true	"New user details"
+//	@Success		200		{object}	response{data=domain.User}
+//	@Failure		409		{object}	errorResponse	"email already exists"
+//	@Router			/user/create [post]
 func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 	var req dto.CreateUser
 
@@ -23,7 +35,13 @@ func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 		validationError(ctx, err)
 		return
 	}
-	user, err := uh.usvc.CreateUser(ctx, &req)
+
+	caller, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	user, err := uh.usvc.CreateUser(ctx, &req, caller.ClinicID)
 	if err != nil {
 		handleError(ctx, err)
 		return

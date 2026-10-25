@@ -18,6 +18,16 @@ func NewVisitHandler(svc port.VisitsService) *VisitHandler {
 	}
 }
 
+// CreateVisit godoc
+//
+//	@Summary		Create a visit
+//	@Tags			visits
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateVisitReq	true	"Visit details"
+//	@Success		200		{object}	response{data=dto.VisitCreateResponse}
+//	@Router			/visit [post]
 func (vh *VisitHandler) CreateVisit(ctx *gin.Context) {
 	var req dto.CreateVisitReq
 
@@ -26,15 +36,8 @@ func (vh *VisitHandler) CreateVisit(ctx *gin.Context) {
 		return
 	}
 
-	payload, exists := ctx.Get(authorizationPayloadKey)
-	if !exists {
-		validationError(ctx, domain.ErrEmptyAuthorizationHeader)
-		return
-	}
-
-	userPayload, ok := payload.(*domain.TokenPayload)
+	user, ok := currentUser(ctx)
 	if !ok {
-		validationError(ctx, domain.ErrInvalidAuthorizationHeader)
 		return
 	}
 
@@ -44,19 +47,29 @@ func (vh *VisitHandler) CreateVisit(ctx *gin.Context) {
 		Status:         req.Status,
 		VisitDate:      req.VisitDate,
 		CheifComplaint: req.CheifComplaint,
-		CreatedBy:      userPayload.UserId,
-		UpdatedBy:      userPayload.UserId,
+		CreatedBy:      user.UserId,
+		UpdatedBy:      user.UserId,
 	}
 
-	v, err := vh.svc.CreateVisit(ctx, visit)
+	v, err := vh.svc.CreateVisit(ctx, user.ClinicID, visit)
 	if err != nil {
 		handleError(ctx, err)
 		return
 	}
 
-	handleSuccess(ctx, v)
+	handleSuccess(ctx, dto.VisitCreateRes(v))
 }
 
+// GetVisitByVisitID godoc
+//
+//	@Summary		Get a visit
+//	@Tags			visits
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Visit ID"
+//	@Success		200	{object}	response{data=dto.VisitResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/visit/{id} [get]
 func (vh *VisitHandler) GetVisitByVisitID(ctx *gin.Context) {
 	visitID := ctx.Param("id")
 	visitUUID, err := uuid.Parse(visitID)
@@ -65,7 +78,12 @@ func (vh *VisitHandler) GetVisitByVisitID(ctx *gin.Context) {
 		return
 	}
 
-	visit, err := vh.svc.GetVisitByVisitID(ctx, visitUUID)
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visit, err := vh.svc.GetVisitByVisitID(ctx, user.ClinicID, visitUUID)
 	if err != nil {
 		handleError(ctx, err)
 		return
@@ -75,6 +93,15 @@ func (vh *VisitHandler) GetVisitByVisitID(ctx *gin.Context) {
 	handleSuccess(ctx, rsp)
 }
 
+// GetVisitsByPatientID godoc
+//
+//	@Summary		List a patient's visits
+//	@Tags			visits
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			patientId	path		string	true	"Patient ID"
+//	@Success		200			{object}	response{data=dto.PatientVisitsResponse}
+//	@Router			/visit/patient/{patientId} [get]
 func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
 	patientID := ctx.Param("patientId")
 	patientUUID, err := uuid.Parse(patientID)
@@ -83,7 +110,12 @@ func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
 		return
 	}
 
-	visits, err := vh.svc.GetVisitsByPatientID(ctx, patientUUID)
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	visits, err := vh.svc.GetVisitsByPatientID(ctx, user.ClinicID, patientUUID)
 	if err != nil {
 		handleError(ctx, err)
 		return
@@ -93,6 +125,17 @@ func (vh *VisitHandler) GetVisitsByPatientID(ctx *gin.Context) {
 	handleSuccess(ctx, rsp)
 }
 
+// UpdateVisitByVisitID godoc
+//
+//	@Summary		Update a visit
+//	@Tags			visits
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Visit ID"
+//	@Param			request	body		dto.CreateVisitReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/visit/{id} [patch]
 func (vh *VisitHandler) UpdateVisitByVisitID(ctx *gin.Context) {
 	visitID := ctx.Param("id")
 	visitUUID, err := uuid.Parse(visitID)
@@ -107,15 +150,8 @@ func (vh *VisitHandler) UpdateVisitByVisitID(ctx *gin.Context) {
 		return
 	}
 
-	payload, exists := ctx.Get(authorizationPayloadKey)
-	if !exists {
-		validationError(ctx, domain.ErrEmptyAuthorizationHeader)
-		return
-	}
-
-	userPayload, ok := payload.(*domain.TokenPayload)
+	user, ok := currentUser(ctx)
 	if !ok {
-		validationError(ctx, domain.ErrInvalidAuthorizationHeader)
 		return
 	}
 
@@ -126,10 +162,10 @@ func (vh *VisitHandler) UpdateVisitByVisitID(ctx *gin.Context) {
 		Status:         req.Status,
 		VisitDate:      req.VisitDate,
 		CheifComplaint: req.CheifComplaint,
-		UpdatedBy:      userPayload.UserId,
+		UpdatedBy:      user.UserId,
 	}
 
-	err = vh.svc.UpdateVisitByVisitID(ctx, visit)
+	err = vh.svc.UpdateVisitByVisitID(ctx, user.ClinicID, visit)
 	if err != nil {
 		handleError(ctx, err)
 		return

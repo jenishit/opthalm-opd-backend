@@ -8,6 +8,7 @@ import (
 
 type Patient struct {
 	ID           uuid.UUID
+	ClinicID     uuid.UUID
 	FullName     string
 	DOB          string
 	Gender       string

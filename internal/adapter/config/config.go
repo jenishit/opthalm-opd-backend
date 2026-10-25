@@ -20,6 +20,9 @@ type (
 		Session *Session
 		DB      *DB
 		HTTP    *HTTP
+
+		Redis *RedisConfig
+		SMTP  *SMTP
 	}
 	// App contains all the environment variables for the application
 	App struct {
@@ -38,6 +41,12 @@ type (
 		Password string
 		DB       int
 		Prefix   string
+	}
+
+	RedisConfig struct {
+		Addr     string
+		Password string
+		DB       int
 	}
 	Session struct {
 		Driver string
@@ -69,6 +78,17 @@ type (
 		Port               string
 		AllowedOrigins     string
 		UseFunctionURLCORS bool
+	}
+	// SMTP contains the environment variables for outbound email. When Host
+	// is empty, main.go wires a log-only EmailSender instead of net/smtp, so
+	// password-reset/verification flows still work end-to-end without a
+	// mail server configured — just without real delivery.
+	SMTP struct {
+		Host     string
+		Port     string
+		Username string
+		Password string
+		From     string
 	}
 )
 
@@ -115,12 +135,26 @@ func New() (*Container, error) {
 		Name:       os.Getenv("DB_NAME"),
 	}
 
+	redisCfg := &RedisConfig{
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       parseIntOrDefault(os.Getenv("REDIS_DB"), 0),
+	}
+
 	http := &HTTP{
 		Env:                os.Getenv("APP_ENV"),
 		URL:                os.Getenv("HTTP_URL"),
 		Port:               os.Getenv("HTTP_PORT"),
 		AllowedOrigins:     os.Getenv("HTTP_ALLOWED_ORIGINS"),
 		UseFunctionURLCORS: parseBool(os.Getenv("HTTP_USE_FUNCTION_URL_CORS"), false),
+	}
+
+	smtp := &SMTP{
+		Host:     os.Getenv("SMTP_HOST"),
+		Port:     envOrDefault(os.Getenv("SMTP_PORT"), "587"),
+		Username: os.Getenv("SMTP_USERNAME"),
+		Password: os.Getenv("SMTP_PASSWORD"),
+		From:     envOrDefault(os.Getenv("SMTP_FROM"), "no-reply@example.com"),
 	}
 
 	return &Container{
@@ -130,6 +164,8 @@ func New() (*Container, error) {
 		session,
 		db,
 		http,
+		redisCfg,
+		smtp,
 	}, nil
 }
 

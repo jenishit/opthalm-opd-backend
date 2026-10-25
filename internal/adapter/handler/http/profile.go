@@ -20,6 +20,15 @@ func NewProfileHandler(psvc port.ProfileService) *ProfileHandler {
 	}
 }
 
+// GetProfileByID godoc
+//
+//	@Summary		Get my profile
+//	@Description	Returns the authenticated caller's own profile.
+//	@Tags			profile
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=dto.ProfileResponse}
+//	@Router			/profile/getme [get]
 func (ph *ProfileHandler) GetProfileByID(ctx *gin.Context) {
 	payload, exists := ctx.Get(authorizationPayloadKey)
 	if !exists {
@@ -43,6 +52,14 @@ func (ph *ProfileHandler) GetProfileByID(ctx *gin.Context) {
 	handleSuccess(ctx, rsp)
 }
 
+// GetProfiles godoc
+//
+//	@Summary		List profiles
+//	@Tags			profile
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.ProfileResponse}
+//	@Router			/profile/profile-details [get]
 func (ph *ProfileHandler) GetProfiles(ctx *gin.Context) {
 	res, err := ph.psvc.GetProfiles(ctx)
 	if err != nil {
@@ -54,6 +71,16 @@ func (ph *ProfileHandler) GetProfiles(ctx *gin.Context) {
 	handleSuccess(ctx, rsp)
 }
 
+// SearchProfiles godoc
+//
+//	@Summary		Search profiles
+//	@Tags			profile
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.ProfileResponse}
+//	@Router			/profile/search [get]
 func (ph *ProfileHandler) SearchProfiles(ctx *gin.Context) {
 	query := ctx.Query("query")
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -68,6 +95,18 @@ func (ph *ProfileHandler) SearchProfiles(ctx *gin.Context) {
 	handleSuccess(ctx, rsp)
 }
 
+// UpdateProfileByUserID godoc
+//
+//	@Summary		Update a profile
+//	@Tags			profile
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string						true	"User ID"
+//	@Param			request	body		dto.UpdateProfileRequest	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Failure		400		{object}	errorResponse	"invalid UUID"
+//	@Router			/profile/update-profile/{id} [patch]
 func (ph *ProfileHandler) UpdateProfileByUserID(ctx *gin.Context) {
 	user_id := ctx.Param("id")
 	id, err := uuid.Parse(user_id)

@@ -8,10 +8,19 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
 )
+
+// Executor is satisfied by both *pgxpool.Pool and pgx.Tx, so repository
+// methods that need to participate in a transaction can accept either.
+type Executor interface {
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
 
 var migrationsFS embed.FS
 
@@ -48,6 +57,25 @@ func New(ctx context.Context, config *config.DB) (*DB, error) {
 		&psql,
 		url,
 	}, nil
+}
+
+// WithTx runs fn inside a single database transaction, committing if fn
+// returns nil and rolling back otherwise (including on panic).
+func (db *DB) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error {
+	tx, err := db.Pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck // no-op if already committed
+
+	if err := fn(tx); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+	return nil
 }
 
 // Migrate runs the database migration

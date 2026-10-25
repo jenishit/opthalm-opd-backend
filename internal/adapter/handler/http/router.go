@@ -1,10 +1,26 @@
 package http
 
 import (
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	_ "github.com/jenish-brainztechs/go-backend/docs" // registers the generated swagger spec
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
 	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/redis/go-redis/v9"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// shutdownGracePeriod is how long Serve waits for in-flight requests to
+// finish draining after a shutdown signal before forcing the listener closed.
+const shutdownGracePeriod = 15 * time.Second
 
 type Router struct {
 	*gin.Engine
@@ -21,6 +37,16 @@ func NewRouter(
 	patientHandler PatientHandler,
 	visitHandler VisitHandler,
 	catalogHandler CatalogHandler,
+	invoiceHandler InvoiceHandler,
+	inventoryHandler InventoryHandler,
+	vendorHandler VendorHandler,
+	stockPurchaseHandler StockPurchaseHandler,
+	labJobHandler LabJobHandler,
+	reportsHandler ReportsHandler,
+	calculatorHandler CalculatorHandler,
+	subscriptionHandler SubscriptionHandler,
+	subSvc port.SubscriptionService,
+	redisClient *redis.Client,
 ) (*Router, error) {
 
 	if config.App.Env == "production" {
@@ -28,28 +54,61 @@ func NewRouter(
 	}
 
 	router := gin.New()
+	router.Use(requestIDMiddleware())
+	router.Use(requestLoggerMiddleware())
+	router.Use(recoveryMiddleware())
+	router.Use(CORSMiddleware(config.HTTP.AllowedOrigins))
+
+	// Swagger UI + spec, for exploring/testing the API and for frontend
+	// codegen. Left off in production — it documents the full request/
+	// response shape of the whole API and is dev/staging tooling, not
+	// something to leave publicly reachable once actually deployed.
+	if config.App.Env != "production" {
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	api := router.Group("/api")
 
 	auth := api.Group("/auth")
 	{
-		auth.POST("/login", authHandler.Login)
+		auth.POST("/login", rateLimitMiddleware(redisClient, "login", 10, time.Minute), authHandler.Login)
+		auth.POST("/refresh", authHandler.Refresh)
+		auth.POST("/logout", authHandler.Logout)
+		auth.POST("/password-reset/request", rateLimitMiddleware(redisClient, "pwreset", 5, time.Hour), authHandler.RequestPasswordReset)
+		auth.POST("/password-reset/confirm", rateLimitMiddleware(redisClient, "pwreset-confirm", 10, time.Hour), authHandler.ConfirmPasswordReset)
+		auth.POST("/email/verify/confirm", authHandler.ConfirmEmailVerification)
+		auth.POST("/email/verify/resend", authMiddleware(token), authHandler.RequestEmailVerification)
 	}
 
+	api.POST("/signup", rateLimitMiddleware(redisClient, "signup", 5, time.Hour), authHandler.Signup)
+
+	platform := api.Group("/platform")
+	platform.Use(authMiddleware(token), superadminMiddleware())
+	{
+		subscriptions := platform.Group("/subscriptions")
+		{
+			subscriptions.GET("/:clinicId", subscriptionHandler.GetByClinicID)
+			subscriptions.PUT("/:clinicId", subscriptionHandler.Upsert)
+		}
+	}
+
+	admin := api.Group("/admin")
+	admin.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
+
 	role := api.Group("/role")
+	role.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
 	{
 		role.POST("/create", roleHandler.CreateRole)
 	}
 
 	user := api.Group("/user")
+	user.Use(authMiddleware(token), adminMiddleware(), subscriptionMiddleware(subSvc))
 	{
 		user.POST("/create", userHandler.CreateUser)
 	}
 
-	admin := api.Group("/admin")
-	admin.Use(authMiddleware(token), adminMiddleware())
-
-	profile := api.Group("/profile").Use(authMiddleware(token))
+	profile := api.Group("/profile")
+	profile.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
 	{
 		profile.GET("/search", profileHandler.SearchProfiles)
 		profile.GET("/getme", profileHandler.GetProfileByID)
@@ -65,7 +124,8 @@ func NewRouter(
 		clinics.PATCH("/:id", clinicHandler.UpdateClinic)
 	}
 
-	patient := api.Group("/patient").Use(authMiddleware(token))
+	patient := api.Group("/patient")
+	patient.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
 	{
 		patient.POST("", patientHandler.CreatePatient)
 		patient.GET("", patientHandler.GetPatients)
@@ -75,7 +135,8 @@ func NewRouter(
 		patient.PATCH("/:id/delete", patientHandler.DeletePatientByID)
 	}
 
-	visit := api.Group("/visit").Use(authMiddleware(token))
+	visit := api.Group("/visit")
+	visit.Use(authMiddleware(token), subscriptionMiddleware(subSvc))
 	{
 		visit.POST("", visitHandler.CreateVisit)
 		visit.GET("/:id", visitHandler.GetVisitByVisitID)
@@ -113,11 +174,143 @@ func NewRouter(
 		}
 	}
 
+	billing := api.Group("/billing")
+	billing.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_BILLING"), subscriptionMiddleware(subSvc))
+	{
+		invoice := billing.Group("/invoice")
+		{
+			invoice.POST("", invoiceHandler.CreateInvoice)
+			invoice.GET("", invoiceHandler.ListInvoices)
+			invoice.GET("/search", invoiceHandler.SearchInvoices)
+			invoice.GET("/:id", invoiceHandler.GetInvoiceByID)
+			invoice.PATCH("/:id/status", invoiceHandler.UpdateInvoiceStatus)
+			invoice.POST("/:id/payments", invoiceHandler.RecordPayment)
+			invoice.GET("/:id/pdf", invoiceHandler.GetInvoicePDF)
+			invoice.GET("/:id/qr", invoiceHandler.GetInvoiceQR)
+			invoice.GET("/:id/whatsapp-link", invoiceHandler.GetInvoiceWhatsAppLink)
+		}
+	}
+
+	inventory := api.Group("/inventory")
+	inventory.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_INVENTORY"), subscriptionMiddleware(subSvc))
+	{
+		items := inventory.Group("/items")
+		{
+			items.POST("", inventoryHandler.CreateItem)
+			items.GET("", inventoryHandler.ListItems)
+			items.GET("/search", inventoryHandler.SearchItems)
+			items.GET("/barcode/:sku", inventoryHandler.GetItemByBarcode)
+			items.GET("/:id", inventoryHandler.GetItemByID)
+			items.PATCH("/:id", inventoryHandler.UpdateItem)
+			items.PATCH("/:id/delete", inventoryHandler.DeleteItem)
+			items.POST("/:id/stock", inventoryHandler.AddStock)
+			items.GET("/:id/movements", inventoryHandler.ListMovements)
+			items.GET("/:id/barcode-image", inventoryHandler.GetBarcodeImage)
+		}
+
+		inventory.GET("/low-stock", inventoryHandler.LowStock)
+
+		vendors := inventory.Group("/vendors")
+		{
+			vendors.POST("", vendorHandler.CreateVendor)
+			vendors.GET("", vendorHandler.ListVendors)
+			vendors.GET("/search", vendorHandler.SearchVendors)
+			vendors.GET("/:id", vendorHandler.GetVendorByID)
+			vendors.PATCH("/:id", vendorHandler.UpdateVendor)
+			vendors.PATCH("/:id/delete", vendorHandler.DeleteVendor)
+		}
+
+		purchases := inventory.Group("/purchases")
+		{
+			purchases.POST("", stockPurchaseHandler.CreatePurchase)
+			purchases.GET("", stockPurchaseHandler.ListPurchases)
+			purchases.GET("/:id", stockPurchaseHandler.GetPurchaseByID)
+		}
+	}
+
+	labJob := api.Group("/lab-jobs")
+	labJob.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN", "ROLE_LAB", "ROLE_BILLING"), subscriptionMiddleware(subSvc))
+	{
+		labJob.POST("", labJobHandler.CreateLabJob)
+		labJob.GET("", labJobHandler.ListLabJobs)
+		labJob.GET("/:id", labJobHandler.GetLabJobByID)
+		labJob.PATCH("/:id/status", labJobHandler.UpdateLabJobStatus)
+		labJob.GET("/patient/:patientId", labJobHandler.GetLabJobsByPatientID)
+	}
+
+	reports := api.Group("/reports")
+	reports.Use(authMiddleware(token), roleMiddleware("ROLE_ADMIN"), subscriptionMiddleware(subSvc))
+	{
+		sales := reports.Group("/sales")
+		{
+			sales.GET("/daily", reportsHandler.SalesDaily)
+			sales.GET("/monthly", reportsHandler.SalesMonthly)
+			sales.GET("/range", reportsHandler.SalesRange)
+		}
+		reports.GET("/dues", reportsHandler.PatientDues)
+		reports.GET("/vendor-dues", reportsHandler.VendorDues)
+
+		inventoryReports := reports.Group("/inventory")
+		{
+			inventoryReports.GET("/low-stock", reportsHandler.InventoryLowStock)
+			inventoryReports.GET("/valuation", reportsHandler.InventoryValuation)
+		}
+
+		reports.GET("/visits/summary", reportsHandler.VisitsSummary)
+	}
+
+	calculators := api.Group("/calculators")
+	calculators.Use(authMiddleware(token))
+	{
+		calculators.POST("/transposition", calculatorHandler.Transposition)
+		calculators.POST("/spherical-equivalent", calculatorHandler.SphericalEquivalent)
+		calculators.POST("/near-add", calculatorHandler.NearAdd)
+		calculators.POST("/vertex-distance", calculatorHandler.VertexDistance)
+		calculators.POST("/telescope-fov", calculatorHandler.TelescopeFOV)
+	}
+
 	return &Router{
 		router,
 	}, nil
 }
 
+// Serve starts the HTTP server and blocks until it's asked to shut down via
+// SIGINT/SIGTERM (the signals a `docker stop` or orchestrator sends), at
+// which point it stops accepting new connections and gives in-flight
+// requests up to shutdownGracePeriod to finish before returning.
 func (r *Router) Serve(listenAddr string) error {
-	return r.Run(listenAddr)
+	srv := &http.Server{
+		Addr:    listenAddr,
+		Handler: r.Engine,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	serveErr := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serveErr <- err
+		}
+		close(serveErr)
+	}()
+
+	select {
+	case err := <-serveErr:
+		return err
+	case <-ctx.Done():
+	}
+
+	slog.Info("shutdown signal received, draining in-flight requests", "grace_period", shutdownGracePeriod)
+	stop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGracePeriod)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		return err
+	}
+
+	slog.Info("server shut down cleanly")
+	return nil
 }

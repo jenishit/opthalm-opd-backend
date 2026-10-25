@@ -18,18 +18,18 @@ func NewVisitsService(vr port.VisitsRepository) *VisitsService {
 	}
 }
 
-func (vs *VisitsService) CreateVisit(ctx context.Context, v *domain.Visit) (*domain.Visit, error) {
-	return vs.repo.CreateVisit(ctx, v)
+func (vs *VisitsService) CreateVisit(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) (*domain.Visit, error) {
+	return vs.repo.CreateVisit(ctx, clinicID, v)
 }
 
-func (vs *VisitsService) GetVisitByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitDetails, error) {
-	return vs.repo.GetVisitByVisitID(ctx, id)
+func (vs *VisitsService) GetVisitByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitDetails, error) {
+	return vs.repo.GetVisitByVisitID(ctx, clinicID, id)
 }
 
-func (vs *VisitsService) UpdateVisitByVisitID(ctx context.Context, v *domain.Visit) error {
-	return vs.repo.UpdateVisitByVisitID(ctx, v)
+func (vs *VisitsService) UpdateVisitByVisitID(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) error {
+	return vs.repo.UpdateVisitByVisitID(ctx, clinicID, v)
 }
 
-func (vs *VisitsService) GetVisitsByPatientID(ctx context.Context, id uuid.UUID) ([]*domain.VisitDetails, error) {
-	return vs.repo.GetVisitsByPatientID(ctx, id)
+func (vs *VisitsService) GetVisitsByPatientID(ctx context.Context, clinicID, id uuid.UUID) ([]*domain.VisitDetails, error) {
+	return vs.repo.GetVisitsByPatientID(ctx, clinicID, id)
 }

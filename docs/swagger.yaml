@@ -1,0 +1,3734 @@
+basePath: /api
+definitions:
+  domain.ConfirmEmailVerificationRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  domain.ConfirmPasswordResetRequest:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  domain.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      session_id:
+        type: string
+      user_id:
+        type: string
+      user_type:
+        type: string
+    type: object
+  domain.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  domain.RequestPasswordResetRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  domain.Role:
+    properties:
+      id:
+        type: string
+      roleName:
+        type: string
+    type: object
+  domain.SignupRequest:
+    properties:
+      admin_email:
+        type: string
+      admin_first_name:
+        type: string
+      admin_last_name:
+        type: string
+      admin_password:
+        type: string
+      clinic_name:
+        type: string
+      registration_no:
+        type: string
+    required:
+    - admin_email
+    - admin_first_name
+    - admin_last_name
+    - admin_password
+    - clinic_name
+    - registration_no
+    type: object
+  domain.User:
+    properties:
+      clinicID:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        $ref: '#/definitions/valueobjects.Password'
+      roleID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  domain.VisitStatus:
+    enum:
+    - scheduled
+    - waiting
+    - examining
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - Scheduled
+    - Waiting
+    - Examining
+    - Completed
+    - Cancelled
+  dto.AddStockReq:
+    properties:
+      notes:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  dto.ClinicRequest:
+    properties:
+      address:
+        type: string
+      clinic_name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      registration_no:
+        type: string
+      report_footer:
+        type: string
+      tagline:
+        type: string
+    required:
+    - clinic_name
+    - registration_no
+    type: object
+  dto.ClinicResponse:
+    properties:
+      address:
+        type: string
+      clinic_name:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      phone:
+        type: string
+      registration_no:
+        type: string
+      report_footer:
+        type: string
+      tagline:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  dto.CreateInventoryItemReq:
+    properties:
+      brand:
+        type: string
+      category:
+        enum:
+        - frame
+        - lens
+        - contact_lens
+        - sunglasses
+        - coating
+        - accessory
+        - other
+        type: string
+      color:
+        type: string
+      cost_price:
+        minimum: 0
+        type: number
+      model:
+        type: string
+      name:
+        type: string
+      quantity_on_hand:
+        minimum: 0
+        type: integer
+      reorder_threshold:
+        minimum: 0
+        type: integer
+      selling_price:
+        minimum: 0
+        type: number
+      size:
+        type: string
+      sku:
+        type: string
+      unit:
+        type: string
+    required:
+    - category
+    - name
+    - sku
+    type: object
+  dto.CreateInvoiceItemReq:
+    properties:
+      bundle_id:
+        type: string
+      description:
+        type: string
+      discount_amount:
+        type: number
+      inventory_item_id:
+        type: string
+      item_type:
+        enum:
+        - frame
+        - lens
+        - coating
+        - contact_lens
+        - service
+        - other
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      unit_price:
+        minimum: 0
+        type: number
+    required:
+    - description
+    - item_type
+    - quantity
+    - unit_price
+    type: object
+  dto.CreateInvoiceReq:
+    properties:
+      discount_amount:
+        type: number
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateInvoiceItemReq'
+        minItems: 1
+        type: array
+      patient_id:
+        type: string
+      tax_amount:
+        type: number
+      visit_id:
+        type: string
+    required:
+    - items
+    - patient_id
+    type: object
+  dto.CreateLabJobReq:
+    properties:
+      advance_payment:
+        type: number
+      expected_delivery_date:
+        type: string
+      invoice_id:
+        type: string
+      invoice_item_id:
+        type: string
+      job_type:
+        type: string
+      notes:
+        type: string
+      patient_id:
+        type: string
+      vendor_id:
+        type: string
+    required:
+    - job_type
+    - patient_id
+    type: object
+  dto.CreatePatientReq:
+    properties:
+      address:
+        type: string
+      dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      occupation:
+        type: string
+      phone:
+        type: string
+    required:
+    - dob
+    - full_name
+    - phone
+    type: object
+  dto.CreateRole:
+    properties:
+      role_name:
+        type: string
+    required:
+    - role_name
+    type: object
+  dto.CreateStockPurchaseItemReq:
+    properties:
+      inventory_item_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      unit_cost:
+        minimum: 0
+        type: number
+    required:
+    - inventory_item_id
+    - quantity
+    - unit_cost
+    type: object
+  dto.CreateStockPurchaseReq:
+    properties:
+      invoice_ref_no:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateStockPurchaseItemReq'
+        minItems: 1
+        type: array
+      paid_amount:
+        type: number
+      vendor_id:
+        type: string
+    required:
+    - items
+    - vendor_id
+    type: object
+  dto.CreateUser:
+    properties:
+      email:
+        description: the acceptable string type is of email type
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_name:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role_name
+    type: object
+  dto.CreateVendorReq:
+    properties:
+      address:
+        type: string
+      contact_person:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateVisitReq:
+    properties:
+      chief_complaint:
+        type: string
+      examine_by:
+        type: string
+      patient_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      visit_date:
+        type: string
+    required:
+    - examine_by
+    - patient_id
+    type: object
+  dto.DiagnosisCatalogResponse:
+    properties:
+      created_at:
+        type: string
+      icd10_code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.EntityRef:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.HistoryConditionResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.InventoryItemResponse:
+    properties:
+      brand:
+        type: string
+      category:
+        type: string
+      color:
+        type: string
+      cost_price:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      model:
+        type: string
+      name:
+        type: string
+      quantity_on_hand:
+        type: integer
+      reorder_threshold:
+        type: integer
+      selling_price:
+        type: number
+      size:
+        type: string
+      sku:
+        type: string
+      unit:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.InventoryValuationResponse:
+    properties:
+      total_cost_value:
+        type: number
+      total_items:
+        type: integer
+      total_sell_value:
+        type: number
+      total_units:
+        type: integer
+    type: object
+  dto.InvoiceItemResponse:
+    properties:
+      bundle_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      discount_amount:
+        type: number
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      item_type:
+        type: string
+      line_total:
+        type: number
+      quantity:
+        type: integer
+      unit_price:
+        type: number
+    type: object
+  dto.InvoiceResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      discount_amount:
+        type: number
+      due_amount:
+        type: number
+      id:
+        type: string
+      invoice_no:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.InvoiceItemResponse'
+        type: array
+      paid_amount:
+        type: number
+      patient_id:
+        type: string
+      patient_name:
+        type: string
+      patient_phone:
+        type: string
+      payment_status:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/dto.PaymentResponse'
+        type: array
+      status:
+        type: string
+      subtotal:
+        type: number
+      tax_amount:
+        type: number
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      visit_id:
+        type: string
+    type: object
+  dto.LabJobResponse:
+    properties:
+      advance_payment:
+        type: number
+      created_at:
+        type: string
+      delivered_at:
+        type: string
+      expected_delivery_date:
+        type: string
+      history:
+        items:
+          $ref: '#/definitions/dto.LabJobStatusHistoryResponse'
+        type: array
+      id:
+        type: string
+      invoice_id:
+        type: string
+      invoice_item_id:
+        type: string
+      job_type:
+        type: string
+      notes:
+        type: string
+      patient_id:
+        type: string
+      patient_name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      vendor_id:
+        type: string
+      vendor_name:
+        type: string
+    type: object
+  dto.LabJobStatusHistoryResponse:
+    properties:
+      changed_at:
+        type: string
+      changed_by:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.MedicineResponse:
+    properties:
+      brand_name:
+        type: string
+      created_at:
+        type: string
+      form:
+        type: string
+      id:
+        type: string
+      medicine_name:
+        type: string
+      strength:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.NearAddReq:
+    properties:
+      add_power:
+        type: number
+      distance_sphere:
+        type: number
+    type: object
+  dto.PatientDueResponse:
+    properties:
+      created_at:
+        type: string
+      due_amount:
+        type: number
+      invoice_no:
+        type: string
+      paid_amount:
+        type: number
+      patient_name:
+        type: string
+      patient_phone:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  dto.PatientRef:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.PatientResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      createdBy:
+        type: string
+      dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      occupation:
+        type: string
+      patient_id:
+        type: string
+      phone:
+        type: string
+      registered_on:
+        type: string
+    type: object
+  dto.PatientVisitsResponse:
+    properties:
+      patient:
+        $ref: '#/definitions/dto.PatientRef'
+      visits:
+        items:
+          $ref: '#/definitions/dto.VisitItemResponse'
+        type: array
+    type: object
+  dto.PaymentResponse:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      invoice_id:
+        type: string
+      method:
+        type: string
+      paid_at:
+        type: string
+      reference_no:
+        type: string
+    type: object
+  dto.ProfileResponse:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      role_name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.RecordPaymentReq:
+    properties:
+      amount:
+        type: number
+      method:
+        enum:
+        - cash
+        - card
+        - online
+        - bank_transfer
+        type: string
+      reference_no:
+        type: string
+    required:
+    - amount
+    - method
+    type: object
+  dto.SalesSummaryResponse:
+    properties:
+      discount:
+        type: number
+      invoice_count:
+        type: integer
+      period:
+        type: string
+      subtotal:
+        type: number
+      tax:
+        type: number
+      total_due:
+        type: number
+      total_paid:
+        type: number
+      total_sales:
+        type: number
+    type: object
+  dto.ScalarResultRes:
+    properties:
+      result:
+        type: number
+    type: object
+  dto.SphericalEquivalentReq:
+    properties:
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.StockMovementResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      movement_type:
+        type: string
+      notes:
+        type: string
+      quantity:
+        type: integer
+      reference_id:
+        type: string
+      reference_type:
+        type: string
+    type: object
+  dto.StockPurchaseItemResponse:
+    properties:
+      id:
+        type: string
+      inventory_item_id:
+        type: string
+      line_total:
+        type: number
+      quantity:
+        type: integer
+      unit_cost:
+        type: number
+    type: object
+  dto.StockPurchaseResponse:
+    properties:
+      created_at:
+        type: string
+      due_amount:
+        type: number
+      id:
+        type: string
+      invoice_ref_no:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.StockPurchaseItemResponse'
+        type: array
+      paid_amount:
+        type: number
+      purchase_date:
+        type: string
+      total_amount:
+        type: number
+      vendor_id:
+        type: string
+      vendor_name:
+        type: string
+    type: object
+  dto.SubscriptionResponse:
+    properties:
+      clinic_id:
+        type: string
+      created_at:
+        type: string
+      current_period_end:
+        type: string
+      id:
+        type: string
+      plan_name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.TelescopeFOVReq:
+    properties:
+      magnification:
+        type: number
+      true_fov_degrees:
+        type: number
+    type: object
+  dto.TranspositionReq:
+    properties:
+      axis:
+        maximum: 180
+        minimum: 0
+        type: integer
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.TranspositionRes:
+    properties:
+      axis:
+        type: integer
+      cylinder:
+        type: number
+      sphere:
+        type: number
+    type: object
+  dto.UpdateDiagnosisCatalogReq:
+    properties:
+      icd10_code:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UpdateHistoryConditionReq:
+    properties:
+      name:
+        type: string
+    type: object
+  dto.UpdateInventoryItemReq:
+    properties:
+      brand:
+        type: string
+      category:
+        enum:
+        - frame
+        - lens
+        - contact_lens
+        - sunglasses
+        - coating
+        - accessory
+        - other
+        type: string
+      color:
+        type: string
+      cost_price:
+        type: number
+      model:
+        type: string
+      name:
+        type: string
+      reorder_threshold:
+        type: integer
+      selling_price:
+        type: number
+      size:
+        type: string
+    type: object
+  dto.UpdateInvoiceStatusReq:
+    properties:
+      status:
+        enum:
+        - draft
+        - finalized
+        - cancelled
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateLabJobStatusReq:
+    properties:
+      notes:
+        type: string
+      status:
+        enum:
+        - in_fitting
+        - ready_to_deliver
+        - delivered
+        - cancelled
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateMedicineReq:
+    properties:
+      brand_name:
+        type: string
+      form:
+        type: string
+      medicine_name:
+        type: string
+      strength:
+        type: string
+    type: object
+  dto.UpdateProfileRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      role_name:
+        type: string
+    type: object
+  dto.UpdateVendorReq:
+    properties:
+      address:
+        type: string
+      contact_person:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  dto.UpsertSubscriptionReq:
+    properties:
+      current_period_end:
+        description: YYYY-MM-DD
+        type: string
+      plan_name:
+        type: string
+      status:
+        enum:
+        - trialing
+        - active
+        - past_due
+        - cancelled
+        type: string
+    required:
+    - current_period_end
+    - status
+    type: object
+  dto.VendorDueResponse:
+    properties:
+      due_amount:
+        type: number
+      paid_amount:
+        type: number
+      purchase_date:
+        type: string
+      total_amount:
+        type: number
+      vendor_name:
+        type: string
+    type: object
+  dto.VendorResponse:
+    properties:
+      address:
+        type: string
+      contact_person:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.VertexDistanceReq:
+    properties:
+      from_distance_mm:
+        type: number
+      power:
+        type: number
+      to_distance_mm:
+        type: number
+    type: object
+  dto.VisitCreateResponse:
+    properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      examine_by:
+        type: string
+      id:
+        type: string
+      patient_id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  dto.VisitItemResponse:
+    properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        $ref: '#/definitions/dto.EntityRef'
+      examine_by:
+        $ref: '#/definitions/dto.EntityRef'
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        $ref: '#/definitions/dto.EntityRef'
+      visit_date:
+        type: string
+    type: object
+  dto.VisitResponse:
+    properties:
+      chief_complaint:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        $ref: '#/definitions/dto.EntityRef'
+      examine_by:
+        $ref: '#/definitions/dto.EntityRef'
+      id:
+        type: string
+      patient:
+        $ref: '#/definitions/dto.PatientRef'
+      status:
+        $ref: '#/definitions/domain.VisitStatus'
+      updated_at:
+        type: string
+      updated_by:
+        $ref: '#/definitions/dto.EntityRef'
+      visit_date:
+        type: string
+    type: object
+  dto.VisitsSummaryResponse:
+    properties:
+      period:
+        type: string
+      visit_count:
+        type: integer
+    type: object
+  http.errorResponse:
+    properties:
+      messages:
+        example:
+        - Error message 1
+        - ' Error message 2'
+        items:
+          type: string
+        type: array
+      success:
+        example: false
+        type: boolean
+    type: object
+  http.response:
+    properties:
+      data: {}
+      message:
+        example: Success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  valueobjects.Password:
+    type: object
+host: localhost:8082
+info:
+  contact:
+    name: API Support
+  description: |-
+    Backend API for a multi-tenant (SaaS) ophthalmology clinic
+    management system: patients, visits, billing/POS, inventory,
+    lab jobs, reports, and optical calculators.
+
+    Every route under /api (other than /api/auth/*, /api/signup,
+    and the /api/auth/password-reset|email endpoints) requires a
+    Bearer access token, and most additionally require the
+    caller's clinic to have an active subscription.
+  license:
+    name: Proprietary
+  title: Opthalmic Management System API
+  version: "1.0"
+paths:
+  /admin/catalog/conditions:
+    get:
+      description: Admin-only. History conditions are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.HistoryConditionResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List history conditions
+      tags:
+      - catalog
+  /admin/catalog/conditions/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Condition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.HistoryConditionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a history condition
+      tags:
+      - catalog
+    patch:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Condition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateHistoryConditionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a history condition
+      tags:
+      - catalog
+  /admin/catalog/conditions/{id}/delete:
+    patch:
+      description: Admin-only.
+      parameters:
+      - description: Condition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a history condition
+      tags:
+      - catalog
+  /admin/catalog/conditions/search:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.HistoryConditionResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search history conditions
+      tags:
+      - catalog
+  /admin/catalog/diagnoses:
+    get:
+      description: Admin-only. Diagnoses are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.DiagnosisCatalogResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List diagnoses
+      tags:
+      - catalog
+  /admin/catalog/diagnoses/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Diagnosis ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DiagnosisCatalogResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a diagnosis
+      tags:
+      - catalog
+    patch:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Diagnosis ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDiagnosisCatalogReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a diagnosis
+      tags:
+      - catalog
+  /admin/catalog/diagnoses/{id}/delete:
+    patch:
+      description: Admin-only.
+      parameters:
+      - description: Diagnosis ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a diagnosis
+      tags:
+      - catalog
+  /admin/catalog/diagnoses/search:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.DiagnosisCatalogResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search diagnoses
+      tags:
+      - catalog
+  /admin/catalog/medicines:
+    get:
+      description: Admin-only. Medicines are a global catalog, not clinic-scoped.
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.MedicineResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List medicines
+      tags:
+      - catalog
+  /admin/catalog/medicines/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Medicine ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MedicineResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a medicine
+      tags:
+      - catalog
+    patch:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Medicine ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMedicineReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a medicine
+      tags:
+      - catalog
+  /admin/catalog/medicines/{id}/delete:
+    patch:
+      description: Admin-only.
+      parameters:
+      - description: Medicine ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a medicine
+      tags:
+      - catalog
+  /admin/catalog/medicines/search:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.MedicineResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search medicines
+      tags:
+      - catalog
+  /admin/clinic:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ClinicResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List clinics
+      tags:
+      - clinic
+    post:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Clinic details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ClinicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ClinicResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create clinic settings
+      tags:
+      - clinic
+  /admin/clinic/{id}:
+    get:
+      description: Admin-only.
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ClinicResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get clinic settings
+      tags:
+      - clinic
+    patch:
+      consumes:
+      - application/json
+      description: Admin-only.
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ClinicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update clinic settings
+      tags:
+      - clinic
+  /auth/email/verify/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Marks the token's owning user's email as verified.
+      parameters:
+      - description: Verification code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ConfirmEmailVerificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: invalid, expired, or already-used code
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Confirm email verification
+      tags:
+      - auth
+  /auth/email/verify/resend:
+    post:
+      description: Sends a fresh verification code (valid 24h) to the authenticated
+        caller's own email address, invalidating any previously issued one.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Resend the email verification code
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges email + password for an access token (short-lived JWT)
+        and a refresh token (long-lived, rotating).
+      parameters:
+      - description: Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "401":
+          description: invalid credentials
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Log in
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revokes the session backing the given refresh token. The already-issued
+        access token keeps working until it expires (at most TOKEN_DURATION) — access
+        tokens are stateless and not checked against sessions on every request.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      summary: Log out
+      tags:
+      - auth
+  /auth/password-reset/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Applies a new password using the code from RequestPasswordReset,
+        then revokes every existing session for that user (forcing re-login everywhere).
+      parameters:
+      - description: Reset code + new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ConfirmPasswordResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "401":
+          description: invalid, expired, or already-used code
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Confirm a password reset
+      tags:
+      - auth
+  /auth/password-reset/request:
+    post:
+      consumes:
+      - application/json
+      description: Always returns the same success response regardless of whether
+        the email belongs to an account, so this endpoint can't be used to enumerate
+        registered emails. If it does, a single-use code valid for 1 hour is emailed.
+      parameters:
+      - description: Account email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RequestPasswordResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Request a password reset code
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges a valid, not-yet-used refresh token for a new access+refresh
+        pair, rotating the old one. Presenting an already-rotated-out refresh token
+        is treated as theft and revokes every session for that user.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "401":
+          description: invalid, expired, or reused refresh token
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Refresh an access token
+      tags:
+      - auth
+  /billing/invoice:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InvoiceResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List invoices
+      tags:
+      - billing
+    post:
+      consumes:
+      - application/json
+      description: Requires ROLE_ADMIN or ROLE_BILLING.
+      parameters:
+      - description: Invoice details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInvoiceReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InvoiceResponse'
+              type: object
+        "409":
+          description: insufficient stock
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an invoice
+      tags:
+      - billing
+  /billing/invoice/{id}:
+    get:
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InvoiceResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an invoice
+      tags:
+      - billing
+  /billing/invoice/{id}/payments:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecordPaymentReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PaymentResponse'
+              type: object
+        "400":
+          description: payment exceeds due amount
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Record a payment against an invoice
+      tags:
+      - billing
+  /billing/invoice/{id}/pdf:
+    get:
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Download an invoice as PDF
+      tags:
+      - billing
+  /billing/invoice/{id}/qr:
+    get:
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Get an invoice summary as a QR code
+      tags:
+      - billing
+  /billing/invoice/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateInvoiceStatusReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "409":
+          description: invoice already paid
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update invoice status
+      tags:
+      - billing
+  /billing/invoice/{id}/whatsapp-link:
+    get:
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  properties:
+                    link:
+                      type: string
+                  type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get a wa.me link to share an invoice summary
+      tags:
+      - billing
+  /billing/invoice/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InvoiceResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search invoices
+      tags:
+      - billing
+  /calculators/near-add:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Distance sphere + add power
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NearAddReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute near-add power
+      tags:
+      - calculators
+  /calculators/spherical-equivalent:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Sphere/cylinder
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SphericalEquivalentReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute spherical equivalent
+      tags:
+      - calculators
+  /calculators/telescope-fov:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: True FOV (degrees) + magnification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TelescopeFOVReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Compute apparent field of view for a telescope/loupe
+      tags:
+      - calculators
+  /calculators/transposition:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Sphere/cylinder/axis
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TranspositionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TranspositionRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Transpose a cylinder between plus/minus cylinder notation
+      tags:
+      - calculators
+  /calculators/vertex-distance:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Power + from/to vertex distance (mm)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VertexDistanceReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ScalarResultRes'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Adjust power for a change in vertex distance
+      tags:
+      - calculators
+  /inventory/items:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory items
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Requires ROLE_ADMIN or ROLE_INVENTORY.
+      parameters:
+      - description: Item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInventoryItemReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryItemResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create an inventory item
+      tags:
+      - inventory
+  /inventory/items/{id}:
+    get:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryItemResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an inventory item
+      tags:
+      - inventory
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateInventoryItemReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update an inventory item
+      tags:
+      - inventory
+  /inventory/items/{id}/barcode-image:
+    get:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Get an item's barcode as a PNG image
+      tags:
+      - inventory
+  /inventory/items/{id}/delete:
+    patch:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete an inventory item
+      tags:
+      - inventory
+  /inventory/items/{id}/movements:
+    get:
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 20
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.StockMovementResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List an item's stock movements
+      tags:
+      - inventory
+  /inventory/items/{id}/stock:
+    post:
+      consumes:
+      - application/json
+      description: Records a stock movement and increments quantity on hand.
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Quantity + notes
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddStockReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.StockMovementResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add stock to an item
+      tags:
+      - inventory
+  /inventory/items/barcode/{sku}:
+    get:
+      parameters:
+      - description: SKU
+        in: path
+        name: sku
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryItemResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an inventory item by SKU/barcode
+      tags:
+      - inventory
+  /inventory/items/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search inventory items
+      tags:
+      - inventory
+  /inventory/low-stock:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List items at or below their reorder threshold
+      tags:
+      - inventory
+  /inventory/purchases:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.StockPurchaseResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List stock purchases
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Creates the purchase and its line items, and increments quantity
+        on hand for each item.
+      parameters:
+      - description: Purchase details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStockPurchaseReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.StockPurchaseResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Record a stock purchase from a vendor
+      tags:
+      - inventory
+  /inventory/purchases/{id}:
+    get:
+      parameters:
+      - description: Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.StockPurchaseResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a stock purchase
+      tags:
+      - inventory
+  /inventory/vendors:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List vendors
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vendor details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVendorReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VendorResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a vendor
+      tags:
+      - inventory
+  /inventory/vendors/{id}:
+    get:
+      parameters:
+      - description: Vendor ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VendorResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a vendor
+      tags:
+      - inventory
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vendor ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateVendorReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a vendor
+      tags:
+      - inventory
+  /inventory/vendors/{id}/delete:
+    patch:
+      parameters:
+      - description: Vendor ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a vendor
+      tags:
+      - inventory
+  /inventory/vendors/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search vendors
+      tags:
+      - inventory
+  /lab-jobs:
+    get:
+      parameters:
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.LabJobResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List lab jobs
+      tags:
+      - lab-jobs
+    post:
+      consumes:
+      - application/json
+      description: Requires ROLE_ADMIN, ROLE_LAB, or ROLE_BILLING.
+      parameters:
+      - description: Lab job details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLabJobReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LabJobResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a lab job
+      tags:
+      - lab-jobs
+  /lab-jobs/{id}:
+    get:
+      parameters:
+      - description: Lab job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.LabJobResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a lab job
+      tags:
+      - lab-jobs
+  /lab-jobs/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Lab job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New status + notes
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLabJobStatusReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a lab job's status
+      tags:
+      - lab-jobs
+  /lab-jobs/patient/{patientId}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.LabJobResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List a patient's lab jobs
+      tags:
+      - lab-jobs
+  /patient:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PatientResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List patients
+      tags:
+      - patients
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Patient details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePatientReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PatientResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a patient
+      tags:
+      - patients
+  /patient/{id}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PatientResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a patient
+      tags:
+      - patients
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePatientReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a patient
+      tags:
+      - patients
+  /patient/{id}/delete:
+    patch:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Soft-delete a patient
+      tags:
+      - patients
+  /patient/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PatientResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search patients
+      tags:
+      - patients
+  /platform/subscriptions/{clinicId}:
+    get:
+      description: Platform-operator-only (ROLE_SUPERADMIN).
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: clinicId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SubscriptionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a clinic's subscription
+      tags:
+      - platform
+    put:
+      consumes:
+      - application/json
+      description: Platform-operator-only (ROLE_SUPERADMIN). A clinic's own admin
+        can never reach this route, so it can never reactivate or extend its own subscription.
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: clinicId
+        required: true
+        type: string
+      - description: Plan, status, period end
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpsertSubscriptionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SubscriptionResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create or update a clinic's subscription
+      tags:
+      - platform
+  /profile/getme:
+    get:
+      description: Returns the authenticated caller's own profile.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProfileResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get my profile
+      tags:
+      - profile
+  /profile/profile-details:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProfileResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List profiles
+      tags:
+      - profile
+  /profile/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: query
+        type: string
+      - default: 10
+        description: Max results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProfileResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Search profiles
+      tags:
+      - profile
+  /profile/update-profile/{id}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+        "400":
+          description: invalid UUID
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a profile
+      tags:
+      - profile
+  /reports/dues:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PatientDueResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Outstanding patient balances
+      tags:
+      - reports
+  /reports/inventory/low-stock:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryItemResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Inventory low-stock report
+      tags:
+      - reports
+  /reports/inventory/valuation:
+    get:
+      description: Admin-only.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.InventoryValuationResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Inventory valuation report
+      tags:
+      - reports
+  /reports/sales/daily:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD, defaults to today
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Daily sales report
+      tags:
+      - reports
+  /reports/sales/monthly:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: Defaults to current year
+        in: query
+        name: year
+        type: integer
+      - description: Defaults to current month
+        in: query
+        name: month
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Monthly sales report
+      tags:
+      - reports
+  /reports/sales/range:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.SalesSummaryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Sales report over a date range
+      tags:
+      - reports
+  /reports/vendor-dues:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VendorDueResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Outstanding vendor balances
+      tags:
+      - reports
+  /reports/visits/summary:
+    get:
+      description: Admin-only. Add ?format=csv to download instead of receiving JSON.
+      parameters:
+      - description: YYYY-MM-DD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: '''day'' (default) or ''doctor'''
+        in: query
+        name: group_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VisitsSummaryResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Visits summary report
+      tags:
+      - reports
+  /role/create:
+    post:
+      consumes:
+      - application/json
+      description: Admin-only. Role names are global (not clinic-scoped) reusable
+        labels.
+      parameters:
+      - description: Role name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Role'
+              type: object
+        "409":
+          description: role already exists
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a role
+      tags:
+      - roles
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new clinic (tenant), its first ROLE_ADMIN user, and a
+        14-day trial subscription, atomically. Returns a normal login response so
+        the new admin is immediately authenticated.
+      parameters:
+      - description: New clinic + admin details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "409":
+          description: email already registered
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+        "429":
+          description: rate limited
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Sign up a new clinic
+      tags:
+      - auth
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Admin-only. Creates a new user (and profile) in the caller's own
+        clinic.
+      parameters:
+      - description: New user details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "409":
+          description: email already exists
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a staff user
+      tags:
+      - users
+  /visit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Visit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVisitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VisitCreateResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a visit
+      tags:
+      - visits
+  /visit/{id}:
+    get:
+      parameters:
+      - description: Visit ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VisitResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a visit
+      tags:
+      - visits
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Visit ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVisitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.response'
+      security:
+      - BearerAuth: []
+      summary: Update a visit
+      tags:
+      - visits
+  /visit/patient/{patientId}:
+    get:
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PatientVisitsResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List a patient's visits
+      tags:
+      - visits
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the access token, e.g. "Bearer
+      eyJhbGci...".
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,7 +1,6 @@
 package http
 
 import (
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
@@ -19,6 +18,17 @@ func NewClinicHandler(svc port.ClinicService) *ClinicHandler {
 	}
 }
 
+// InsertClinic godoc
+//
+//	@Summary		Create clinic settings
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.ClinicRequest	true	"Clinic details"
+//	@Success		200		{object}	response{data=dto.ClinicResponse}
+//	@Router			/admin/clinic [post]
 func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
 	var req dto.ClinicRequest
 
@@ -40,7 +50,7 @@ func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
 	}
 
 	clinic := &domain.ClinicSettings{
-		ClinicName:        req.ClinicName,
+		ClinicName:     req.ClinicName,
 		Tagline:        &req.Tagline,
 		Address:        &req.Address,
 		Phone:          &req.Phone,
@@ -56,9 +66,20 @@ func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
-	handleSuccess(ctx, s)
+	handleSuccess(ctx, dto.ClinicsResponse(s))
 }
 
+// GetClinicByID godoc
+//
+//	@Summary		Get clinic settings
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Clinic ID"
+//	@Success		200	{object}	response{data=dto.ClinicResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/clinic/{id} [get]
 func (ch *ClinicHandler) GetClinicByID(ctx *gin.Context) {
 	clinicID := ctx.Param("id")
 	clinicUUID, err := uuid.Parse(clinicID)
@@ -73,9 +94,21 @@ func (ch *ClinicHandler) GetClinicByID(ctx *gin.Context) {
 		handleError(ctx, err)
 		return
 	}
-	handleSuccess(ctx, clinic)
+	handleSuccess(ctx, dto.ClinicsResponse(clinic))
 }
 
+// UpdateClinic godoc
+//
+//	@Summary		Update clinic settings
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string				true	"Clinic ID"
+//	@Param			request	body		dto.ClinicRequest	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/clinic/{id} [patch]
 func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
 	clinicID := ctx.Param("id")
 	clinicUUID, err := uuid.Parse(clinicID)
@@ -104,7 +137,7 @@ func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
 
 	clinic := &domain.ClinicSettings{
 		ID:             clinicUUID,
-		ClinicName:        req.ClinicName,
+		ClinicName:     req.ClinicName,
 		Tagline:        &req.Tagline,
 		Address:        &req.Address,
 		Phone:          &req.Phone,
@@ -122,8 +155,17 @@ func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
 	handleSuccess(ctx, gin.H{"message": "Clinic settings updated successfully"})
 }
 
+// GetAllClinics godoc
+//
+//	@Summary		List clinics
+//	@Description	Admin-only.
+//	@Tags			clinic
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=[]dto.ClinicResponse}
+//	@Router			/admin/clinic [get]
 func (ch *ClinicHandler) GetAllClinics(ctx *gin.Context) {
-	
+
 	res, err := ch.svc.GetAllClinics(ctx)
 
 	if err != nil {

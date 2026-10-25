@@ -17,6 +17,18 @@ func NewRoleHandler(rsvc port.RoleService) *RoleHandler {
 	}
 }
 
+// CreateRole godoc
+//
+//	@Summary		Create a role
+//	@Description	Admin-only. Role names are global (not clinic-scoped) reusable labels.
+//	@Tags			roles
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.CreateRole	true	"Role name"
+//	@Success		200		{object}	response{data=domain.Role}
+//	@Failure		409		{object}	errorResponse	"role already exists"
+//	@Router			/role/create [post]
 func (rh *RoleHandler) CreateRole(ctx *gin.Context) {
 	var req dto.CreateRole
 

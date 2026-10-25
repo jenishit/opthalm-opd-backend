@@ -8,15 +8,15 @@ import (
 )
 
 type VisitsRepository interface {
-	CreateVisit(ctx context.Context, v *domain.Visit) (*domain.Visit, error)
-	GetVisitByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitDetails, error)
-	UpdateVisitByVisitID(ctx context.Context, v *domain.Visit) error
-	GetVisitsByPatientID(ctx context.Context, id uuid.UUID) ([]*domain.VisitDetails, error)
+	CreateVisit(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) (*domain.Visit, error)
+	GetVisitByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitDetails, error)
+	UpdateVisitByVisitID(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) error
+	GetVisitsByPatientID(ctx context.Context, clinicID, id uuid.UUID) ([]*domain.VisitDetails, error)
 }
 
 type VisitsService interface {
-	CreateVisit(ctx context.Context, v *domain.Visit) (*domain.Visit, error)
-	GetVisitByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitDetails, error)
-	UpdateVisitByVisitID(ctx context.Context, v *domain.Visit) error
-	GetVisitsByPatientID(ctx context.Context, id uuid.UUID) ([]*domain.VisitDetails, error)
+	CreateVisit(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) (*domain.Visit, error)
+	GetVisitByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitDetails, error)
+	UpdateVisitByVisitID(ctx context.Context, clinicID uuid.UUID, v *domain.Visit) error
+	GetVisitsByPatientID(ctx context.Context, clinicID, id uuid.UUID) ([]*domain.VisitDetails, error)
 }

@@ -23,6 +23,13 @@ var errorStatusMap = map[error]int{
 	domain.ErrForbidden:                  http.StatusForbidden,
 	domain.ErrNoUpdatedData:              http.StatusBadRequest,
 	domain.ErrInvalidUUID:                http.StatusBadRequest,
+	domain.ErrInsufficientStock:          http.StatusConflict,
+	domain.ErrSubscriptionInactive:       http.StatusPaymentRequired,
+	domain.ErrInsufficientPayment:        http.StatusBadRequest,
+	domain.ErrPaymentExceedsDueAmount:    http.StatusBadRequest,
+	domain.ErrInvoiceAlreadyPaid:         http.StatusConflict,
+	domain.ErrTooManyRequests:            http.StatusTooManyRequests,
+	domain.ErrBadRequest:                 http.StatusBadRequest,
 }
 
 // validationError sends an error response for some specific request validation error

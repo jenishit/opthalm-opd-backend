@@ -1,227 +1,81 @@
-# Project Report: Reports-Management-System
+# Project Report: Opthalmic Management System
 
-**Generated:** July 7, 2026
+**Updated:** September 30, 2026 (supersedes the July 7, 2026 report — the project has grown substantially since then: multi-tenancy, full SaaS auth, and five business modules were added)
 
 ---
 
 ## Overview
 
-A Go backend for a lab reports management system following **Clean Architecture / Hexagonal** pattern with 3 layers: `core` (domain/port/services), `adapter` (handler/repository/config/auth), and `cmd` (entrypoint).
+A Go backend for a multi-tenant ophthalmology clinic management system, following **Clean Architecture / Hexagonal** pattern with 3 layers: `core` (domain/port/services), `adapter` (handler/repository/config/auth/cache/email), and `cmd` (entrypoint).
 
 **Module:** `github.com/jenish-brainztechs/go-backend`
 **Go Version:** 1.26.4
 **Framework:** Gin (v1.12.0)
-**Database:** PostgreSQL 16 (pgx/v5)
+**Database:** PostgreSQL 16 (pgx/v5) · **Cache:** Redis 7
 
----
-
-## Architecture: Clean Architecture / Hexagonal Pattern
-
-The project follows **Clean Architecture** (also known as Hexagonal Architecture or Ports & Adapters), which enforces a strict dependency rule: **dependencies point inward** — outer layers depend on inner layers, never the reverse.
-
-### Layer Structure
-
-```
-cmd/                        ← Entrypoint / Composition Root
-  └── main.go               ← Wires all dependencies together
-
-internal/
-  └── adapter/              ← Outer layer (infrastructure / IO)
-      ├── auth/jwt/         ←   JWT adapter (implements TokenService port)
-      ├── config/           ←   Env config loader
-      ├── handler/http/     ←   HTTP handlers (Gin controllers)
-      │   ├── dto/          ←   Request/Response DTOs
-      │   ├── middleware.go ←   CORS + Auth middleware
-      │   ├── response.go   ←   Standardized response helpers
-      │   └── router.go     ←   Gin router + route definitions
-      └── storage/postgres/ ←   PostgreSQL adapter
-          ├── db.go         ←   Connection pool + migration runner
-          ├── migrations/   ←   SQL migration files
-          └── repository/   ←   Repository implementations
-
-  └── core/                 ← Inner layer (business logic, zero external deps)
-      ├── domain/           ←   Enterprise business rules (models, errors, VOs)
-      │   └── valueobjects/ ←   Value objects (e.g., Password with bcrypt)
-      ├── port/             ←   Interface definitions (ports)
-      │   ├── *Repository   ←   Outbound ports (driven interfaces)
-      │   └── *Service      ←   Inbound ports (driving interfaces)
-      └── services/         ←   Application business rules (use cases)
-```
-
-### How It Works
-
-1. **Domain Layer** (`core/domain/`) — Pure Go types, no imports from other packages. Contains entity structs (`User`, `Role`, `Profile`, `Patient`, `LabSettings`), value objects (`Password` with bcrypt), sentinel errors, and business rules.
-
-2. **Port Layer** (`core/port/`) — Defines **interfaces only**. `UserRepository` / `ProfileRepository` / etc. are outbound ports (what the app needs from the outside world). `UserService` / `AuthService` / etc. are inbound ports (what the app offers to the outside world).
-
-3. **Service Layer** (`core/services/`) — Implements **application use cases**. Depends only on port interfaces, never on concrete adapters. Dependencies are injected via constructors (e.g., `NewAuthService(repo, tokenService)`).
-
-4. **Adapter Layer** (`internal/adapter/`) — Implements **port interfaces** using concrete technologies:
-   - `handler/http/` — Gin-based HTTP handlers that call service ports
-   - `auth/jwt/` — JWT implementation of `TokenService` port
-   - `storage/postgres/repository/` — pgx-based implementations of repository ports
-
-5. **Composition Root** (`cmd/main.go`) — Creates all concrete implementations and wires them together through constructor injection. No service locator, no global state.
-
-### Data Flow Example (Login)
-
-```
-HTTP Request
-  → Router (Gin)
-    → AuthHandler.Login()
-      → domain.Login (request DTO)
-        → AuthService.Login()  [core/services]
-          → UserRepository.GetUserByEmail()  [port interface]
-            → UserRepository (Postgres)  [adapter/storage]
-          ← domain.BasicDetails
-          → Password.Verify(plaintext)  [domain/valueobjects]
-          → JWTToken.CreateAccessToken()  [port interface]
-            → JWTToken (adapter/auth/jwt)
-          ← token string
-        ← domain.LoginResponse
-      ← dto.LoginResponse (response DTO)
-    ← handleSuccess(ctx, response)
-  ← JSON Response
-```
-
-### Key Benefits
-
-- **Testability**: Services can be tested with mock repositories/services
-- **Swapability**: Swap Postgres for MongoDB by writing a new adapter
-- **Isolation**: Business logic has zero knowledge of HTTP, JWT, or SQL
-- **Single Responsibility**: Each layer has a clear, non-overlapping concern
-
----
-
-## Project Structure
-
-```
-go-backend/
-├── .air.toml                        # Air live-reload config
-├── .env                             # Local environment variables
-├── .env.example                     # Example env vars template
-├── docker-compose.yml               # Postgres 16 service (port 5433)
-├── go.mod / go.sum
-├── cmd/
-│   └── main.go                      # Entrypoint — DI wiring + server start
-└── internal/
-    ├── adapter/
-    │   ├── auth/jwt/jwt.go          # JWT token creation & verification (HS256)
-    │   ├── config/config.go         # Env-based config loader (godotenv)
-    │   ├── handler/http/
-    │   │   ├── auth.go              # Login handler
-    │   │   ├── middleware.go        # CORS + Bearer auth middleware
-    │   │   ├── profile.go           # Profile CRUD handlers
-    │   │   ├── response.go          # Standardized JSON responses + error mapping
-    │   │   ├── role.go              # Role creation handler
-    │   │   ├── router.go            # Gin router + route definitions
-    │   │   ├── users.go             # User creation handler
-    │   │   └── dto/                 # Request/Response DTOs
-    │   └── storage/postgres/
-    │       ├── db.go                # Connection pool + migration runner
-    │       ├── migrations/          # 3 SQL migration files
-    │       └── repository/          # CRUD implementations
-    └── core/
-        ├── domain/                  # Domain models, errors, value objects
-        ├── port/                    # Repository & Service interfaces
-        └── services/                # Business logic implementations
-```
-
-**Total: 46 files** (36 Go source, 3 SQL migrations, 7 config/support)
+See `README.md` for the architecture diagram, quick-start, and operational notes — this document tracks what's implemented and what's still missing.
 
 ---
 
 ## What Has Been Implemented
 
-### 1. Database & Storage
-- **3 migrations** — `role`, `users`/`profile`, and `lab_settings` tables
-- **PostgreSQL connection pool** via pgx/v5
-- **SQL query builder** (Masterminds/squirrel) for parameterized, injection-safe queries
-- **Repositories:** Role, User, Profile, Settings — all implement port interfaces
+### 1. Multi-tenancy
+Shared database, `clinic_id` column on every tenant-scoped table (patients, visits, billing, inventory, lab jobs). `role` and the reference catalogs (medicines, diagnoses, history conditions) are deliberately global. Cross-tenant isolation is covered by `tenancy_test.go`.
 
-### 2. Authentication
-- **JWT token service** — HS256, configurable duration, custom claims (user_id, role_name, session_id)
-- **Login flow** — email lookup → bcrypt verify → JWT generation → response
-- **Bearer token middleware** — extracts, verifies, and injects payload into Gin context
-- **Password value object** — bcrypt hashing (cost 14), validation, marshaling-safe
+### 2. Authentication & subscription gating
+- Short-lived access JWT (15m default) + rotating, revocable opaque refresh tokens (`sessions` table), with reuse-detection (a replayed, already-rotated-out refresh token revokes the whole session chain).
+- `POST /api/signup` — creates a clinic + first `ROLE_ADMIN` user + 14-day trial subscription, atomically.
+- Subscription gating middleware — 402 on any tenant-scoped route if the clinic's subscription isn't active/trialing. Only `ROLE_SUPERADMIN` (manually provisioned) can manage a clinic's subscription via `/api/platform/subscriptions/:clinicId`.
+- Password reset and email verification flows (`verification_tokens` table, single-use, expiring), delivered via a pluggable `EmailSender` (log-only in dev, real SMTP if `SMTP_HOST` is set).
 
-### 3. API Endpoints
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/auth/login` | No | User login |
-| POST | `/api/role/create` | No | Create new role |
-| POST | `/api/user/create` | No | Register user |
-| GET | `/api/profile/getme` | Yes | Get own profile |
-| GET | `/api/profile/profile-details` | Yes | Get all profiles |
-| PATCH | `/api/profile/update-profile/:id` | Yes | Update profile by user ID |
+### 3. Business modules
+| Module | Endpoints (base path) |
+|---|---|
+| Patients | `/api/patient` — CRUD, search |
+| Visits | `/api/visit` — create/get/update, list by patient |
+| Catalog | `/api/admin/catalog/{medicines,diagnoses,conditions}` — global reference data |
+| Billing/POS | `/api/billing/invoice` — create, list, search, status, payments, PDF/QR/WhatsApp-link |
+| Inventory | `/api/inventory/{items,vendors,purchases}` — CRUD, stock movements, barcode image, low-stock |
+| Lab jobs | `/api/lab-jobs` — create, list, status updates |
+| Reports | `/api/reports/*` — sales (daily/monthly/range), dues, inventory valuation/low-stock, visits summary; CSV export via `?format=csv` |
+| Calculators | `/api/calculators/*` — transposition, spherical equivalent, near-add, vertex distance, telescope FOV (stateless optical math) |
+| Clinic settings | `/api/admin/clinic` — per-tenant branding/contact info used on invoices |
 
-### 4. Business Logic (Services)
-- **AuthService** — login with credential verification
-- **UserService** — user creation with role lookup & profile creation in one transaction-like flow
-- **RoleService** — role creation, name ↔ ID lookups
-- **ProfileService** — CRUD for profiles with JOIN queries
-- **SettingsService** — upsert lab settings (incomplete — see below)
+### 4. Cross-cutting concerns
+- **CORS** — configurable allowed origins.
+- **Structured JSON responses** — `{success, message, data}` / `{success, messages}`, with a sentinel-error → HTTP-status map covering every domain error.
+- **Structured logging** — one `log/slog` line per request (request ID, latency, authenticated user/clinic), JSON in production.
+- **Rate limiting** — Redis-backed, on signup/login/password-reset.
+- **Graceful shutdown** — drains in-flight requests on `SIGINT`/`SIGTERM`.
+- **Swagger/OpenAPI** — generated from handler annotations, served at `/swagger/index.html` outside production.
+- **Panic recovery** — `gin.CustomRecovery` returns the standard JSON error envelope instead of crashing the process.
 
-### 5. Cross-Cutting Concerns
-- **CORS middleware** — allows configurable origins
-- **Standardized JSON responses** — `{success, message, data}` / `{success, messages}`
-- **Sentinel error mapping** — 30+ domain errors mapped to appropriate HTTP status codes
-- **Air live-reload** configured for development
+### 5. Testing
+Real-database integration suite (no mocked repositories) in `internal/adapter/handler/http/*_test.go`, built on a shared harness (`internal/testutil/harness.go`) that wires the exact same DI graph as `cmd/main.go`. Covers every module above plus auth/session lifecycle, tenant isolation, subscription gating, and rate limiting.
 
----
-
-## What Is Missing / Incomplete
-
-### 🔴 Not Implemented (defined but unused)
-
-| Feature | Evidence |
-|---------|----------|
-| **Settings handler & routes** | `SettingsRepository` & `SettingsService` exist but are never instantiated in `main.go`. No settings endpoints in `router.go`. |
-| **Settings service GetSettings** | `port/settings.go` defines `GetSettings` but `services/settings.go` only implements `UpsertSettings`. |
-| **Patient module** | `domain/patients.go` defines a `Patient` struct. No repository, service, handler, routes, or migration exist. Completely unused. |
-| **Session / Redis** | `Session`, `Redis` config structs defined and loaded. `SessionState`, `RefreshTokenPayload` domain types exist. No session repository, Redis connection, or session middleware implemented. |
-| **Refresh tokens** | `RefreshTokenPayload` domain type + `Refresh.Duration` config exist. No refresh token creation, storage, verification, or endpoint. |
-| **Logout** | No token invalidation / blacklist mechanism. |
-
-### 🟡 Partially Implemented / Issues
-
-| Issue | Details |
-|-------|---------|
-| **Migrations never called** | `DB.Migrate()` exists in `db.go` but is **not invoked** in `main.go`. Must be run manually. |
-| **Docker port mismatch** | `docker-compose.yml` maps port 5433:5433, but `.env` uses port 5432. |
-| **Profile update authorization** | `PATCH /api/profile/update-profile/:id` accepts any `:id` param but has no role-based authorization check. |
-| **~Validation error handling unused~** | **FIXED** — All handlers now use `validationError()`, `handleError()`, and `handleSuccess()` helpers instead of raw `ctx.JSON`. |
-| **BasicDetails unused fields** | `Username` and `FullName` fields in `domain.BasicDetails` are never populated by the repository query. |
-| **Profile email duality** | `profile` table has its own `email` column, but the profile repository JOINs with `users.email`. Potential confusion. |
-| **Error message typo** | Several handlers return `"Something went wrong internally while creating error"` (should be "creating the resource"). |
-| **Zero tests** | No unit or integration tests exist anywhere in the project. |
-| **Lambda leftovers** | Config contains `IsLambdaRuntime()` and secret ARN resolution logic, likely from a cloned/serverless-adapted project. |
-| **Project name inconsistency** | `.env.example` references "inventory-management" but app name is "Reports-Management-System". |
+### 6. Infrastructure
+- Multi-stage `Dockerfile` (`golang:1.26-alpine` → `alpine:3.20`), `docker-compose.yml` with healthchecked Postgres + Redis and `depends_on: condition: service_healthy` ordering.
+- 14 goose-style SQL migrations (`internal/adapter/storage/postgres/migrations/`), applied via the `goose` CLI (not run automatically by the app).
 
 ---
 
-## Dependencies
+## What Is Missing / Deferred
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `github.com/gin-gonic/gin` | v1.12.0 | HTTP router/framework |
-| `github.com/jackc/pgx/v5` | v5.10.0 | PostgreSQL driver |
-| `github.com/Masterminds/squirrel` | v1.5.4 | SQL query builder |
-| `github.com/golang-jwt/jwt/v4` | v4.5.2 | JWT tokens |
-| `github.com/golang-migrate/migrate/v4` | v4.19.1 | DB migrations |
-| `github.com/joho/godotenv` | v1.5.1 | .env loader |
-| `golang.org/x/crypto` | v0.48.0 | bcrypt |
-| `github.com/google/uuid` | v1.6.0 | UUID generation |
+| Item | Status |
+|---|---|
+| AI/OCR for prescription scanning | Deliberately deferred (explicit early scoping decision) |
+| Desktop/hardware integrations (barcode scanners, card readers) | Out of scope — backend-only by design |
+| Frontend | Not part of this codebase |
+| CI pipeline | Not set up — tests are run manually against docker-compose |
+| Payment gateway integration | Subscription billing is an internal/manual flag (`subscriptions` table), not wired to a real payment processor |
+| Audit log | No append-only record of who changed what; sentinel errors + structured logs are the only trail today |
 
 ---
 
-## Recommendations
+## Known Rough Edges
 
-1. **Call `DB.Migrate()` in `main.go`** before starting the server.
-2. **Wire up Settings module** — instantiate repo/service/handler and add routes.
-3. **Add tests** — at minimum unit tests for services, integration tests for repositories.
-4. **Fix Docker port** to match `.env` (5432) or update `.env` to use 5433.
-5. **Decide on Patients** — either implement the full module (repo, service, handler, migration) or remove the domain type.
-6. **Add authorization middleware** for role-based access control.
-7. **Fix error messages** and enable proper validation error handling.
-8. **Clean up legacy code** — remove Lambda/secret ARN logic if not needed.
+| Item | Details |
+|---|---|
+| Dead config structs | `config.Session`, `config.Cache`, and the legacy `config.Redis` struct are loaded but unused — superseded by `config.RedisConfig`. Left in place rather than risk breaking something that reads them; safe to remove in a follow-up pass. |
+| Lambda leftovers | `config.go` still carries `IsLambdaRuntime()` and AWS secret-ARN resolution logic from an earlier serverless-adapted template. Unused in the current docker-compose deployment model. |
+| `DB.Migrate()` unused | A golang-migrate-based `Migrate()` method exists on `postgres.DB` but nothing calls it — migrations are applied via the `goose` CLI instead, which is what all 14 existing migration files are formatted for (`-- +goose Up/Down` markers, not golang-migrate's `.up.sql`/`.down.sql` pairs). Worth removing the dead method or wiring it up properly, not leaving both half-present. |

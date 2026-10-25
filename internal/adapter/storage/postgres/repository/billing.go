@@ -1,0 +1,368 @@
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+
+	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
+	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+)
+
+type InvoiceRepository struct {
+	DB    *postgres.DB
+	Stock *InventoryRepository
+}
+
+func NewInvoiceRepository(db *postgres.DB, stock *InventoryRepository) *InvoiceRepository {
+	return &InvoiceRepository{DB: db, Stock: stock}
+}
+
+func (r *InvoiceRepository) CreateInvoice(ctx context.Context, clinicID uuid.UUID, invoice *domain.Invoice, items []*domain.InvoiceItem) (*domain.InvoiceDetails, error) {
+	referenceType := "invoice"
+
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		query, args, err := sq.Insert("invoices").
+			Columns(
+				"clinic_id", "patient_id", "visit_id", "status", "subtotal", "discount_amount",
+				"tax_amount", "total_amount", "paid_amount", "due_amount",
+				"payment_status", "created_by", "updated_by",
+			).
+			Values(
+				clinicID, invoice.PatientID, nullUUIDPtr(invoice.VisitID), string(invoice.Status), invoice.Subtotal, invoice.DiscountAmount,
+				invoice.TaxAmount, invoice.TotalAmount, invoice.PaidAmount, invoice.DueAmount,
+				string(invoice.PaymentStatus), invoice.CreatedBy, invoice.UpdatedBy,
+			).
+			Suffix("RETURNING id").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.CreateInvoice build invoice: %w", err)
+		}
+
+		if err := tx.QueryRow(ctx, query, args...).Scan(&invoice.ID); err != nil {
+			return fmt.Errorf("InvoiceRepo.CreateInvoice insert invoice: %w", err)
+		}
+
+		for _, item := range items {
+			ib := sq.Insert("invoice_items").
+				Columns(
+					"clinic_id", "invoice_id", "bundle_id", "item_type", "description", "inventory_item_id",
+					"quantity", "unit_price", "discount_amount", "line_total",
+				).
+				Values(
+					clinicID, invoice.ID, nullUUIDPtr(item.BundleID), string(item.ItemType), item.Description, nullUUIDPtr(item.InventoryItemID),
+					item.Quantity, item.UnitPrice, item.DiscountAmount, item.LineTotal,
+				).
+				Suffix("RETURNING id").
+				PlaceholderFormat(sq.Dollar)
+
+			query, args, err := ib.ToSql()
+			if err != nil {
+				return fmt.Errorf("InvoiceRepo.CreateInvoice build item: %w", err)
+			}
+			if err := tx.QueryRow(ctx, query, args...).Scan(&item.ID); err != nil {
+				return fmt.Errorf("InvoiceRepo.CreateInvoice insert item: %w", err)
+			}
+			item.InvoiceID = invoice.ID
+
+			if item.InventoryItemID != nil {
+				itemID := item.ID
+				if _, err := r.Stock.deductStockTx(ctx, tx, clinicID, *item.InventoryItemID, item.Quantity, domain.MovementSaleOut, &referenceType, &itemID, nil, invoice.CreatedBy); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetByID(ctx, clinicID, invoice.ID)
+}
+
+func (r *InvoiceRepository) GetByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.id": id, "i.clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.GetByID build: %w", err)
+	}
+
+	details, err := scanInvoiceDetails(ctx, r.DB, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	if details.Items, err = r.listItems(ctx, id); err != nil {
+		return nil, err
+	}
+	if details.Payments, err = r.listPayments(ctx, id); err != nil {
+		return nil, err
+	}
+
+	return details, nil
+}
+
+func (r *InvoiceRepository) List(ctx context.Context, clinicID uuid.UUID, limit, offset int) ([]*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.clinic_id": clinicID}).
+		OrderBy("i.created_at DESC").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.List build: %w", err)
+	}
+	return scanInvoiceDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *InvoiceRepository) Search(ctx context.Context, clinicID uuid.UUID, queryStr string, limit int) ([]*domain.InvoiceDetails, error) {
+	query, args, err := invoiceSelect().
+		Where(sq.Eq{"i.clinic_id": clinicID}).
+		Where(sq.Or{
+			sq.Expr("i.invoice_no ILIKE '%' || ? || '%'", queryStr),
+			sq.Expr("p.full_name ILIKE '%' || ? || '%'", queryStr),
+			sq.Expr("p.phone ILIKE '%' || ? || '%'", queryStr),
+		}).
+		OrderBy("i.created_at DESC").
+		Limit(uint64(limit)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.Search build: %w", err)
+	}
+	return scanInvoiceDetailsList(ctx, r.DB, query, args)
+}
+
+func (r *InvoiceRepository) UpdateStatus(ctx context.Context, clinicID, id uuid.UUID, status domain.InvoiceStatus, updatedBy uuid.UUID) error {
+	query, args, err := sq.Update("invoices").
+		Set("status", string(status)).
+		Set("updated_by", updatedBy).
+		Set("updated_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": id, "clinic_id": clinicID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("InvoiceRepo.UpdateStatus build: %w", err)
+	}
+	if _, err := r.DB.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("InvoiceRepo.UpdateStatus exec: %w", err)
+	}
+	return nil
+}
+
+func (r *InvoiceRepository) RecordPayment(ctx context.Context, clinicID uuid.UUID, payment *domain.Payment) (*domain.Payment, error) {
+	err := r.DB.WithTx(ctx, func(tx pgx.Tx) error {
+		var totalAmount, paidAmount float64
+		var paymentStatus string
+		err := tx.QueryRow(ctx,
+			`SELECT total_amount, paid_amount, payment_status FROM invoices WHERE id = $1 AND clinic_id = $2 FOR UPDATE`,
+			payment.InvoiceID, clinicID,
+		).Scan(&totalAmount, &paidAmount, &paymentStatus)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				return domain.ErrDataNotFound
+			}
+			return fmt.Errorf("InvoiceRepo.RecordPayment lock invoice: %w", err)
+		}
+
+		if domain.PaymentStatus(paymentStatus) == domain.PaymentPaid {
+			return domain.ErrInvoiceAlreadyPaid
+		}
+
+		newPaid := paidAmount + payment.Amount
+		newDue := totalAmount - newPaid
+		if newDue < 0 {
+			return domain.ErrPaymentExceedsDueAmount
+		}
+
+		newStatus := domain.PaymentPartial
+		if newDue == 0 {
+			newStatus = domain.PaymentPaid
+		} else if newPaid == 0 {
+			newStatus = domain.PaymentUnpaid
+		}
+
+		query, args, err := sq.Insert("payments").
+			Columns("clinic_id", "invoice_id", "amount", "method", "reference_no", "created_by").
+			Values(clinicID, payment.InvoiceID, payment.Amount, string(payment.Method), nullStringPtr(payment.ReferenceNo), payment.CreatedBy).
+			Suffix("RETURNING id, paid_at, created_at").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment build payment: %w", err)
+		}
+		if err := tx.QueryRow(ctx, query, args...).Scan(&payment.ID, &payment.PaidAt, &payment.CreatedAt); err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment insert payment: %w", err)
+		}
+
+		uQuery, uArgs, err := sq.Update("invoices").
+			Set("paid_amount", newPaid).
+			Set("due_amount", newDue).
+			Set("payment_status", string(newStatus)).
+			Set("updated_at", sq.Expr("NOW()")).
+			Where(sq.Eq{"id": payment.InvoiceID}).
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment build invoice update: %w", err)
+		}
+		if _, err := tx.Exec(ctx, uQuery, uArgs...); err != nil {
+			return fmt.Errorf("InvoiceRepo.RecordPayment update invoice: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return payment, nil
+}
+
+func (r *InvoiceRepository) listItems(ctx context.Context, invoiceID uuid.UUID) ([]*domain.InvoiceItem, error) {
+	query, args, err := sq.Select(
+		"id", "invoice_id", "bundle_id", "item_type", "description", "inventory_item_id",
+		"quantity", "unit_price", "discount_amount", "line_total", "created_at",
+	).
+		From("invoice_items").
+		Where(sq.Eq{"invoice_id": invoiceID}).
+		OrderBy("created_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listItems build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listItems query: %w", err)
+	}
+	defer rows.Close()
+
+	var items []*domain.InvoiceItem
+	for rows.Next() {
+		var it domain.InvoiceItem
+		var bundleID, inventoryItemID uuid.NullUUID
+		var itemType string
+		if err := rows.Scan(
+			&it.ID, &it.InvoiceID, &bundleID, &itemType, &it.Description, &inventoryItemID,
+			&it.Quantity, &it.UnitPrice, &it.DiscountAmount, &it.LineTotal, &it.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("InvoiceRepo.listItems scan: %w", err)
+		}
+		it.ItemType = domain.ItemType(itemType)
+		if bundleID.Valid {
+			it.BundleID = &bundleID.UUID
+		}
+		if inventoryItemID.Valid {
+			it.InventoryItemID = &inventoryItemID.UUID
+		}
+		items = append(items, &it)
+	}
+	return items, rows.Err()
+}
+
+func (r *InvoiceRepository) listPayments(ctx context.Context, invoiceID uuid.UUID) ([]*domain.Payment, error) {
+	query, args, err := sq.Select(
+		"id", "invoice_id", "amount", "method", "reference_no", "paid_at", "created_by", "created_at",
+	).
+		From("payments").
+		Where(sq.Eq{"invoice_id": invoiceID}).
+		OrderBy("paid_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listPayments build: %w", err)
+	}
+
+	rows, err := r.DB.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("InvoiceRepo.listPayments query: %w", err)
+	}
+	defer rows.Close()
+
+	var payments []*domain.Payment
+	for rows.Next() {
+		var p domain.Payment
+		var method string
+		var referenceNo sql.NullString
+		if err := rows.Scan(&p.ID, &p.InvoiceID, &p.Amount, &method, &referenceNo, &p.PaidAt, &p.CreatedBy, &p.CreatedAt); err != nil {
+			return nil, fmt.Errorf("InvoiceRepo.listPayments scan: %w", err)
+		}
+		p.Method = domain.PaymentMethod(method)
+		if referenceNo.Valid {
+			p.ReferenceNo = &referenceNo.String
+		}
+		payments = append(payments, &p)
+	}
+	return payments, rows.Err()
+}
+
+func invoiceSelect() sq.SelectBuilder {
+	return sq.Select(
+		"i.id", "i.invoice_no", "i.patient_id", "p.full_name", "p.phone", "i.visit_id", "i.status",
+		"i.subtotal", "i.discount_amount", "i.tax_amount", "i.total_amount",
+		"i.paid_amount", "i.due_amount", "i.payment_status",
+		"i.created_by", "i.updated_by", "i.created_at", "i.updated_at",
+	).
+		From("invoices i").
+		Join("patients p ON p.id = i.patient_id")
+}
+
+func scanInvoiceDetails(ctx context.Context, db *postgres.DB, query string, args []any) (*domain.InvoiceDetails, error) {
+	row := db.QueryRow(ctx, query, args...)
+	return scanInvoiceDetailsRow(row)
+}
+
+func scanInvoiceDetailsRow(row pgx.Row) (*domain.InvoiceDetails, error) {
+	var d domain.InvoiceDetails
+	var visitID uuid.NullUUID
+	var status, paymentStatus string
+
+	err := row.Scan(
+		&d.ID, &d.InvoiceNo, &d.PatientID, &d.PatientName, &d.PatientPhone, &visitID, &status,
+		&d.Subtotal, &d.DiscountAmount, &d.TaxAmount, &d.TotalAmount,
+		&d.PaidAmount, &d.DueAmount, &paymentStatus,
+		&d.CreatedBy, &d.UpdatedBy, &d.CreatedAt, &d.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrDataNotFound
+		}
+		return nil, fmt.Errorf("scan invoice: %w", err)
+	}
+
+	d.Status = domain.InvoiceStatus(status)
+	d.PaymentStatus = domain.PaymentStatus(paymentStatus)
+	if visitID.Valid {
+		d.VisitID = &visitID.UUID
+	}
+
+	return &d, nil
+}
+
+func scanInvoiceDetailsList(ctx context.Context, db *postgres.DB, query string, args []any) ([]*domain.InvoiceDetails, error) {
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query invoices: %w", err)
+	}
+	defer rows.Close()
+
+	var result []*domain.InvoiceDetails
+	for rows.Next() {
+		d, err := scanInvoiceDetailsRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, d)
+	}
+	return result, rows.Err()
+}

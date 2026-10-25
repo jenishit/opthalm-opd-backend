@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 )
@@ -291,6 +293,9 @@ func scanMedicine(ctx context.Context, db *postgres.DB, qb sq.SelectBuilder) (*d
 		&m.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("scan: %w", err)
 	}
 
@@ -370,6 +375,9 @@ func scanDiagnosisCatalog(ctx context.Context, db *postgres.DB, qb sq.SelectBuil
 		&d.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("scan: %w", err)
 	}
 
@@ -433,6 +441,9 @@ func scanHistoryCondition(ctx context.Context, db *postgres.DB, qb sq.SelectBuil
 		&h.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("scan: %w", err)
 	}
 

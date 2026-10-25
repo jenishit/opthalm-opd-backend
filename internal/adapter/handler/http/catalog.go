@@ -11,9 +11,9 @@ import (
 )
 
 type CatalogHandler struct {
-	medicineSvc      port.MedicineService
-	diagnosisSvc     port.DiagnosisCatalogService
-	conditionSvc     port.HistoryConditionService
+	medicineSvc  port.MedicineService
+	diagnosisSvc port.DiagnosisCatalogService
+	conditionSvc port.HistoryConditionService
 }
 
 func NewCatalogHandler(
@@ -30,6 +30,17 @@ func NewCatalogHandler(
 
 // ─── Medicine ─────────────────────────────────────────────────────────────────
 
+// ListMedicines godoc
+//
+//	@Summary		List medicines
+//	@Description	Admin-only. Medicines are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.MedicineResponse}
+//	@Router			/admin/catalog/medicines [get]
 func (h *CatalogHandler) ListMedicines(ctx *gin.Context) {
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
@@ -43,6 +54,17 @@ func (h *CatalogHandler) ListMedicines(ctx *gin.Context) {
 	handleSuccess(ctx, dto.MedicineResList(items))
 }
 
+// SearchMedicines godoc
+//
+//	@Summary		Search medicines
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.MedicineResponse}
+//	@Router			/admin/catalog/medicines/search [get]
 func (h *CatalogHandler) SearchMedicines(ctx *gin.Context) {
 	query := ctx.Query("query")
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -56,6 +78,17 @@ func (h *CatalogHandler) SearchMedicines(ctx *gin.Context) {
 	handleSuccess(ctx, dto.MedicineResList(items))
 }
 
+// GetMedicineByID godoc
+//
+//	@Summary		Get a medicine
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Medicine ID"
+//	@Success		200	{object}	response{data=dto.MedicineResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/medicines/{id} [get]
 func (h *CatalogHandler) GetMedicineByID(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -72,6 +105,18 @@ func (h *CatalogHandler) GetMedicineByID(ctx *gin.Context) {
 	handleSuccess(ctx, dto.MedicineRes(item))
 }
 
+// UpdateMedicine godoc
+//
+//	@Summary		Update a medicine
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string					true	"Medicine ID"
+//	@Param			request	body		dto.UpdateMedicineReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/medicines/{id} [patch]
 func (h *CatalogHandler) UpdateMedicine(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -107,6 +152,16 @@ func (h *CatalogHandler) UpdateMedicine(ctx *gin.Context) {
 	handleSuccess(ctx, gin.H{"message": "Medicine updated successfully"})
 }
 
+// DeleteMedicine godoc
+//
+//	@Summary		Soft-delete a medicine
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Medicine ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/medicines/{id}/delete [patch]
 func (h *CatalogHandler) DeleteMedicine(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -125,6 +180,17 @@ func (h *CatalogHandler) DeleteMedicine(ctx *gin.Context) {
 
 // ─── Diagnosis Catalog ────────────────────────────────────────────────────────
 
+// ListDiagnoses godoc
+//
+//	@Summary		List diagnoses
+//	@Description	Admin-only. Diagnoses are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.DiagnosisCatalogResponse}
+//	@Router			/admin/catalog/diagnoses [get]
 func (h *CatalogHandler) ListDiagnoses(ctx *gin.Context) {
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
@@ -138,6 +204,17 @@ func (h *CatalogHandler) ListDiagnoses(ctx *gin.Context) {
 	handleSuccess(ctx, dto.DiagnosisCatalogResList(items))
 }
 
+// SearchDiagnoses godoc
+//
+//	@Summary		Search diagnoses
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.DiagnosisCatalogResponse}
+//	@Router			/admin/catalog/diagnoses/search [get]
 func (h *CatalogHandler) SearchDiagnoses(ctx *gin.Context) {
 	query := ctx.Query("query")
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -151,6 +228,17 @@ func (h *CatalogHandler) SearchDiagnoses(ctx *gin.Context) {
 	handleSuccess(ctx, dto.DiagnosisCatalogResList(items))
 }
 
+// GetDiagnosisByID godoc
+//
+//	@Summary		Get a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Diagnosis ID"
+//	@Success		200	{object}	response{data=dto.DiagnosisCatalogResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/diagnoses/{id} [get]
 func (h *CatalogHandler) GetDiagnosisByID(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -167,6 +255,18 @@ func (h *CatalogHandler) GetDiagnosisByID(ctx *gin.Context) {
 	handleSuccess(ctx, dto.DiagnosisCatalogRes(item))
 }
 
+// UpdateDiagnosis godoc
+//
+//	@Summary		Update a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Diagnosis ID"
+//	@Param			request	body		dto.UpdateDiagnosisCatalogReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/diagnoses/{id} [patch]
 func (h *CatalogHandler) UpdateDiagnosis(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -200,6 +300,16 @@ func (h *CatalogHandler) UpdateDiagnosis(ctx *gin.Context) {
 	handleSuccess(ctx, gin.H{"message": "Diagnosis updated successfully"})
 }
 
+// DeleteDiagnosis godoc
+//
+//	@Summary		Soft-delete a diagnosis
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Diagnosis ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/diagnoses/{id}/delete [patch]
 func (h *CatalogHandler) DeleteDiagnosis(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -218,6 +328,17 @@ func (h *CatalogHandler) DeleteDiagnosis(ctx *gin.Context) {
 
 // ─── History Condition ────────────────────────────────────────────────────────
 
+// ListConditions godoc
+//
+//	@Summary		List history conditions
+//	@Description	Admin-only. History conditions are a global catalog, not clinic-scoped.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			limit	query		int	false	"Max results"	default(10)
+//	@Param			offset	query		int	false	"Offset"		default(0)
+//	@Success		200		{object}	response{data=[]dto.HistoryConditionResponse}
+//	@Router			/admin/catalog/conditions [get]
 func (h *CatalogHandler) ListConditions(ctx *gin.Context) {
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
@@ -231,6 +352,17 @@ func (h *CatalogHandler) ListConditions(ctx *gin.Context) {
 	handleSuccess(ctx, dto.HistoryConditionResList(items))
 }
 
+// SearchConditions godoc
+//
+//	@Summary		Search history conditions
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			query	query		string	false	"Search text"
+//	@Param			limit	query		int		false	"Max results"	default(10)
+//	@Success		200		{object}	response{data=[]dto.HistoryConditionResponse}
+//	@Router			/admin/catalog/conditions/search [get]
 func (h *CatalogHandler) SearchConditions(ctx *gin.Context) {
 	query := ctx.Query("query")
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -244,6 +376,17 @@ func (h *CatalogHandler) SearchConditions(ctx *gin.Context) {
 	handleSuccess(ctx, dto.HistoryConditionResList(items))
 }
 
+// GetConditionByID godoc
+//
+//	@Summary		Get a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Condition ID"
+//	@Success		200	{object}	response{data=dto.HistoryConditionResponse}
+//	@Failure		404	{object}	errorResponse
+//	@Router			/admin/catalog/conditions/{id} [get]
 func (h *CatalogHandler) GetConditionByID(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -260,6 +403,18 @@ func (h *CatalogHandler) GetConditionByID(ctx *gin.Context) {
 	handleSuccess(ctx, dto.HistoryConditionRes(item))
 }
 
+// UpdateCondition godoc
+//
+//	@Summary		Update a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		string							true	"Condition ID"
+//	@Param			request	body		dto.UpdateHistoryConditionReq	true	"Fields to update"
+//	@Success		200		{object}	response
+//	@Router			/admin/catalog/conditions/{id} [patch]
 func (h *CatalogHandler) UpdateCondition(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -292,6 +447,16 @@ func (h *CatalogHandler) UpdateCondition(ctx *gin.Context) {
 	handleSuccess(ctx, gin.H{"message": "Condition updated successfully"})
 }
 
+// DeleteCondition godoc
+//
+//	@Summary		Soft-delete a history condition
+//	@Description	Admin-only.
+//	@Tags			catalog
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id	path		string	true	"Condition ID"
+//	@Success		200	{object}	response
+//	@Router			/admin/catalog/conditions/{id}/delete [patch]
 func (h *CatalogHandler) DeleteCondition(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {

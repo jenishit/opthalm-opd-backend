@@ -18,22 +18,22 @@ func NewPatientService(pr port.PatientRepository) *PatientService {
 	}
 }
 
-func (ps *PatientService) CreatePatient(ctx context.Context, pt *domain.Patient) (*domain.Patient, error) {
-	return ps.repo.CreatePatient(ctx, pt)
+func (ps *PatientService) CreatePatient(ctx context.Context, clinicID uuid.UUID, pt *domain.Patient) (*domain.Patient, error) {
+	return ps.repo.CreatePatient(ctx, clinicID, pt)
 }
-func (ps *PatientService) GetPatientByID(ctx context.Context, id uuid.UUID) (*domain.Patient, error) {
-	return ps.repo.GetPatientByID(ctx, id)
+func (ps *PatientService) GetPatientByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Patient, error) {
+	return ps.repo.GetPatientByID(ctx, clinicID, id)
 }
-func (ps *PatientService) GetPatients(ctx context.Context) ([]*domain.Patient, error) {
-	return ps.repo.GetPatients(ctx)
+func (ps *PatientService) GetPatients(ctx context.Context, clinicID uuid.UUID) ([]*domain.Patient, error) {
+	return ps.repo.GetPatients(ctx, clinicID)
 }
 
-func (ps *PatientService) SearchPatients(ctx context.Context, query string, limit int) ([]*domain.Patient, error) {
-	return ps.repo.SearchPatients(ctx, query, limit)
+func (ps *PatientService) SearchPatients(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Patient, error) {
+	return ps.repo.SearchPatients(ctx, clinicID, query, limit)
 }
-func (ps *PatientService) UpdatePatientByID(ctx context.Context, pt *domain.Patient) error {
-	return ps.repo.UpdatePatientByID(ctx, pt)
+func (ps *PatientService) UpdatePatientByID(ctx context.Context, clinicID uuid.UUID, pt *domain.Patient) error {
+	return ps.repo.UpdatePatientByID(ctx, clinicID, pt)
 }
-func (ps *PatientService) DeletePatientByID(ctx context.Context, id uuid.UUID) error {
-	return ps.repo.DeletePatientByID(ctx, id)
+func (ps *PatientService) DeletePatientByID(ctx context.Context, clinicID, id uuid.UUID) error {
+	return ps.repo.DeletePatientByID(ctx, clinicID, id)
 }

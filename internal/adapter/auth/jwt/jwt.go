@@ -1,6 +1,10 @@
 package jwt
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -11,6 +15,10 @@ import (
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 	"github.com/jenish-brainztechs/go-backend/internal/core/port"
 )
+
+// refreshTokenBytes is the entropy of a generated refresh token (32 bytes =
+// 256 bits, well beyond what's brute-forceable).
+const refreshTokenBytes = 32
 
 type JWTToken struct {
 	secret   string
@@ -41,6 +49,7 @@ func (jt *JWTToken) CreateAccessToken(user *domain.BasicDetails, sessionID uuid.
 	claims := jwt.MapClaims{
 		"user_id":    user.ID,
 		"role_name":  user.UserRole,
+		"clinic_id":  user.ClinicID,
 		"exp":        expirationTime.Unix(),
 		"session_id": sessionID,
 	}
@@ -69,37 +78,59 @@ func (jt *JWTToken) VerifyAccessToken(tokenString string) (*domain.TokenPayload,
 		var ve *jwt.ValidationError
 		if errors.As(err, &ve) {
 			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return nil, errors.New("access token expired")
+				return nil, domain.ErrExpiredToken
 			}
 		}
-		return nil, fmt.Errorf("token validation failed: %w", err)
+		return nil, domain.ErrInvalidToken
 	}
 
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok || !parsedToken.Valid {
-		return nil, errors.New("invalid token")
+		return nil, domain.ErrInvalidToken
 	}
 
 	userID, ok := claims["user_id"].(string)
 	roleName, ok2 := claims["role_name"].(string)
 	if !ok || !ok2 {
-		return nil, errors.New("invalid token claims")
+		return nil, domain.ErrInvalidToken
 	}
 
 	uid, err := uuid.Parse(userID)
 	if err != nil {
-		return nil, errors.New("invalid user_id in token")
+		return nil, domain.ErrInvalidToken
 	}
 	payload.UserId = uid
 	payload.RoleName = roleName
 
+	if cid, ok := claims["clinic_id"].(string); ok && cid != "" {
+		clinicID, err := uuid.Parse(cid)
+		if err != nil {
+			return nil, domain.ErrInvalidToken
+		}
+		payload.ClinicID = clinicID
+	}
+
 	if sid, ok := claims["session_id"].(string); ok && sid != "" {
 		sessID, err := uuid.Parse(sid)
 		if err != nil {
-			return nil, errors.New("invalid session_id in token")
+			return nil, domain.ErrInvalidToken
 		}
 		payload.SessionID = sessID
 	}
 
 	return &payload, nil
+}
+
+func (jt *JWTToken) GenerateRefreshToken() (plain string, hash string, err error) {
+	buf := make([]byte, refreshTokenBytes)
+	if _, err := rand.Read(buf); err != nil {
+		return "", "", fmt.Errorf("generating refresh token: %w", err)
+	}
+	plain = base64.RawURLEncoding.EncodeToString(buf)
+	return plain, jt.HashRefreshToken(plain), nil
+}
+
+func (jt *JWTToken) HashRefreshToken(plain string) string {
+	sum := sha256.Sum256([]byte(plain))
+	return hex.EncodeToString(sum[:])
 }

@@ -15,6 +15,7 @@ type Role struct {
 type User struct {
 	ID        uuid.UUID
 	RoleID    uuid.UUID
+	ClinicID  uuid.UUID
 	Email     string
 	Password  valueobjects.Password
 	CreatedAt time.Time
@@ -30,6 +31,7 @@ type UserRole string
 type BasicDetails struct {
 	ID       uuid.UUID             `db:"id"`
 	UserRole UserRole              `db:"user_role"`
+	ClinicID uuid.UUID             `db:"clinic_id"`
 	Email    *string               `db:"email"`
 	Username *string               `db:"username"`
 	Password valueobjects.Password `db:"password"`

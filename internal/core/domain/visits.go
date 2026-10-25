@@ -18,6 +18,7 @@ const (
 
 type Visit struct {
 	ID             uuid.UUID
+	ClinicID       uuid.UUID
 	PatientID      uuid.UUID
 	ExamineBy      uuid.UUID
 	Status         VisitStatus

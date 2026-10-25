@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain/valueobjects"
@@ -23,7 +24,7 @@ func NewUserService(ur port.UserRepository, rsvc port.RoleService, psvc port.Pro
 	}
 }
 
-func (u *UserService) CreateUser(ctx context.Context, data *dto.CreateUser) (*domain.User, error) {
+func (u *UserService) CreateUser(ctx context.Context, data *dto.CreateUser, clinicID uuid.UUID) (*domain.User, error) {
 
 	roleID, err := u.roleService.GetRoleIDByRoleName(ctx, data.RoleName)
 	if err != nil {
@@ -36,6 +37,7 @@ func (u *UserService) CreateUser(ctx context.Context, data *dto.CreateUser) (*do
 	us := &domain.User{
 		Email:    data.Email,
 		RoleID:   *roleID,
+		ClinicID: clinicID,
 		Password: *pwd,
 	}
 

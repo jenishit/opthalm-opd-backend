@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -37,3 +38,22 @@ func nullStringPtr(value *string) sql.NullString {
 	}
 }
 
+func nullTimePtr(value *time.Time) sql.NullTime {
+	if value == nil {
+		return sql.NullTime{}
+	}
+	return sql.NullTime{
+		Time:  *value,
+		Valid: true,
+	}
+}
+
+func nullUUIDPtr(value *uuid.UUID) uuid.NullUUID {
+	if value == nil {
+		return uuid.NullUUID{}
+	}
+	return uuid.NullUUID{
+		UUID:  *value,
+		Valid: true,
+	}
+}
