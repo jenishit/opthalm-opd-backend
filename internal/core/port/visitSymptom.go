@@ -8,11 +8,11 @@ import (
 )
 
 type VisitSymptomRepository interface {
-	UpsertVisitSymptom(ctx context.Context, vs *domain.VisitSymptom) (*domain.CreateVSResponse, error)
-	GetVisitSymptomByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitSymptom, error)
+	UpsertVisitSymptom(ctx context.Context, clinicID uuid.UUID, vs *domain.VisitSymptom) (*domain.CreateVSResponse, error)
+	GetVisitSymptomByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitSymptom, error)
 }
 
 type VisitSymptomService interface {
-	UpsertVisitSymptom(ctx context.Context, vs *domain.VisitSymptom) (*domain.CreateVSResponse, error)
-	GetVisitSymptomByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitSymptom, error)
+	UpsertVisitSymptom(ctx context.Context, clinicID uuid.UUID, vs *domain.VisitSymptom) (*domain.CreateVSResponse, error)
+	GetVisitSymptomByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitSymptom, error)
 }

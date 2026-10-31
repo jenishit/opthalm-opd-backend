@@ -131,6 +131,33 @@ func main() {
 	visitService := services.NewVisitsService(visitRepo)
 	visitHandler := http.NewVisitHandler(visitService)
 
+	visitSymptomRepo := repository.NewVisitSymptomRepository(db)
+	visitSymptomService := services.NewVisitSymptomService(visitSymptomRepo)
+
+	examinationRepo := repository.NewExaminationFindingsRepository(db)
+	examinationService := services.NewExaminationFindingsService(examinationRepo)
+
+	refractionRepo := repository.NewRefractionReadingRepository(db)
+	refractionService := services.NewRefractionReadingService(refractionRepo)
+
+	visitDiagnosisRepo := repository.NewVisitDiagnosisRepository(db)
+	visitDiagnosisService := services.NewVisitDiagnosisService(visitDiagnosisRepo)
+
+	treatmentRepo := repository.NewTreatmentRepository(db)
+	treatmentService := services.NewTreatmentService(treatmentRepo)
+
+	followUpRepo := repository.NewFollowUpRepository(db)
+	followUpService := services.NewFollowUpService(followUpRepo)
+
+	clinicalHandler := http.NewClinicalHandler(
+		visitSymptomService,
+		examinationService,
+		refractionService,
+		visitDiagnosisService,
+		treatmentService,
+		followUpService,
+	)
+
 	medicineRepo := repository.NewMedicineRepository(db)
 	medicineService := services.NewMedicineService(medicineRepo)
 
@@ -183,6 +210,7 @@ func main() {
 		*clinicHandler,
 		*patientHandler,
 		*visitHandler,
+		*clinicalHandler,
 		*catalogHandler,
 		*invoiceHandler,
 		*inventoryHandler,

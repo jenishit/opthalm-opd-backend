@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
 	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
 )
@@ -20,9 +22,10 @@ func NewVisitSymptomRepository(db *postgres.DB) *VisitSymptomRepository {
 	}
 }
 
-func (vsr *VisitSymptomRepository) UpsertVisitSymptom(ctx context.Context, vr *domain.VisitSymptom) (*domain.CreateVSResponse, error) {
+func (vsr *VisitSymptomRepository) UpsertVisitSymptom(ctx context.Context, clinicID uuid.UUID, vr *domain.VisitSymptom) (*domain.CreateVSResponse, error) {
 	query := `INSERT INTO
 	VISIT_SYMPTOMS (
+		CLINIC_ID,
 		VISIT_ID,
 		FOREIGN_BODY_SENSATION,
 		REDNESS,
@@ -65,7 +68,8 @@ VALUES
 		$17,
 		$18,
 		$19,
-		$20
+		$20,
+		$21
 	)
 ON CONFLICT (VISIT_ID) DO UPDATE
 SET
@@ -97,7 +101,29 @@ RETURNING
 
 	var vs domain.CreateVSResponse
 
-	err := vsr.DB.QueryRow(ctx, query).Scan(
+	err := vsr.DB.QueryRow(ctx, query,
+		clinicID,
+		vr.VisitID,
+		vr.ForeignBodySensation,
+		vr.Redness,
+		vr.Swelling,
+		vr.DiminishedDistanceVision,
+		vr.DiminishedNearVision,
+		vr.Blurring,
+		vr.Headache,
+		vr.EyePain,
+		vr.WateryEyes,
+		vr.Discharge,
+		vr.Itching,
+		vr.PhotoPhobia,
+		vr.Floaters,
+		vr.Flashes,
+		vr.DoubleVision,
+		vr.RecentFever,
+		vr.ComplaintDuration,
+		vr.CreatedBy,
+		vr.UpdatedBy,
+	).Scan(
 		&vs.VisitID,
 		&vs.CreatedBy,
 		&vs.UpdatedBy,
@@ -111,7 +137,7 @@ RETURNING
 	return &vs, nil
 }
 
-func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context, id uuid.UUID) (*domain.VisitSymptom, error) {
+func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context, clinicID, id uuid.UUID) (*domain.VisitSymptom, error) {
 	query, args, err := sq.
 		Select(
 			"VISIT_ID",
@@ -136,7 +162,7 @@ func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context,
 			"UPDATED_BY",
 		).
 		From("VISIT_SYMPTOMS").
-		Where(sq.Eq{"VISIT_ID": id}).
+		Where(sq.Eq{"VISIT_ID": id, "CLINIC_ID": clinicID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -167,10 +193,12 @@ func (vsr *VisitSymptomRepository) GetVisitSymptomByVisitID(ctx context.Context,
 		&vs.ComplaintDuration,
 		&vs.CreatedBy,
 		&vs.UpdatedBy,
-		&vs.UpdatedAt,
 	)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrDataNotFound
+		}
 		return nil, fmt.Errorf("failed to scan row: %w", err)
 	}
 

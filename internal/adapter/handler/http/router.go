@@ -36,6 +36,7 @@ func NewRouter(
 	clinicHandler ClinicHandler,
 	patientHandler PatientHandler,
 	visitHandler VisitHandler,
+	clinicalHandler ClinicalHandler,
 	catalogHandler CatalogHandler,
 	invoiceHandler InvoiceHandler,
 	inventoryHandler InventoryHandler,
@@ -142,6 +143,15 @@ func NewRouter(
 		visit.GET("/:id", visitHandler.GetVisitByVisitID)
 		visit.GET("/patient/:patientId", visitHandler.GetVisitsByPatientID)
 		visit.PATCH("/:id", visitHandler.UpdateVisitByVisitID)
+
+		visit.GET("/:id/clinical", clinicalHandler.GetVisitClinical)
+		visit.PUT("/:id/symptoms", clinicalHandler.UpsertVisitSymptoms)
+		visit.PUT("/:id/examination", clinicalHandler.UpsertExamination)
+		visit.GET("/:id/readings", clinicalHandler.ListReadings)
+		visit.POST("/:id/readings", clinicalHandler.AddReading)
+		visit.PUT("/:id/diagnoses", clinicalHandler.ReplaceDiagnoses)
+		visit.PUT("/:id/treatments", clinicalHandler.ReplaceTreatments)
+		visit.PUT("/:id/follow-up", clinicalHandler.UpsertFollowUp)
 	}
 
 	catalog := admin.Group("/catalog")

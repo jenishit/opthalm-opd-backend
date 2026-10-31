@@ -14,7 +14,7 @@ type VisitSymptom struct {
 	DiminishedDistanceVision *string
 	DiminishedNearVision     *string
 	Blurring                 *string
-	Headache                 *bool
+	Headache                 *string
 	EyePain                  *string
 	WateryEyes               *string
 	Discharge                *string
@@ -22,7 +22,7 @@ type VisitSymptom struct {
 	PhotoPhobia              *string
 	Floaters                 *string
 	Flashes                  *string
-	DoubleVision             *bool
+	DoubleVision             *string
 	RecentFever              *bool
 	ComplaintDuration        *string
 	CreatedBy                uuid.UUID
@@ -31,8 +31,8 @@ type VisitSymptom struct {
 }
 
 type CreateVSResponse struct {
-	VisitID                  uuid.UUID
-	CreatedBy                uuid.UUID
-	UpdatedBy                uuid.UUID
-	UpdatedAt                time.Time
+	VisitID   uuid.UUID
+	CreatedBy uuid.UUID
+	UpdatedBy uuid.UUID
+	UpdatedAt time.Time
 }

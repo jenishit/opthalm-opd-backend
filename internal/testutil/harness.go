@@ -43,7 +43,7 @@ var appTables = []string{
 	"stock_purchase_items", "stock_purchases",
 	"inventory_stock_movements", "inventory_items", "vendors",
 	"payments", "invoice_items", "invoices",
-	"follow_ups", "refraction_readings", "investigations", "examination_findings", "visit_symptoms",
+	"follow_ups", "treatments", "visit_diagnoses", "refraction_readings", "investigations", "examination_findings", "visit_symptoms",
 	"visits",
 	"medicines", "diagnosis_catalog", "history_conditions",
 	"patients",
@@ -163,6 +163,33 @@ func NewTestServer(t *testing.T) *TestServer {
 	visitService := services.NewVisitsService(visitRepo)
 	visitHandler := httpadapter.NewVisitHandler(visitService)
 
+	visitSymptomRepo := repository.NewVisitSymptomRepository(db)
+	visitSymptomService := services.NewVisitSymptomService(visitSymptomRepo)
+
+	examinationRepo := repository.NewExaminationFindingsRepository(db)
+	examinationService := services.NewExaminationFindingsService(examinationRepo)
+
+	refractionRepo := repository.NewRefractionReadingRepository(db)
+	refractionService := services.NewRefractionReadingService(refractionRepo)
+
+	visitDiagnosisRepo := repository.NewVisitDiagnosisRepository(db)
+	visitDiagnosisService := services.NewVisitDiagnosisService(visitDiagnosisRepo)
+
+	treatmentRepo := repository.NewTreatmentRepository(db)
+	treatmentService := services.NewTreatmentService(treatmentRepo)
+
+	followUpRepo := repository.NewFollowUpRepository(db)
+	followUpService := services.NewFollowUpService(followUpRepo)
+
+	clinicalHandler := httpadapter.NewClinicalHandler(
+		visitSymptomService,
+		examinationService,
+		refractionService,
+		visitDiagnosisService,
+		treatmentService,
+		followUpService,
+	)
+
 	medicineRepo := repository.NewMedicineRepository(db)
 	medicineService := services.NewMedicineService(medicineRepo)
 
@@ -208,7 +235,7 @@ func NewTestServer(t *testing.T) *TestServer {
 	router, err := httpadapter.NewRouter(
 		cfg, tokenService,
 		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler,
-		*patientHandler, *visitHandler, *catalogHandler, *invoiceHandler,
+		*patientHandler, *visitHandler, *clinicalHandler, *catalogHandler, *invoiceHandler,
 		*inventoryHandler, *vendorHandler, *stockPurchaseHandler, *labJobHandler,
 		*reportsHandler, *calculatorHandler,
 		*subscriptionHandler, subscriptionService,
