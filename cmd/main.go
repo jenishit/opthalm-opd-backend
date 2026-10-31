@@ -127,6 +127,10 @@ func main() {
 	patientService := services.NewPatientService(patientRepo)
 	patientHandler := http.NewPatientHandler(patientService)
 
+	patientHistoryRepo := repository.NewPatientHistoryRepository(db)
+	patientHistoryService := services.NewPatientHistoryService(patientHistoryRepo)
+	patientHistoryHandler := http.NewPatientHistoryHandler(patientHistoryService)
+
 	visitRepo := repository.NewVisitsRepository(db)
 	visitService := services.NewVisitsService(visitRepo)
 	visitHandler := http.NewVisitHandler(visitService)
@@ -209,6 +213,7 @@ func main() {
 		*authHandler,
 		*clinicHandler,
 		*patientHandler,
+		*patientHistoryHandler,
 		*visitHandler,
 		*clinicalHandler,
 		*catalogHandler,

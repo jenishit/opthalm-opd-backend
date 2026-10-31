@@ -35,6 +35,7 @@ func NewRouter(
 	authHandler AuthHandler,
 	clinicHandler ClinicHandler,
 	patientHandler PatientHandler,
+	patientHistoryHandler PatientHistoryHandler,
 	visitHandler VisitHandler,
 	clinicalHandler ClinicalHandler,
 	catalogHandler CatalogHandler,
@@ -134,6 +135,9 @@ func NewRouter(
 		patient.GET("/:id", patientHandler.GetPatientByID)
 		patient.PATCH("/:id", patientHandler.UpdatePatientByID)
 		patient.PATCH("/:id/delete", patientHandler.DeletePatientByID)
+
+		patient.GET("/:id/history", patientHistoryHandler.ListPatientHistory)
+		patient.POST("/:id/history", patientHistoryHandler.CreatePatientHistory)
 	}
 
 	visit := api.Group("/visit")

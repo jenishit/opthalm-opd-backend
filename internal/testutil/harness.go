@@ -45,6 +45,7 @@ var appTables = []string{
 	"payments", "invoice_items", "invoices",
 	"follow_ups", "treatments", "visit_diagnoses", "refraction_readings", "investigations", "examination_findings", "visit_symptoms",
 	"visits",
+	"patient_history_conditions", "patient_history",
 	"medicines", "diagnosis_catalog", "history_conditions",
 	"patients",
 	"subscriptions",
@@ -159,6 +160,10 @@ func NewTestServer(t *testing.T) *TestServer {
 	patientService := services.NewPatientService(patientRepo)
 	patientHandler := httpadapter.NewPatientHandler(patientService)
 
+	patientHistoryRepo := repository.NewPatientHistoryRepository(db)
+	patientHistoryService := services.NewPatientHistoryService(patientHistoryRepo)
+	patientHistoryHandler := httpadapter.NewPatientHistoryHandler(patientHistoryService)
+
 	visitRepo := repository.NewVisitsRepository(db)
 	visitService := services.NewVisitsService(visitRepo)
 	visitHandler := httpadapter.NewVisitHandler(visitService)
@@ -235,7 +240,7 @@ func NewTestServer(t *testing.T) *TestServer {
 	router, err := httpadapter.NewRouter(
 		cfg, tokenService,
 		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler,
-		*patientHandler, *visitHandler, *clinicalHandler, *catalogHandler, *invoiceHandler,
+		*patientHandler, *patientHistoryHandler, *visitHandler, *clinicalHandler, *catalogHandler, *invoiceHandler,
 		*inventoryHandler, *vendorHandler, *stockPurchaseHandler, *labJobHandler,
 		*reportsHandler, *calculatorHandler,
 		*subscriptionHandler, subscriptionService,
