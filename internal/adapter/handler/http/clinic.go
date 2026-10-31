@@ -3,9 +3,9 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http/dto"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 )
 
 type ClinicHandler struct {
@@ -50,14 +50,19 @@ func (ch *ClinicHandler) InsertClinic(ctx *gin.Context) {
 	}
 
 	clinic := &domain.ClinicSettings{
-		ClinicName:     req.ClinicName,
-		Tagline:        &req.Tagline,
-		Address:        &req.Address,
-		Phone:          &req.Phone,
-		Email:          &req.Email,
-		RegistrationNo: &req.RegistrationNo,
-		ReportFooter:   &req.ReportFooter,
-		UpdatedBy:      userPayload.UserId,
+		ClinicName:               req.ClinicName,
+		Tagline:                  &req.Tagline,
+		Address:                  &req.Address,
+		Phone:                    &req.Phone,
+		Email:                    &req.Email,
+		RegistrationNo:           &req.RegistrationNo,
+		ReportFooter:             &req.ReportFooter,
+		WorkspaceSlug:            req.WorkspaceSlug,
+		DefaultCurrency:          req.DefaultCurrency,
+		Timezone:                 req.Timezone,
+		RequireConsentBeforeExam: req.RequireConsentBeforeExam,
+		LowStockNotifications:    req.LowStockNotifications,
+		UpdatedBy:                userPayload.UserId,
 	}
 
 	s, err := ch.svc.InsertClinic(ctx, clinic)
@@ -136,15 +141,20 @@ func (ch *ClinicHandler) UpdateClinic(ctx *gin.Context) {
 	}
 
 	clinic := &domain.ClinicSettings{
-		ID:             clinicUUID,
-		ClinicName:     req.ClinicName,
-		Tagline:        &req.Tagline,
-		Address:        &req.Address,
-		Phone:          &req.Phone,
-		Email:          &req.Email,
-		RegistrationNo: &req.RegistrationNo,
-		ReportFooter:   &req.ReportFooter,
-		UpdatedBy:      userPayload.UserId,
+		ID:                       clinicUUID,
+		ClinicName:               req.ClinicName,
+		Tagline:                  &req.Tagline,
+		Address:                  &req.Address,
+		Phone:                    &req.Phone,
+		Email:                    &req.Email,
+		RegistrationNo:           &req.RegistrationNo,
+		ReportFooter:             &req.ReportFooter,
+		WorkspaceSlug:            req.WorkspaceSlug,
+		DefaultCurrency:          req.DefaultCurrency,
+		Timezone:                 req.Timezone,
+		RequireConsentBeforeExam: req.RequireConsentBeforeExam,
+		LowStockNotifications:    req.LowStockNotifications,
+		UpdatedBy:                userPayload.UserId,
 	}
 
 	err = ch.svc.UpdateClinic(ctx, clinic)

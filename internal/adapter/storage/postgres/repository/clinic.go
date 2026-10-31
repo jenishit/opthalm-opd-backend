@@ -10,8 +10,8 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
 )
 
 type ClinicRepository struct {
@@ -27,6 +27,18 @@ func NewClinicRepository(db *postgres.DB) *ClinicRepository {
 func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSettings) (*domain.ClinicSettings, error) {
 	now := time.Now()
 
+	// require_consent_before_exam/low_stock_notifications are NOT NULL
+	// columns, so an omitted field on create needs an explicit default
+	// rather than a NULL value.
+	requireConsent := false
+	if s.RequireConsentBeforeExam != nil {
+		requireConsent = *s.RequireConsentBeforeExam
+	}
+	lowStockNotifications := true
+	if s.LowStockNotifications != nil {
+		lowStockNotifications = *s.LowStockNotifications
+	}
+
 	query, args, err := sq.
 		Insert("clinic_settings").
 		Columns(
@@ -37,6 +49,11 @@ func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSe
 			"email",
 			"registration_no",
 			"report_footer",
+			"workspace_slug",
+			"default_currency",
+			"timezone",
+			"require_consent_before_exam",
+			"low_stock_notifications",
 			"updated_at",
 			"updated_by ",
 		).
@@ -48,6 +65,11 @@ func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSe
 			s.Email,
 			s.RegistrationNo,
 			s.ReportFooter,
+			s.WorkspaceSlug,
+			s.DefaultCurrency,
+			s.Timezone,
+			requireConsent,
+			lowStockNotifications,
 			now,
 			s.UpdatedBy,
 		).
@@ -76,6 +98,7 @@ func (sr *ClinicRepository) InsertClinic(ctx context.Context, s *domain.ClinicSe
 
 func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uuid.UUID) (*domain.ClinicSettings, error) {
 	var phone, email, tagline, address, registrationNo, reportFooter sql.NullString
+	var workspaceSlug, defaultCurrency, timezone sql.NullString
 
 	query, args, err := sq.
 		Select(
@@ -87,6 +110,11 @@ func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uu
 			"email",
 			"registration_no",
 			"report_footer",
+			"workspace_slug",
+			"default_currency",
+			"timezone",
+			"require_consent_before_exam",
+			"low_stock_notifications",
 			"updated_by",
 		).From("clinic_settings").
 		Where(sq.Eq{"id": clinicID}).
@@ -110,6 +138,11 @@ func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uu
 		&email,
 		&registrationNo,
 		&reportFooter,
+		&workspaceSlug,
+		&defaultCurrency,
+		&timezone,
+		&clinic.RequireConsentBeforeExam,
+		&clinic.LowStockNotifications,
 		&clinic.UpdatedBy,
 	)
 
@@ -120,6 +153,15 @@ func (sr *ClinicRepository) GetClinicByClinicID(ctx context.Context, clinicID uu
 		return nil, fmt.Errorf("failed to scan row: %w", err)
 	}
 
+	if workspaceSlug.Valid {
+		clinic.WorkspaceSlug = &workspaceSlug.String
+	}
+	if defaultCurrency.Valid {
+		clinic.DefaultCurrency = &defaultCurrency.String
+	}
+	if timezone.Valid {
+		clinic.Timezone = &timezone.String
+	}
 	if tagline.Valid {
 		clinic.Tagline = &tagline.String
 	}
@@ -164,6 +206,21 @@ func (sr *ClinicRepository) UpdateClinic(ctx context.Context, s *domain.ClinicSe
 	if s.ReportFooter != nil {
 		builder = builder.Set("report_footer", s.ReportFooter)
 	}
+	if s.WorkspaceSlug != nil {
+		builder = builder.Set("workspace_slug", s.WorkspaceSlug)
+	}
+	if s.DefaultCurrency != nil {
+		builder = builder.Set("default_currency", s.DefaultCurrency)
+	}
+	if s.Timezone != nil {
+		builder = builder.Set("timezone", s.Timezone)
+	}
+	if s.RequireConsentBeforeExam != nil {
+		builder = builder.Set("require_consent_before_exam", s.RequireConsentBeforeExam)
+	}
+	if s.LowStockNotifications != nil {
+		builder = builder.Set("low_stock_notifications", s.LowStockNotifications)
+	}
 
 	builder = builder.Set("updated_by", s.UpdatedBy)
 
@@ -183,6 +240,7 @@ func (sr *ClinicRepository) UpdateClinic(ctx context.Context, s *domain.ClinicSe
 
 func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.ClinicSettings, error) {
 	var phone, email, tagline, address, registrationNo, reportFooter sql.NullString
+	var workspaceSlug, defaultCurrency, timezone sql.NullString
 
 	query, args, err := sq.
 		Select(
@@ -194,6 +252,11 @@ func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.Clinic
 			"email",
 			"registration_no",
 			"report_footer",
+			"workspace_slug",
+			"default_currency",
+			"timezone",
+			"require_consent_before_exam",
+			"low_stock_notifications",
 			"updated_by",
 		).From("clinic_settings").
 		PlaceholderFormat(sq.Dollar).
@@ -224,6 +287,11 @@ func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.Clinic
 			&email,
 			&registrationNo,
 			&reportFooter,
+			&workspaceSlug,
+			&defaultCurrency,
+			&timezone,
+			&clinic.RequireConsentBeforeExam,
+			&clinic.LowStockNotifications,
 			&clinic.UpdatedBy,
 		)
 
@@ -231,6 +299,15 @@ func (sr *ClinicRepository) GetAllClinics(ctx context.Context) ([]*domain.Clinic
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 
+		if workspaceSlug.Valid {
+			clinic.WorkspaceSlug = &workspaceSlug.String
+		}
+		if defaultCurrency.Valid {
+			clinic.DefaultCurrency = &defaultCurrency.String
+		}
+		if timezone.Valid {
+			clinic.Timezone = &timezone.String
+		}
 		if tagline.Valid {
 			clinic.Tagline = &tagline.String
 		}

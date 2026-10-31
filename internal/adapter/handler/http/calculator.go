@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http/dto"
-	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http/dto"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/services"
 )
 
 // CalculatorHandler exposes the stateless optical math helpers. It depends

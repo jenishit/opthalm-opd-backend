@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -25,13 +26,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
-
-	auth "github.com/jenish-brainztechs/go-backend/internal/adapter/auth/jwt"
-	redisadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/cache/redis"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	httpadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres/repository"
+jenishit/opthalm-opd-backend
+	auth "github.com/jenish-bjenishit/opthalm-opd-backendl/adapter/auth/jwt"
+	redisadapterjenishit/opthalm-opd-backendhs/go-backend/internal/adapter/cache/redis"
+	"github.com/jenish-brainjenishit/opthalm-opd-backendapter/config"
+	httpadapter jenishit/opthalm-opd-backends/go-backend/internal/adapter/handler/http"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres/repository"
 	"github.com/jenish-brainztechs/go-backend/internal/core/services"
 )
 
@@ -49,6 +50,8 @@ var appTables = []string{
 	"medicines", "diagnosis_catalog", "history_conditions",
 	"patients",
 	"subscriptions",
+	"clinic_integrations", "clinic_audit_log", "clinic_privacy_config", "clinic_pos_config",
+	"clinic_payment_config", "clinic_notification_prefs", "clinic_locations",
 	"clinic_settings",
 	"verification_tokens",
 	"sessions",
@@ -156,6 +159,38 @@ func NewTestServer(t *testing.T) *TestServer {
 	clinicService := services.NewClinicService(clinicRepo)
 	clinicHandler := httpadapter.NewClinicHandler(clinicService)
 
+	clinicLocationRepo := repository.NewClinicLocationRepository(db)
+	clinicLocationService := services.NewClinicLocationService(clinicLocationRepo)
+
+	notificationPrefsRepo := repository.NewNotificationPrefsRepository(db)
+	notificationPrefsService := services.NewNotificationPrefsService(notificationPrefsRepo)
+
+	paymentConfigRepo := repository.NewPaymentConfigRepository(db)
+	paymentConfigService := services.NewPaymentConfigService(paymentConfigRepo)
+
+	posConfigRepo := repository.NewPosConfigRepository(db)
+	posConfigService := services.NewPosConfigService(posConfigRepo)
+
+	privacyConfigRepo := repository.NewPrivacyConfigRepository(db)
+	privacyConfigService := services.NewPrivacyConfigService(privacyConfigRepo)
+
+	auditLogRepo := repository.NewAuditLogRepository(db)
+	auditLogService := services.NewAuditLogService(auditLogRepo)
+
+	integrationRepo := repository.NewIntegrationRepository(db)
+	integrationService := services.NewIntegrationService(integrationRepo)
+
+	clinicConfigHandler := httpadapter.NewClinicConfigHandler(
+		clinicLocationService,
+		notificationPrefsService,
+		paymentConfigService,
+		posConfigService,
+		privacyConfigService,
+		auditLogService,
+		integrationService,
+		cfg.Files.UploadDir,
+	)
+
 	patientRepo := repository.NewPatientRepository(db)
 	patientService := services.NewPatientService(patientRepo)
 	patientHandler := httpadapter.NewPatientHandler(patientService)
@@ -239,7 +274,7 @@ func NewTestServer(t *testing.T) *TestServer {
 
 	router, err := httpadapter.NewRouter(
 		cfg, tokenService,
-		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler,
+		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler, *clinicConfigHandler,
 		*patientHandler, *patientHistoryHandler, *visitHandler, *clinicalHandler, *catalogHandler, *invoiceHandler,
 		*inventoryHandler, *vendorHandler, *stockPurchaseHandler, *labJobHandler,
 		*reportsHandler, *calculatorHandler,
@@ -544,6 +579,7 @@ func setTestEnvDefaults() {
 	setIfEmpty("REDIS_ADDR", "localhost:6380")
 	setIfEmpty("REDIS_PASSWORD", "change-me-too")
 	setIfEmpty("REDIS_DB", "0")
+	setIfEmpty("UPLOAD_DIR", filepath.Join(os.TempDir(), "opthalm-opd-test-uploads"))
 }
 
 func setIfEmpty(key, value string) {

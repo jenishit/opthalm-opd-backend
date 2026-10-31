@@ -33,16 +33,16 @@ import (
 
 	"os"
 
-	auth "github.com/jenish-brainztechs/go-backend/internal/adapter/auth/jwt"
-	redisadapter "github.com/jenish-brainztechs/go-backend/internal/adapter/cache/redis"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/email/logsender"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/email/smtpsender"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/handler/http"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/storage/postgres/repository"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
-	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+	auth "github.com/jenishit/opthalm-opd-backend/internal/adapter/auth/jwt"
+	redisadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/cache/redis"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/email/logsender"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/email/smtpsender"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres/repository"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/services"
 )
 
 func main() {
@@ -122,6 +122,38 @@ func main() {
 	clinicRepo := repository.NewClinicRepository(db)
 	clinicService := services.NewClinicService(clinicRepo)
 	clinicHandler := http.NewClinicHandler(clinicService)
+
+	clinicLocationRepo := repository.NewClinicLocationRepository(db)
+	clinicLocationService := services.NewClinicLocationService(clinicLocationRepo)
+
+	notificationPrefsRepo := repository.NewNotificationPrefsRepository(db)
+	notificationPrefsService := services.NewNotificationPrefsService(notificationPrefsRepo)
+
+	paymentConfigRepo := repository.NewPaymentConfigRepository(db)
+	paymentConfigService := services.NewPaymentConfigService(paymentConfigRepo)
+
+	posConfigRepo := repository.NewPosConfigRepository(db)
+	posConfigService := services.NewPosConfigService(posConfigRepo)
+
+	privacyConfigRepo := repository.NewPrivacyConfigRepository(db)
+	privacyConfigService := services.NewPrivacyConfigService(privacyConfigRepo)
+
+	auditLogRepo := repository.NewAuditLogRepository(db)
+	auditLogService := services.NewAuditLogService(auditLogRepo)
+
+	integrationRepo := repository.NewIntegrationRepository(db)
+	integrationService := services.NewIntegrationService(integrationRepo)
+
+	clinicConfigHandler := http.NewClinicConfigHandler(
+		clinicLocationService,
+		notificationPrefsService,
+		paymentConfigService,
+		posConfigService,
+		privacyConfigService,
+		auditLogService,
+		integrationService,
+		config.Files.UploadDir,
+	)
 
 	patientRepo := repository.NewPatientRepository(db)
 	patientService := services.NewPatientService(patientRepo)
@@ -212,6 +244,7 @@ func main() {
 		*profileHandler,
 		*authHandler,
 		*clinicHandler,
+		*clinicConfigHandler,
 		*patientHandler,
 		*patientHistoryHandler,
 		*visitHandler,

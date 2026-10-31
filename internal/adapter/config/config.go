@@ -23,6 +23,7 @@ type (
 
 		Redis *RedisConfig
 		SMTP  *SMTP
+		Files *Files
 	}
 	// App contains all the environment variables for the application
 	App struct {
@@ -89,6 +90,14 @@ type (
 		Username string
 		Password string
 		From     string
+	}
+	// Files is where uploaded assets (currently just payment QR codes) are
+	// written on local disk and served back from. This is dev/single-
+	// instance storage — a real deployment with multiple instances or a
+	// read-only filesystem (e.g. Lambda) needs to swap this for S3 or
+	// equivalent object storage before relying on uploads surviving.
+	Files struct {
+		UploadDir string
 	}
 )
 
@@ -157,6 +166,10 @@ func New() (*Container, error) {
 		From:     envOrDefault(os.Getenv("SMTP_FROM"), "no-reply@example.com"),
 	}
 
+	files := &Files{
+		UploadDir: envOrDefault(os.Getenv("UPLOAD_DIR"), "./uploads"),
+	}
+
 	return &Container{
 		app,
 		token,
@@ -166,6 +179,7 @@ func New() (*Container, error) {
 		http,
 		redisCfg,
 		smtp,
+		files,
 	}, nil
 }
 

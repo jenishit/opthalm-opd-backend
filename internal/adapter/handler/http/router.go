@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/jenish-brainztechs/go-backend/docs" // registers the generated swagger spec
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	_ "github.com/jenishit/opthalm-opd-backend/docs" // registers the generated swagger spec
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -34,6 +34,7 @@ func NewRouter(
 	profileHandler ProfileHandler,
 	authHandler AuthHandler,
 	clinicHandler ClinicHandler,
+	clinicConfigHandler ClinicConfigHandler,
 	patientHandler PatientHandler,
 	patientHistoryHandler PatientHistoryHandler,
 	visitHandler VisitHandler,
@@ -68,6 +69,11 @@ func NewRouter(
 	if config.App.Env != "production" {
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
+
+	// Uploaded assets (currently just payment QR codes) — public, unauthenticated:
+	// a QR code is meant to be shown to patients at checkout, not gated behind a
+	// staff login. See config.Files.UploadDir's doc comment for the storage caveat.
+	router.Static("/uploads", config.Files.UploadDir)
 
 	api := router.Group("/api")
 
@@ -122,6 +128,28 @@ func NewRouter(
 	{
 		clinics.POST("", clinicHandler.InsertClinic)
 		clinics.GET("", clinicHandler.GetAllClinics)
+
+		clinics.GET("/locations", clinicConfigHandler.ListLocations)
+		clinics.POST("/locations", clinicConfigHandler.CreateLocation)
+
+		clinics.GET("/notifications", clinicConfigHandler.GetNotificationPrefs)
+		clinics.PUT("/notifications", clinicConfigHandler.UpdateNotificationPrefs)
+
+		clinics.GET("/payment-config", clinicConfigHandler.GetPaymentConfig)
+		clinics.PUT("/payment-config", clinicConfigHandler.UpdatePaymentConfig)
+		clinics.POST("/payment-config/qr-code", clinicConfigHandler.UploadQRCode)
+
+		clinics.GET("/pos-config", clinicConfigHandler.GetPosConfig)
+		clinics.PUT("/pos-config", clinicConfigHandler.UpdatePosConfig)
+
+		clinics.GET("/privacy-config", clinicConfigHandler.GetPrivacyConfig)
+		clinics.PUT("/privacy-config", clinicConfigHandler.UpdatePrivacyConfig)
+		clinics.GET("/audit-log", clinicConfigHandler.ListAuditLog)
+
+		clinics.GET("/integrations", clinicConfigHandler.ListIntegrations)
+		clinics.POST("/integrations/:provider/connect", clinicConfigHandler.ConnectIntegration)
+		clinics.DELETE("/integrations/:provider", clinicConfigHandler.DisconnectIntegration)
+
 		clinics.GET("/:id", clinicHandler.GetClinicByID)
 		clinics.PATCH("/:id", clinicHandler.UpdateClinic)
 	}

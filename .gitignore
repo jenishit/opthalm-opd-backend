@@ -33,3 +33,6 @@ go.work.sum
 
 ./graphify-out
 tmp/
+
+# local dev storage for uploaded assets (see UPLOAD_DIR in .env.example)
+/uploads/

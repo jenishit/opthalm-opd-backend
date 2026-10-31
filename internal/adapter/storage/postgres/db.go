@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jenish-brainztechs/go-backend/internal/adapter/config"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
 )
 
 // Executor is satisfied by both *pgxpool.Pool and pgx.Tx, so repository

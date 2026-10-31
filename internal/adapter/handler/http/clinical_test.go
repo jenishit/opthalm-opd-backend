@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jenish-brainztechs/go-backend/internal/testutil"
+	"github.com/jenishit/opthalm-opd-backend/internal/testutil"
 )
 
 func createTestVisit(t *testing.T, ts *testutil.TestServer, token string, userID, patientID uuid.UUID) uuid.UUID {

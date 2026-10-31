@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/jenish-brainztechs/go-backend/internal/testutil"
+	"github.com/jenishit/opthalm-opd-backend/internal/testutil"
 )
 
 func createInventoryItem(t *testing.T, ts *testutil.TestServer, token, sku string, qty int) uuid.UUID {

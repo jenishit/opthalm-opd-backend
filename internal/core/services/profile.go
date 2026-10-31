@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/jenish-brainztechs/go-backend/internal/core/domain"
-	"github.com/jenish-brainztechs/go-backend/internal/core/port"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/domain"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
 )
 
 type ProfileService struct {
