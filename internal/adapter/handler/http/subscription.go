@@ -80,10 +80,13 @@ func (h *SubscriptionHandler) Upsert(ctx *gin.Context) {
 	}
 
 	sub := &domain.Subscription{
-		ClinicID:         clinicID,
-		PlanName:         req.PlanName,
-		Status:           domain.SubscriptionStatus(req.Status),
-		CurrentPeriodEnd: periodEnd,
+		ClinicID:            clinicID,
+		PlanName:            req.PlanName,
+		Status:              domain.SubscriptionStatus(req.Status),
+		CurrentPeriodEnd:    periodEnd,
+		SeatsLimit:          req.SeatsLimit,
+		PatientRecordsLimit: req.PatientRecordsLimit,
+		LocationsLimit:      req.LocationsLimit,
 	}
 
 	updated, err := h.svc.Upsert(ctx, sub)

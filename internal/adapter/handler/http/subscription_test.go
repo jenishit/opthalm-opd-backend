@@ -90,3 +90,61 @@ func TestSubscription_PlatformOperatorCanReactivate(t *testing.T) {
 	resp = ts.Do(t, http.MethodGet, "/api/patient", clinicToken, nil, nil)
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "clinic should regain access after the platform operator reactivates it")
 }
+
+func TestSubscription_ClinicBillingViewShowsLiveUsageAgainstPlatformSetLimits(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	clinicToken, _ := ts.AdminToken(t)
+	superToken, _ := ts.SuperadminToken(t)
+
+	// The platform operator sets the plan's limits...
+	resp := ts.Do(t, http.MethodPut, "/api/platform/subscriptions/"+ts.ClinicID.String(), superToken, map[string]any{
+		"plan_name":             "pro",
+		"status":                "active",
+		"current_period_end":    time.Now().Add(30 * 24 * time.Hour).Format("2006-01-02"),
+		"seats_limit":           5,
+		"patient_records_limit": 100,
+		"locations_limit":       2,
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// A clinic admin can never reach the platform-only endpoint...
+	resp = ts.Do(t, http.MethodGet, "/api/platform/subscriptions/"+ts.ClinicID.String(), clinicToken, nil, nil)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	// ...but can read its own billing view, which carries those limits plus
+	// live usage computed from this clinic's actual rows.
+	var billing struct {
+		PlanName            string  `json:"plan_name"`
+		SeatsLimit          int     `json:"seats_limit"`
+		SeatsUsed           int     `json:"seats_used"`
+		PatientRecordsLimit int     `json:"patient_records_limit"`
+		PatientRecordsUsed  int     `json:"patient_records_used"`
+		LocationsLimit      int     `json:"locations_limit"`
+		LocationsUsed       int     `json:"locations_used"`
+		PaymentMethodLabel  *string `json:"payment_method_label"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/clinic/billing/subscription", clinicToken, nil, &billing)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "pro", billing.PlanName)
+	assert.Equal(t, 5, billing.SeatsLimit)
+	assert.Equal(t, 100, billing.PatientRecordsLimit)
+	assert.Equal(t, 2, billing.LocationsLimit)
+	seatsBefore := billing.SeatsUsed
+	assert.GreaterOrEqual(t, seatsBefore, 1) // the admin user created by AdminToken
+	assert.Equal(t, 0, billing.PatientRecordsUsed)
+	assert.Equal(t, 0, billing.LocationsUsed)
+	assert.Nil(t, billing.PaymentMethodLabel) // nothing syncs this yet
+
+	// Usage reflects real data, live — no caching, no drift.
+	ts.CreatePatient(t, clinicToken, "Billing Usage Patient", "9800000040")
+	resp = ts.Do(t, http.MethodPost, "/api/admin/clinic/locations", clinicToken, map[string]any{
+		"name": "Second Room", "exam_rooms": 1,
+	}, nil)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = ts.DoData(t, http.MethodGet, "/api/admin/clinic/billing/subscription", clinicToken, nil, &billing)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 1, billing.PatientRecordsUsed)
+	assert.Equal(t, 1, billing.LocationsUsed)
+	assert.Equal(t, seatsBefore, billing.SeatsUsed) // unchanged, no new users were created
+}

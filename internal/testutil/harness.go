@@ -26,14 +26,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
-jenishit/opthalm-opd-backend
-	auth "github.com/jenish-bjenishit/opthalm-opd-backendl/adapter/auth/jwt"
-	redisadapterjenishit/opthalm-opd-backendhs/go-backend/internal/adapter/cache/redis"
-	"github.com/jenish-brainjenishit/opthalm-opd-backendapter/config"
-	httpadapter jenishit/opthalm-opd-backends/go-backend/internal/adapter/handler/http"
+
+	auth "github.com/jenishit/opthalm-opd-backend/internal/adapter/auth/jwt"
+	redisadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/cache/redis"
+	"github.com/jenishit/opthalm-opd-backend/internal/adapter/config"
+	httpadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres/repository"
-	"github.com/jenish-brainztechs/go-backend/internal/core/services"
+	"github.com/jenishit/opthalm-opd-backend/internal/core/services"
 )
 
 // appTables lists every table this test suite may write to, in an order
@@ -180,6 +180,9 @@ func NewTestServer(t *testing.T) *TestServer {
 	integrationRepo := repository.NewIntegrationRepository(db)
 	integrationService := services.NewIntegrationService(integrationRepo)
 
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
+
 	clinicConfigHandler := httpadapter.NewClinicConfigHandler(
 		clinicLocationService,
 		notificationPrefsService,
@@ -188,6 +191,7 @@ func NewTestServer(t *testing.T) *TestServer {
 		privacyConfigService,
 		auditLogService,
 		integrationService,
+		subscriptionService,
 		cfg.Files.UploadDir,
 	)
 
@@ -268,8 +272,6 @@ func NewTestServer(t *testing.T) *TestServer {
 	calculatorService := services.NewCalculatorService()
 	calculatorHandler := httpadapter.NewCalculatorHandler(calculatorService)
 
-	subscriptionRepo := repository.NewSubscriptionRepository(db)
-	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
 	subscriptionHandler := httpadapter.NewSubscriptionHandler(subscriptionService)
 
 	router, err := httpadapter.NewRouter(

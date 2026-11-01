@@ -20,4 +20,3 @@ type ClinicService interface {
 	UpdateClinic(ctx context.Context, s *domain.ClinicSettings) error
 	GetAllClinics(ctx context.Context) ([]*domain.ClinicSettings, error)
 }
- 

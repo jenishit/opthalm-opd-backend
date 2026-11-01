@@ -90,3 +90,10 @@ func (s *SubscriptionService) Upsert(
 
 	return updated, nil
 }
+
+// GetUsageMetrics is deliberately never cached — usage meters are meant to
+// reflect the clinic's actual current data, not a value that can go stale
+// for up to subscriptionCacheTTL like the subscription record itself.
+func (s *SubscriptionService) GetUsageMetrics(ctx context.Context, clinicID uuid.UUID) (*domain.SubscriptionUsage, error) {
+	return s.repo.GetUsageMetrics(ctx, clinicID)
+}

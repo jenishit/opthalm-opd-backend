@@ -129,6 +129,8 @@ func NewRouter(
 		clinics.POST("", clinicHandler.InsertClinic)
 		clinics.GET("", clinicHandler.GetAllClinics)
 
+		clinics.GET("/billing/subscription", clinicConfigHandler.GetBillingSubscription)
+
 		clinics.GET("/locations", clinicConfigHandler.ListLocations)
 		clinics.POST("/locations", clinicConfigHandler.CreateLocation)
 

@@ -11,10 +11,10 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	AccessToken string     `json:"access_token"`
-	SessionID   uuid.UUID  `json:"session_id"`
-	UserID      uuid.UUID  `json:"user_id"`
-	UserRole    string     `json:"user_role"`
+	AccessToken string    `json:"access_token"`
+	SessionID   uuid.UUID `json:"session_id"`
+	UserID      uuid.UUID `json:"user_id"`
+	UserRole    string    `json:"user_role"`
 }
 
 func ToLoginResponse(result *domain.LoginResponse) LoginResponse {

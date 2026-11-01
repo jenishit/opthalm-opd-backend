@@ -25,6 +25,7 @@ type ClinicConfigHandler struct {
 	privacySvc      port.PrivacyConfigService
 	auditLogSvc     port.AuditLogService
 	integrationSvc  port.IntegrationService
+	subscriptionSvc port.SubscriptionService
 	uploadDir       string
 }
 
@@ -36,6 +37,7 @@ func NewClinicConfigHandler(
 	privacySvc port.PrivacyConfigService,
 	auditLogSvc port.AuditLogService,
 	integrationSvc port.IntegrationService,
+	subscriptionSvc port.SubscriptionService,
 	uploadDir string,
 ) *ClinicConfigHandler {
 	return &ClinicConfigHandler{
@@ -46,8 +48,41 @@ func NewClinicConfigHandler(
 		privacySvc:      privacySvc,
 		auditLogSvc:     auditLogSvc,
 		integrationSvc:  integrationSvc,
+		subscriptionSvc: subscriptionSvc,
 		uploadDir:       uploadDir,
 	}
+}
+
+// ─── Billing & subscription ─────────────────────────────────────────────────
+
+// GetBillingSubscription godoc
+//
+//	@Summary		Get the clinic's own subscription, plan limits, and live usage
+//	@Description	Unlike /platform/subscriptions/{clinicId}, this is scoped to the caller's own clinic — any admin can read it, not just a platform operator.
+//	@Tags			clinic
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	response{data=dto.BillingSubscriptionResponse}
+//	@Router			/admin/clinic/billing/subscription [get]
+func (h *ClinicConfigHandler) GetBillingSubscription(ctx *gin.Context) {
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	sub, err := h.subscriptionSvc.GetByClinicID(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	usage, err := h.subscriptionSvc.GetUsageMetrics(ctx, user.ClinicID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	handleSuccess(ctx, dto.BillingSubscriptionRes(sub, usage))
 }
 
 // ─── Locations & rooms ──────────────────────────────────────────────────────

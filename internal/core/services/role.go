@@ -29,4 +29,3 @@ func (r *RoleService) GetRoleIDByRoleName(ctx context.Context, role string) (*uu
 func (r *RoleService) GetRoleNameByRoleID(ctx context.Context, id uuid.UUID) (*string, error) {
 	return r.repo.GetRoleNameByRoleID(ctx, id)
 }
-

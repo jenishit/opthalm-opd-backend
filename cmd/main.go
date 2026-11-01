@@ -144,6 +144,9 @@ func main() {
 	integrationRepo := repository.NewIntegrationRepository(db)
 	integrationService := services.NewIntegrationService(integrationRepo)
 
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
+
 	clinicConfigHandler := http.NewClinicConfigHandler(
 		clinicLocationService,
 		notificationPrefsService,
@@ -152,6 +155,7 @@ func main() {
 		privacyConfigService,
 		auditLogService,
 		integrationService,
+		subscriptionService,
 		config.Files.UploadDir,
 	)
 
@@ -232,8 +236,6 @@ func main() {
 	calculatorService := services.NewCalculatorService()
 	calculatorHandler := http.NewCalculatorHandler(calculatorService)
 
-	subscriptionRepo := repository.NewSubscriptionRepository(db)
-	subscriptionService := services.NewSubscriptionService(subscriptionRepo, redisClient)
 	subscriptionHandler := http.NewSubscriptionHandler(subscriptionService)
 
 	router, err := http.NewRouter(
