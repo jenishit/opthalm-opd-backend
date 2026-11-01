@@ -36,3 +36,5 @@ tmp/
 
 # local dev storage for uploaded assets (see UPLOAD_DIR in .env.example)
 /uploads/
+
+tmp/main

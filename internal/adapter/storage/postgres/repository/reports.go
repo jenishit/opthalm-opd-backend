@@ -139,6 +139,81 @@ func (r *ReportsRepository) VisitsSummaryByDay(ctx context.Context, clinicID uui
 	return summary, rows.Err()
 }
 
+// revenueCategories is every inventory_items.category this report breaks
+// revenue down by, in the order the response lists them, paired with the
+// display label the frontend expects.
+var revenueCategories = []struct {
+	dbValue, label string
+}{
+	{"frame", "Frames"},
+	{"lens", "Lenses"},
+	{"sunglasses", "Sunglasses"},
+	{"contact_lens", "Contact lenses"},
+}
+
+func (r *ReportsRepository) RevenueByCategory(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.RevenueByCategory, error) {
+	query := `
+		SELECT ii.category, COALESCE(SUM(it.line_total), 0)
+		FROM invoice_items it
+		JOIN invoices i ON i.id = it.invoice_id
+		JOIN inventory_items ii ON ii.id = it.inventory_item_id
+		WHERE i.clinic_id = $1 AND i.status != 'cancelled' AND i.created_at >= $2 AND i.created_at < $3
+			AND ii.category IN ('frame', 'lens', 'sunglasses', 'contact_lens')
+		GROUP BY ii.category
+	`
+
+	rows, err := r.DB.Query(ctx, query, clinicID, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.RevenueByCategory query: %w", err)
+	}
+	defer rows.Close()
+
+	amounts := make(map[string]float64, len(revenueCategories))
+	for rows.Next() {
+		var category string
+		var amount float64
+		if err := rows.Scan(&category, &amount); err != nil {
+			return nil, fmt.Errorf("ReportsRepo.RevenueByCategory scan: %w", err)
+		}
+		amounts[category] = amount
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	result := &domain.RevenueByCategory{Categories: make([]domain.CategoryRevenue, 0, len(revenueCategories))}
+	for _, c := range revenueCategories {
+		result.Categories = append(result.Categories, domain.CategoryRevenue{Category: c.label, Amount: amounts[c.dbValue]})
+	}
+	return result, nil
+}
+
+func (r *ReportsRepository) ClinicalActivitySummary(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.ClinicalActivitySummary, error) {
+	query := `
+		SELECT
+			(SELECT COUNT(*) FROM patients
+				WHERE clinic_id = $1 AND deleted_at IS NULL AND registered_on >= $2 AND registered_on < $3),
+			(SELECT COUNT(DISTINCT v.id) FROM visits v
+				JOIN examination_findings ef ON ef.visit_id = v.id
+				WHERE v.clinic_id = $1 AND v.visit_date >= $2 AND v.visit_date < $3),
+			(SELECT COUNT(DISTINCT v.id) FROM visits v
+				JOIN refraction_readings rr ON rr.visit_id = v.id
+				WHERE v.clinic_id = $1 AND v.visit_date >= $2 AND v.visit_date < $3),
+			(SELECT COUNT(*) FROM follow_ups f
+				JOIN visits v ON v.id = f.visit_id
+				WHERE v.clinic_id = $1 AND f.followup_date >= $2 AND f.followup_date < $3)
+	`
+
+	s := &domain.ClinicalActivitySummary{}
+	err := r.DB.QueryRow(ctx, query, clinicID, from, to).Scan(
+		&s.NewPatients, &s.ComprehensiveExams, &s.RefractionVisits, &s.FollowUpVisits,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("ReportsRepo.ClinicalActivitySummary: %w", err)
+	}
+	return s, nil
+}
+
 func (r *ReportsRepository) VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error) {
 	query := `
 		SELECT v.examined_by, COALESCE(CONCAT(p.first_name, ' ', p.last_name), ''), COUNT(*)

@@ -264,6 +264,72 @@ func (h *ReportsHandler) VisitsSummary(ctx *gin.Context) {
 	respondTable(ctx, "visits-by-day", "Visits Summary", headers, rows, res)
 }
 
+// RevenueByCategory godoc
+//
+//	@Summary		Revenue by product category
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON. Only line items linked to an inventory item in Frames/Lenses/Sunglasses/Contact lenses are counted — services and other categories aren't part of this breakdown.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			from	query		string	true	"YYYY-MM-DD"
+//	@Param			to		query		string	true	"YYYY-MM-DD"
+//	@Success		200		{object}	response{data=dto.RevenueByCategoryResponse}
+//	@Router			/reports/sales/by-category [get]
+func (h *ReportsHandler) RevenueByCategory(ctx *gin.Context) {
+	from, to, ok := parseDateRange(ctx)
+	if !ok {
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	result, err := h.svc.RevenueByCategory(ctx, user.ClinicID, from, to)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.RevenueByCategoryRes(result)
+	headers, rows := res.TableRows()
+	respondTable(ctx, "sales-by-category", "Revenue by Category - "+res.Period, headers, rows, res)
+}
+
+// ClinicalActivitySummary godoc
+//
+//	@Summary		Clinical activity summary
+//	@Description	Admin-only. Add ?format=csv to download instead of receiving JSON. follow_up_visits counts follow-ups due in the period, not necessarily a visit that has already happened.
+//	@Tags			reports
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			from	query		string	true	"YYYY-MM-DD"
+//	@Param			to		query		string	true	"YYYY-MM-DD"
+//	@Success		200		{object}	response{data=dto.ClinicalActivitySummaryResponse}
+//	@Router			/reports/clinical-activity [get]
+func (h *ReportsHandler) ClinicalActivitySummary(ctx *gin.Context) {
+	from, to, ok := parseDateRange(ctx)
+	if !ok {
+		return
+	}
+
+	user, ok := currentUser(ctx)
+	if !ok {
+		return
+	}
+
+	summary, err := h.svc.ClinicalActivitySummary(ctx, user.ClinicID, from, to)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	res := dto.ClinicalActivitySummaryRes(summary)
+	headers, rows := res.TableRows()
+	respondTable(ctx, "clinical-activity", "Clinical Activity Summary - "+res.Period, headers, rows, res)
+}
+
 // parseDateRange reads ?from=&to= (YYYY-MM-DD, both required), writing the
 // validation error response itself on failure.
 func parseDateRange(ctx *gin.Context) (from, to time.Time, ok bool) {

@@ -156,3 +156,54 @@ func DoctorVisitsSummaryTableRows(ss []*DoctorVisitsSummaryResponse) ([]string, 
 	}
 	return headers, rows
 }
+
+type CategoryAmountResponse struct {
+	Category string  `json:"category"`
+	Amount   float64 `json:"amount"`
+}
+
+type RevenueByCategoryResponse struct {
+	Period     string                   `json:"period"`
+	Categories []CategoryAmountResponse `json:"categories"`
+}
+
+func RevenueByCategoryRes(r *domain.RevenueByCategory) *RevenueByCategoryResponse {
+	categories := make([]CategoryAmountResponse, 0, len(r.Categories))
+	for _, c := range r.Categories {
+		categories = append(categories, CategoryAmountResponse{Category: c.Category, Amount: c.Amount})
+	}
+	return &RevenueByCategoryResponse{Period: r.Period, Categories: categories}
+}
+
+func (r *RevenueByCategoryResponse) TableRows() ([]string, [][]string) {
+	headers := []string{"Category", "Amount"}
+	rows := make([][]string, 0, len(r.Categories))
+	for _, c := range r.Categories {
+		rows = append(rows, []string{c.Category, fmt.Sprintf("%.2f", c.Amount)})
+	}
+	return headers, rows
+}
+
+type ClinicalActivitySummaryResponse struct {
+	Period             string `json:"period"`
+	NewPatients        int    `json:"new_patients"`
+	ComprehensiveExams int    `json:"comprehensive_exams"`
+	RefractionVisits   int    `json:"refraction_visits"`
+	FollowUpVisits     int    `json:"follow_up_visits"`
+}
+
+func ClinicalActivitySummaryRes(s *domain.ClinicalActivitySummary) *ClinicalActivitySummaryResponse {
+	return &ClinicalActivitySummaryResponse{
+		Period: s.Period, NewPatients: s.NewPatients, ComprehensiveExams: s.ComprehensiveExams,
+		RefractionVisits: s.RefractionVisits, FollowUpVisits: s.FollowUpVisits,
+	}
+}
+
+func (s *ClinicalActivitySummaryResponse) TableRows() ([]string, [][]string) {
+	headers := []string{"Period", "New Patients", "Comprehensive Exams", "Refraction Visits", "Follow-up Visits"}
+	rows := [][]string{{
+		s.Period, fmt.Sprintf("%d", s.NewPatients), fmt.Sprintf("%d", s.ComprehensiveExams),
+		fmt.Sprintf("%d", s.RefractionVisits), fmt.Sprintf("%d", s.FollowUpVisits),
+	}}
+	return headers, rows
+}

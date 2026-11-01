@@ -72,3 +72,21 @@ func (s *ReportsService) VisitsSummaryByDay(ctx context.Context, clinicID uuid.U
 func (s *ReportsService) VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error) {
 	return s.repo.VisitsSummaryByDoctor(ctx, clinicID, from, to.AddDate(0, 0, 1))
 }
+
+func (s *ReportsService) RevenueByCategory(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.RevenueByCategory, error) {
+	result, err := s.repo.RevenueByCategory(ctx, clinicID, from, to.AddDate(0, 0, 1))
+	if err != nil {
+		return nil, err
+	}
+	result.Period = from.Format("2006-01-02") + " to " + to.Format("2006-01-02")
+	return result, nil
+}
+
+func (s *ReportsService) ClinicalActivitySummary(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.ClinicalActivitySummary, error) {
+	summary, err := s.repo.ClinicalActivitySummary(ctx, clinicID, from, to.AddDate(0, 0, 1))
+	if err != nil {
+		return nil, err
+	}
+	summary.Period = from.Format("2006-01-02") + " to " + to.Format("2006-01-02")
+	return summary, nil
+}

@@ -15,6 +15,8 @@ type ReportsRepository interface {
 	InventoryValuation(ctx context.Context, clinicID uuid.UUID) (*domain.InventoryValuation, error)
 	VisitsSummaryByDay(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.VisitsSummary, error)
 	VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error)
+	RevenueByCategory(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.RevenueByCategory, error)
+	ClinicalActivitySummary(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.ClinicalActivitySummary, error)
 }
 
 type ReportsService interface {
@@ -27,4 +29,6 @@ type ReportsService interface {
 	InventoryValuation(ctx context.Context, clinicID uuid.UUID) (*domain.InventoryValuation, error)
 	VisitsSummaryByDay(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.VisitsSummary, error)
 	VisitsSummaryByDoctor(ctx context.Context, clinicID uuid.UUID, from, to time.Time) ([]*domain.DoctorVisitsSummary, error)
+	RevenueByCategory(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.RevenueByCategory, error)
+	ClinicalActivitySummary(ctx context.Context, clinicID uuid.UUID, from, to time.Time) (*domain.ClinicalActivitySummary, error)
 }

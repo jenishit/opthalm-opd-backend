@@ -290,6 +290,7 @@ func NewRouter(
 			sales.GET("/daily", reportsHandler.SalesDaily)
 			sales.GET("/monthly", reportsHandler.SalesMonthly)
 			sales.GET("/range", reportsHandler.SalesRange)
+			sales.GET("/by-category", reportsHandler.RevenueByCategory)
 		}
 		reports.GET("/dues", reportsHandler.PatientDues)
 		reports.GET("/vendor-dues", reportsHandler.VendorDues)
@@ -301,6 +302,7 @@ func NewRouter(
 		}
 
 		reports.GET("/visits/summary", reportsHandler.VisitsSummary)
+		reports.GET("/clinical-activity", reportsHandler.ClinicalActivitySummary)
 	}
 
 	calculators := api.Group("/calculators")
