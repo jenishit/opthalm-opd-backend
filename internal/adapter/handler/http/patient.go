@@ -44,14 +44,16 @@ func (ph *PatientHandler) CreatePatient(ctx *gin.Context) {
 	}
 
 	patient := &domain.Patient{
-		FullName:   req.FullName,
-		DOB:        req.DOB,
-		Gender:     req.Gender,
-		Phone:      req.Phone,
-		Occupation: req.Occupation,
-		Email:      req.Email,
-		Address:    req.Address,
-		CreatedBy:  user.UserId,
+		FullName:           req.FullName,
+		DOB:                req.DOB,
+		Gender:             req.Gender,
+		Phone:              req.Phone,
+		Occupation:         req.Occupation,
+		Email:              req.Email,
+		Address:            req.Address,
+		ReferredByName:     req.ReferredByName,
+		ReferredByFacility: req.ReferredByFacility,
+		CreatedBy:          user.UserId,
 	}
 
 	p, err := ph.svc.CreatePatient(ctx, user.ClinicID, patient)
@@ -186,15 +188,17 @@ func (ph *PatientHandler) UpdatePatientByID(ctx *gin.Context) {
 	}
 
 	patient := &domain.Patient{
-		ID:         ptUUID,
-		FullName:   req.FullName,
-		DOB:        req.DOB,
-		Gender:     req.Gender,
-		Phone:      req.Phone,
-		Occupation: req.Occupation,
-		Email:      req.Email,
-		Address:    req.Address,
-		UpdatedBy:  user.UserId,
+		ID:                 ptUUID,
+		FullName:           req.FullName,
+		DOB:                req.DOB,
+		Gender:             req.Gender,
+		Phone:              req.Phone,
+		Occupation:         req.Occupation,
+		Email:              req.Email,
+		Address:            req.Address,
+		ReferredByName:     req.ReferredByName,
+		ReferredByFacility: req.ReferredByFacility,
+		UpdatedBy:          user.UserId,
 	}
 
 	err = ph.svc.UpdatePatientByID(ctx, user.ClinicID, patient)

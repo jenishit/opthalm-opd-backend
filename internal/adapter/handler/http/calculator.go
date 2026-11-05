@@ -117,3 +117,25 @@ func (h *CalculatorHandler) TelescopeFOV(ctx *gin.Context) {
 
 	handleSuccess(ctx, dto.ScalarResultRes{Result: h.svc.TelescopeFOV(req.TrueFOVDegrees, req.Magnification)})
 }
+
+// IOLPower godoc
+//
+//	@Summary		Estimate IOL power using the SRK-II formula
+//	@Description	Approximate cataract IOL power planning. Not a substitute for a dedicated biometry formula (SRK/T, Barrett) for clinical decisions on borderline eyes.
+//	@Tags			calculators
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			request	body		dto.IOLPowerReq	true	"Axial length, average K, A-constant, target refraction"
+//	@Success		200		{object}	response{data=dto.ScalarResultRes}
+//	@Router			/calculators/iol-power [post]
+func (h *CalculatorHandler) IOLPower(ctx *gin.Context) {
+	var req dto.IOLPowerReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		validationError(ctx, err)
+		return
+	}
+
+	result := h.svc.IOLPowerSRKII(req.AxialLengthMM, req.AvgKDiopters, req.AConstant, req.TargetRefractionD)
+	handleSuccess(ctx, dto.ScalarResultRes{Result: result})
+}

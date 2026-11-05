@@ -84,3 +84,35 @@ func TestCalculator_TelescopeFOV(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, 40.0, out.Result)
 }
+
+func TestCalculator_IOLPower(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+
+	var out struct {
+		Result float64 `json:"result"`
+	}
+
+	// Average axial length (22-24.5mm): no A-constant correction.
+	// P = 118 - 0.9*44 - 2.5*23.5 = 118 - 39.6 - 58.75 = 19.65
+	resp := ts.DoData(t, http.MethodPost, "/api/calculators/iol-power", token, map[string]any{
+		"axial_length_mm": 23.5, "avg_k_diopters": 44.0, "a_constant": 118.0,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.InDelta(t, 19.65, out.Result, 0.001)
+
+	// Short eye (<20mm) gets a +3 A-constant correction.
+	// P = 121 - 0.9*44 - 2.5*19.5 = 121 - 39.6 - 48.75 = 32.65
+	resp = ts.DoData(t, http.MethodPost, "/api/calculators/iol-power", token, map[string]any{
+		"axial_length_mm": 19.5, "avg_k_diopters": 44.0, "a_constant": 118.0,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.InDelta(t, 32.65, out.Result, 0.001)
+
+	// A non-zero target refraction shifts the emmetropic power.
+	resp = ts.DoData(t, http.MethodPost, "/api/calculators/iol-power", token, map[string]any{
+		"axial_length_mm": 23.5, "avg_k_diopters": 44.0, "a_constant": 118.0, "target_refraction_d": -2.0,
+	}, &out)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.InDelta(t, 21.65, out.Result, 0.001)
+}

@@ -39,6 +39,7 @@ import (
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/email/logsender"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/email/smtpsender"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/handler/http"
+	minioadapter "github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/minio"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres"
 	"github.com/jenishit/opthalm-opd-backend/internal/adapter/storage/postgres/repository"
 	"github.com/jenishit/opthalm-opd-backend/internal/core/port"
@@ -71,6 +72,19 @@ func main() {
 		os.Exit(1)
 	}
 	defer redisClient.Close()
+
+	objectStore, err := minioadapter.New(ctx, minioadapter.Config{
+		Endpoint:   config.MinIO.Endpoint,
+		AccessKey:  config.MinIO.AccessKey,
+		SecretKey:  config.MinIO.SecretKey,
+		UseSSL:     config.MinIO.UseSSL,
+		Bucket:     config.MinIO.Bucket,
+		PublicBase: config.MinIO.PublicBase,
+	})
+	if err != nil {
+		slog.Error("Error initializing object storage connection", "error", err)
+		os.Exit(1)
+	}
 
 	slog.Info("Database has been initializerd and connected successfully", "db", config.DB.Connection)
 
@@ -238,6 +252,14 @@ func main() {
 
 	subscriptionHandler := http.NewSubscriptionHandler(subscriptionService)
 
+	attachmentRepo := repository.NewAttachmentRepository(db)
+	attachmentService := services.NewAttachmentService(attachmentRepo, objectStore)
+	attachmentHandler := http.NewAttachmentHandler(attachmentService, visitService)
+
+	consentRepo := repository.NewConsentRepository(db)
+	consentService := services.NewConsentService(consentRepo, objectStore)
+	consentHandler := http.NewConsentHandler(consentService, visitService)
+
 	router, err := http.NewRouter(
 		config,
 		tokenService,
@@ -260,6 +282,8 @@ func main() {
 		*reportsHandler,
 		*calculatorHandler,
 		*subscriptionHandler,
+		*attachmentHandler,
+		*consentHandler,
 		subscriptionService,
 		redisClient,
 	)

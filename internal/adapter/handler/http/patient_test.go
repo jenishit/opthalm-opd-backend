@@ -88,6 +88,53 @@ func TestPatient_GetNonexistentReturns404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
+func TestPatient_ReferralFieldsRoundTrip(t *testing.T) {
+	ts := testutil.NewTestServer(t)
+	token, _ := ts.AdminToken(t)
+
+	var created struct {
+		PatientID          uuid.UUID `json:"patient_id"`
+		ReferredByName     *string   `json:"referred_by_name"`
+		ReferredByFacility *string   `json:"referred_by_facility"`
+	}
+	resp := ts.DoData(t, http.MethodPost, "/api/patient", token, map[string]any{
+		"full_name":            "Referred Patient",
+		"dob":                  "1990-01-01",
+		"gender":               "male",
+		"phone":                "9800000030",
+		"referred_by_name":     "Dr. Shrestha",
+		"referred_by_facility": "Green Valley Eye Hospital",
+	}, &created)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.NotNil(t, created.ReferredByName)
+	require.NotNil(t, created.ReferredByFacility)
+	assert.Equal(t, "Dr. Shrestha", *created.ReferredByName)
+	assert.Equal(t, "Green Valley Eye Hospital", *created.ReferredByFacility)
+
+	// Round-trips through GET too, not just the create response.
+	var fetched struct {
+		ReferredByName     *string `json:"referred_by_name"`
+		ReferredByFacility *string `json:"referred_by_facility"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/patient/"+created.PatientID.String(), token, nil, &fetched)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	require.NotNil(t, fetched.ReferredByName)
+	assert.Equal(t, "Dr. Shrestha", *fetched.ReferredByName)
+	require.NotNil(t, fetched.ReferredByFacility)
+	assert.Equal(t, "Green Valley Eye Hospital", *fetched.ReferredByFacility)
+
+	// A walk-in with no referral leaves both fields absent, not an error.
+	walkIn := ts.CreatePatient(t, token, "Walk In Patient", "9800000031")
+	var fetchedWalkIn struct {
+		ReferredByName     *string `json:"referred_by_name"`
+		ReferredByFacility *string `json:"referred_by_facility"`
+	}
+	resp = ts.DoData(t, http.MethodGet, "/api/patient/"+walkIn.String(), token, nil, &fetchedWalkIn)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Nil(t, fetchedWalkIn.ReferredByName)
+	assert.Nil(t, fetchedWalkIn.ReferredByFacility)
+}
+
 func TestPatient_SoftDeleteExcludesFromReads(t *testing.T) {
 	ts := testutil.NewTestServer(t)
 	token, _ := ts.AdminToken(t)

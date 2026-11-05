@@ -49,3 +49,38 @@ func (c *CalculatorService) VertexDistanceAdjust(power float64, fromDistanceMM, 
 func (c *CalculatorService) TelescopeFOV(trueFOVDegrees, magnification float64) float64 {
 	return trueFOVDegrees * magnification
 }
+
+// IOLPowerSRKII estimates the intraocular lens power (diopters) to implant
+// for a target post-op refraction, using the SRK-II regression formula —
+// the standard quick-reference formula for cataract/IOL planning, refining
+// the original SRK formula with an axial-length-dependent correction so it
+// stays accurate for short and long eyes, not just average ones.
+//
+//	axialLengthMM: biometry axial length (mm), typically 20-26mm
+//	avgKDiopters: average corneal power from keratometry (D)
+//	aConstant: the lens manufacturer's A-constant for the IOL model
+//	targetRefractionD: desired post-op spherical equivalent (D); 0 for emmetropia
+func (c *CalculatorService) IOLPowerSRKII(axialLengthMM, avgKDiopters, aConstant, targetRefractionD float64) float64 {
+	correctedAConstant := aConstant
+	switch {
+	case axialLengthMM < 20:
+		correctedAConstant += 3
+	case axialLengthMM < 21:
+		correctedAConstant += 2
+	case axialLengthMM < 22:
+		correctedAConstant += 1
+	case axialLengthMM >= 24.5:
+		correctedAConstant -= 0.5
+	}
+
+	emmetropicPower := correctedAConstant - 0.9*avgKDiopters - 2.5*axialLengthMM
+	if targetRefractionD == 0 {
+		return emmetropicPower
+	}
+
+	// Adjust for a non-zero target refraction: each diopter of desired
+	// myopia/hyperopia shifts the required IOL power by roughly 1.0-1.25x
+	// itself depending on axial length; SRK-II uses a fixed correction
+	// factor of 1.0 for the emmetropic formula's refraction adjustment.
+	return emmetropicPower - targetRefractionD*1.0
+}

@@ -44,6 +44,7 @@ var appTables = []string{
 	"stock_purchase_items", "stock_purchases",
 	"inventory_stock_movements", "inventory_items", "vendors",
 	"payments", "invoice_items", "invoices",
+	"consents", "clinical_attachments",
 	"follow_ups", "treatments", "visit_diagnoses", "refraction_readings", "investigations", "examination_findings", "visit_symptoms",
 	"visits",
 	"patient_history_conditions", "patient_history",
@@ -100,6 +101,40 @@ func (e *emailCapture) Last(t *testing.T) SentEmail {
 	defer e.mu.Unlock()
 	require.NotEmpty(t, e.emails, "expected an email to have been sent")
 	return e.emails[len(e.emails)-1]
+}
+
+// fakeObjectStore is a port.ObjectStorage that keeps bytes in memory,
+// standing in for MinIO in tests the same way emailCapture stands in for
+// real email delivery — no live object store needed to run this suite.
+type fakeObjectStore struct {
+	mu      sync.Mutex
+	objects map[string][]byte
+}
+
+func newFakeObjectStore() *fakeObjectStore {
+	return &fakeObjectStore{objects: make(map[string][]byte)}
+}
+
+func (f *fakeObjectStore) Upload(_ context.Context, key string, r io.Reader, _ int64, _ string) error {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.objects[key] = data
+	return nil
+}
+
+func (f *fakeObjectStore) PresignedURL(_ context.Context, key string, _ time.Duration) (string, error) {
+	return "https://test-object-store.local/" + key, nil
+}
+
+func (f *fakeObjectStore) Delete(_ context.Context, key string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	delete(f.objects, key)
+	return nil
 }
 
 // NewTestServer builds the full DI graph identically to cmd/main.go and
@@ -274,13 +309,23 @@ func NewTestServer(t *testing.T) *TestServer {
 
 	subscriptionHandler := httpadapter.NewSubscriptionHandler(subscriptionService)
 
+	objectStore := newFakeObjectStore()
+
+	attachmentRepo := repository.NewAttachmentRepository(db)
+	attachmentService := services.NewAttachmentService(attachmentRepo, objectStore)
+	attachmentHandler := httpadapter.NewAttachmentHandler(attachmentService, visitService)
+
+	consentRepo := repository.NewConsentRepository(db)
+	consentService := services.NewConsentService(consentRepo, objectStore)
+	consentHandler := httpadapter.NewConsentHandler(consentService, visitService)
+
 	router, err := httpadapter.NewRouter(
 		cfg, tokenService,
 		*roleHandler, *userHandler, *profileHandler, *authHandler, *clinicHandler, *clinicConfigHandler,
 		*patientHandler, *patientHistoryHandler, *visitHandler, *clinicalHandler, *catalogHandler, *invoiceHandler,
 		*inventoryHandler, *vendorHandler, *stockPurchaseHandler, *labJobHandler,
 		*reportsHandler, *calculatorHandler,
-		*subscriptionHandler, subscriptionService,
+		*subscriptionHandler, *attachmentHandler, *consentHandler, subscriptionService,
 		redisClient,
 	)
 	require.NoError(t, err, "build router")

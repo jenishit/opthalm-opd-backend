@@ -42,3 +42,10 @@ type TelescopeFOVReq struct {
 type ScalarResultRes struct {
 	Result float64 `json:"result"`
 }
+
+type IOLPowerReq struct {
+	AxialLengthMM     float64 `json:"axial_length_mm" binding:"required,gt=0"`
+	AvgKDiopters      float64 `json:"avg_k_diopters" binding:"required,gt=0"`
+	AConstant         float64 `json:"a_constant" binding:"required,gt=0"`
+	TargetRefractionD float64 `json:"target_refraction_d"`
+}

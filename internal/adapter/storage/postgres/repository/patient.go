@@ -35,6 +35,8 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UU
 			"dob",
 			"gender",
 			"occupation",
+			"referred_by_name",
+			"referred_by_facility",
 			"registered_on",
 			"created_by",
 			"updated_by",
@@ -47,6 +49,8 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UU
 			pt.DOB,
 			pt.Gender,
 			pt.Occupation,
+			pt.ReferredByName,
+			pt.ReferredByFacility,
 			sq.Expr("CURRENT_DATE"),
 			pt.CreatedBy,
 			pt.CreatedBy,
@@ -87,7 +91,7 @@ func (pr *PatientRepository) CreatePatient(ctx context.Context, clinicID uuid.UU
 }
 
 func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uuid.UUID) (*domain.Patient, error) {
-	var address, occupation sql.NullString
+	var address, occupation, referredByName, referredByFacility sql.NullString
 
 	query, args, err := sq.
 		Select(
@@ -98,6 +102,8 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uu
 			"dob",
 			"gender",
 			"occupation",
+			"referred_by_name",
+			"referred_by_facility",
 			"registered_on",
 			"created_by",
 			"created_at",
@@ -122,6 +128,8 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uu
 		&dob,
 		&patient.Gender,
 		&occupation,
+		&referredByName,
+		&referredByFacility,
 		&patient.RegisteredOn,
 		&patient.CreatedBy,
 		&patient.CreatedAt,
@@ -143,12 +151,18 @@ func (pr *PatientRepository) GetPatientByID(ctx context.Context, clinicID, id uu
 	if occupation.Valid {
 		patient.Occupation = &occupation.String
 	}
+	if referredByName.Valid {
+		patient.ReferredByName = &referredByName.String
+	}
+	if referredByFacility.Valid {
+		patient.ReferredByFacility = &referredByFacility.String
+	}
 
 	return &patient, nil
 }
 
 func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID) ([]*domain.Patient, error) {
-	var address, occupation sql.NullString
+	var address, occupation, referredByName, referredByFacility sql.NullString
 
 	query, args, err := sq.
 		Select(
@@ -159,6 +173,8 @@ func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID
 			"dob",
 			"gender",
 			"occupation",
+			"referred_by_name",
+			"referred_by_facility",
 			"registered_on",
 			"created_by",
 			"created_at",
@@ -193,6 +209,8 @@ func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID
 			&dob,
 			&p.Gender,
 			&occupation,
+			&referredByName,
+			&referredByFacility,
 			&p.RegisteredOn,
 			&p.CreatedBy,
 			&p.CreatedAt,
@@ -211,6 +229,12 @@ func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID
 		if occupation.Valid {
 			p.Occupation = &occupation.String
 		}
+		if referredByName.Valid {
+			p.ReferredByName = &referredByName.String
+		}
+		if referredByFacility.Valid {
+			p.ReferredByFacility = &referredByFacility.String
+		}
 
 		patients = append(patients, &p)
 	}
@@ -219,7 +243,7 @@ func (pr *PatientRepository) GetPatients(ctx context.Context, clinicID uuid.UUID
 }
 
 func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.UUID, query string, limit int) ([]*domain.Patient, error) {
-	var address, occupation sql.NullString
+	var address, occupation, referredByName, referredByFacility sql.NullString
 
 	querySql, args, err := sq.
 		Select(
@@ -230,6 +254,8 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.U
 			"dob",
 			"gender",
 			"occupation",
+			"referred_by_name",
+			"referred_by_facility",
 			"registered_on",
 			"created_by",
 			"created_at",
@@ -269,6 +295,8 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.U
 			&dob,
 			&p.Gender,
 			&occupation,
+			&referredByName,
+			&referredByFacility,
 			&p.RegisteredOn,
 			&p.CreatedBy,
 			&p.CreatedAt,
@@ -287,6 +315,12 @@ func (pr *PatientRepository) SearchPatients(ctx context.Context, clinicID uuid.U
 		if occupation.Valid {
 			p.Occupation = &occupation.String
 		}
+		if referredByName.Valid {
+			p.ReferredByName = &referredByName.String
+		}
+		if referredByFacility.Valid {
+			p.ReferredByFacility = &referredByFacility.String
+		}
 
 		patients = append(patients, &p)
 	}
@@ -301,6 +335,8 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, clinicID uui
 	dob := nullString(pt.DOB)
 	gender := nullString(pt.Gender)
 	occupation := nullStringPtr(pt.Occupation)
+	referredByName := nullStringPtr(pt.ReferredByName)
+	referredByFacility := nullStringPtr(pt.ReferredByFacility)
 
 	query, args, err := sq.
 		Update("patients").
@@ -310,6 +346,8 @@ func (pr *PatientRepository) UpdatePatientByID(ctx context.Context, clinicID uui
 		Set("dob", sq.Expr("COALESCE(?, dob)", dob)).
 		Set("gender", sq.Expr("COALESCE(?, gender)", gender)).
 		Set("occupation", sq.Expr("COALESCE(?, occupation)", occupation)).
+		Set("referred_by_name", sq.Expr("COALESCE(?, referred_by_name)", referredByName)).
+		Set("referred_by_facility", sq.Expr("COALESCE(?, referred_by_facility)", referredByFacility)).
 		Set("updated_at", sq.Expr("NOW()")).
 		Set("updated_by", pt.UpdatedBy).
 		Where(sq.Eq{"id": pt.ID, "clinic_id": clinicID}).

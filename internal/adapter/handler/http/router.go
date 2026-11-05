@@ -48,6 +48,8 @@ func NewRouter(
 	reportsHandler ReportsHandler,
 	calculatorHandler CalculatorHandler,
 	subscriptionHandler SubscriptionHandler,
+	attachmentHandler AttachmentHandler,
+	consentHandler ConsentHandler,
 	subSvc port.SubscriptionService,
 	redisClient *redis.Client,
 ) (*Router, error) {
@@ -178,14 +180,30 @@ func NewRouter(
 		visit.GET("/patient/:patientId", visitHandler.GetVisitsByPatientID)
 		visit.PATCH("/:id", visitHandler.UpdateVisitByVisitID)
 
-		visit.GET("/:id/clinical", clinicalHandler.GetVisitClinical)
-		visit.PUT("/:id/symptoms", clinicalHandler.UpsertVisitSymptoms)
-		visit.PUT("/:id/examination", clinicalHandler.UpsertExamination)
-		visit.GET("/:id/readings", clinicalHandler.ListReadings)
-		visit.POST("/:id/readings", clinicalHandler.AddReading)
-		visit.PUT("/:id/diagnoses", clinicalHandler.ReplaceDiagnoses)
-		visit.PUT("/:id/treatments", clinicalHandler.ReplaceTreatments)
-		visit.PUT("/:id/follow-up", clinicalHandler.UpsertFollowUp)
+		// Clinical sub-resources — the chart itself, plus attachments and
+		// consents — are gated to the roles that actually chart a patient
+		// (doctor/optometrist) or administer the clinic. Front-desk/billing
+		// roles can still create and view the visit record above, just not
+		// its clinical content.
+		clinical := visit.Group("")
+		clinical.Use(roleMiddleware("ROLE_ADMIN", "ROLE_DOCTOR", "ROLE_OPTOMETRIST"))
+		{
+			clinical.GET("/:id/clinical", clinicalHandler.GetVisitClinical)
+			clinical.PUT("/:id/symptoms", clinicalHandler.UpsertVisitSymptoms)
+			clinical.PUT("/:id/examination", clinicalHandler.UpsertExamination)
+			clinical.GET("/:id/readings", clinicalHandler.ListReadings)
+			clinical.POST("/:id/readings", clinicalHandler.AddReading)
+			clinical.PUT("/:id/diagnoses", clinicalHandler.ReplaceDiagnoses)
+			clinical.PUT("/:id/treatments", clinicalHandler.ReplaceTreatments)
+			clinical.PUT("/:id/follow-up", clinicalHandler.UpsertFollowUp)
+
+			clinical.POST("/:id/attachments", attachmentHandler.Upload)
+			clinical.GET("/:id/attachments", attachmentHandler.ListAttachments)
+			clinical.DELETE("/:id/attachments/:attachmentId", attachmentHandler.DeleteAttachment)
+
+			clinical.POST("/:id/consents", consentHandler.Create)
+			clinical.GET("/:id/consents", consentHandler.List)
+		}
 	}
 
 	catalog := admin.Group("/catalog")
@@ -313,6 +331,7 @@ func NewRouter(
 		calculators.POST("/near-add", calculatorHandler.NearAdd)
 		calculators.POST("/vertex-distance", calculatorHandler.VertexDistance)
 		calculators.POST("/telescope-fov", calculatorHandler.TelescopeFOV)
+		calculators.POST("/iol-power", calculatorHandler.IOLPower)
 	}
 
 	return &Router{

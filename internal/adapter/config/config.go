@@ -24,6 +24,7 @@ type (
 		Redis *RedisConfig
 		SMTP  *SMTP
 		Files *Files
+		MinIO *MinIO
 	}
 	// App contains all the environment variables for the application
 	App struct {
@@ -99,6 +100,19 @@ type (
 	Files struct {
 		UploadDir string
 	}
+	// MinIO is the S3-compatible object store clinical images (fundus/OCT/
+	// visual-field exports pulled off diagnostic devices) and consent
+	// signature images are uploaded to. Unlike Files.UploadDir (local disk),
+	// this is safe behind multiple app instances since the bytes don't live
+	// on any one instance's filesystem.
+	MinIO struct {
+		Endpoint   string
+		AccessKey  string
+		SecretKey  string
+		UseSSL     bool
+		Bucket     string
+		PublicBase string // optional reverse-proxy base URL serving the bucket; falls back to presigned GET URLs when empty
+	}
 )
 
 // New creates a new container instance
@@ -170,6 +184,15 @@ func New() (*Container, error) {
 		UploadDir: envOrDefault(os.Getenv("UPLOAD_DIR"), "./uploads"),
 	}
 
+	minioCfg := &MinIO{
+		Endpoint:   os.Getenv("MINIO_ENDPOINT"),
+		AccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
+		SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+		UseSSL:     parseBool(os.Getenv("MINIO_USE_SSL"), false),
+		Bucket:     envOrDefault(os.Getenv("MINIO_BUCKET"), "clinical-attachments"),
+		PublicBase: os.Getenv("MINIO_PUBLIC_BASE_URL"),
+	}
+
 	return &Container{
 		app,
 		token,
@@ -180,6 +203,7 @@ func New() (*Container, error) {
 		redisCfg,
 		smtp,
 		files,
+		minioCfg,
 	}, nil
 }
 
